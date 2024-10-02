@@ -1,7 +1,14 @@
 
+import FeatureListSection from "../containers/HomePage/FeatureListSection"
+import MainHomeSection from "../containers/HomePage/MainHomeSection"
+import TestimonialSection from "../containers/HomePage/TestimonialSection"
 function Home() {
-    return (  
-                <div>This is home page</div> 
+    return (
+        <div>
+            <MainHomeSection />
+            <FeatureListSection />
+            <TestimonialSection />
+        </div>
     )
 }
 
