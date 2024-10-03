@@ -6,31 +6,31 @@ export default function MainHomeSection(): JSX.Element {
         <ReactLenis root>
             <main className="bg-black">
                 <div className="wrapper">
-                    <section className="text-primary h-screen w-full bg-white grid place-content-center sticky top-0">
-                        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+                    <section className="text-white h-screen w-full bg-black grid place-content-center sticky top-0">
+                        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#ffffff2e_1px,transparent_1px),linear-gradient(to_bottom,#ffffff2e_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
 
-                        <h1 className="2xl:text-7xl text-6xl px-8 font-semibold text-center tracking-tight leading-[120%]">
-                            Trải nghiệm chat video theo thời gian thực <br /> với VELTRA. Cuộn xuống để khám phá!
+                        <h1 className="2xl:text-7xl text-6xl px-8 font-semibold text-center tracking-tight leading-[120%] ">
+                            Trải nghiệm chat video theo thời gian thực <br /> với Veltra. <span className="bg-gradient-primary bg-clip-text text-transparent">Cuộn xuống để khám phá!</span>
                         </h1>
                     </section>
 
-                    <section className="bg-white text-black grid place-content-center h-screen sticky top-0 overflow-hidden">
+                    <section className="bg-black text-white grid place-content-center h-screen sticky top-0 overflow-hidden">
                         <HeroSection />
                     </section>
 
-                    <section className="text-white h-screen w-full bg-white grid place-content-center sticky top-0">
-                        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+                    <section className="text-white h-screen w-full bg-black grid place-content-center sticky top-0">
+                        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#ffffff2e_1px,transparent_1px),linear-gradient(to_bottom,#ffffff2e_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
                         <h1 className="2xl:text-7xl text-5xl px-8 font-semibold text-center tracking-tight leading-[120%]">
-                            Kết nối không giới hạn <br /> với bạn bè và gia đình qua video!
+                            Kết nối <span className="bg-gradient-primary bg-clip-text text-transparent">không giới hạn</span> <br /> với bạn bè và gia đình qua video!
                         </h1>
                     </section>
                 </div>
 
-                <section className="text-black w-full bg-white ">
+                <section className="text-white w-full bg-black ">
                     <div className="grid grid-cols-2">
                         <div className="sticky top-0 h-screen flex items-center justify-center">
                             <h1 className="2xl:text-7xl text-5xl px-8 font-semibold text-center tracking-tight leading-[120%]">
-                                Cảm ơn bạn đã chọn VELTRA.
+                                Cảm ơn bạn đã chọn Veltra.
                                 <br /> Giờ hãy bắt đầu cuộc gọi đầu tiên của bạn!
                             </h1>
                         </div>
@@ -67,7 +67,7 @@ export default function MainHomeSection(): JSX.Element {
                     </div>
                 </section>
 
-                <section className="text-black w-full bg-white ">
+                <section className="text-white w-full bg-black ">
                     <div className="grid grid-cols-2 px-8">
                         <div className="grid gap-2">
                             <figure className="sticky top-0 h-screen grid place-content-center">
@@ -101,20 +101,13 @@ export default function MainHomeSection(): JSX.Element {
                         </div>
                         <div className="sticky top-0 h-screen grid place-content-center">
                             <h1 className="text-4xl px-8 font-medium text-right tracking-tight leading-[120%]">
-                                Với VELTRA, bạn có thể kết nối dễ dàng, mọi lúc, mọi nơi qua cuộc gọi video thời gian thực.
+                                Với Veltra, bạn có thể kết nối dễ dàng, mọi lúc, mọi nơi qua cuộc gọi video<span className="bg-gradient-primary bg-clip-text text-transparent"> thời gian thực</span>.
                             </h1>
                         </div>
                     </div>
                 </section>
 
-                <footer className="group bg-gradient-to-r from-amber-200 to-gray-50 ">
-                    <h1 className="text-[16vw] group-hover:translate-y-4 translate-y-20 leading-[100%] uppercase font-semibold text-center bg-gradient-to-r from-yellow-400 to-yellow-100 bg-clip-text text-transparent transition-all ease-linear">
-                        VELTRA
-                    </h1>
-                    <section className="bg-black text-white font-bold italic h-40 relative z-10 grid place-content-center text-2xl rounded-tr-full rounded-tl-full">
-                        {/* Cảm ơn bạn đã ghé thăm VELTRA! */}
-                    </section>
-                </footer>
+
             </main>
         </ReactLenis>
     )

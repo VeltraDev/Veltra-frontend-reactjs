@@ -7,7 +7,7 @@ export default function AppLogo() {
           <a href="javascript:void(0)">
               <ThunderIcon />
           </a>
-          <p className='text-xl font-bold'>VelTra</p>
+          <p className='text-xl font-bold text-white'>VelTra</p>
           <label
               htmlFor="checkbox"
               className="relative h-[3em] w-[3em] ml-2  rounded-[1.2em] bg-[#b3fffa] shadow-[inset_-1px_1px_4px_0px_#f0fffe,inset_1px_-1px_4px_0px_#00bdb0,-1px_2px_4px_0px_#00bdb0]"

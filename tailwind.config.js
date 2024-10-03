@@ -10,9 +10,19 @@ export default {
   theme: {
     extend: {
       colors: {
+        black: '#000',
+        white: '#fff',
         bgPrimary: '#F7F8F9',
         primary: '#FB8E0B ',
         accent: '#34495E',
+      },
+      fontFamily: {
+        sans: ['Figtree', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
+        updock: ['Updock', 'sans-serif'],
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(to right, #F0E6FF, #4F46E5)',
       },
     },
   },

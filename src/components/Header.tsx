@@ -13,12 +13,12 @@ export default function Header() {
     ]
 
     return (
-        <nav className="bg-white border-b w-full md:static md:text-sm md:border-none z-10">
+        <nav className="bg-black border-b w-full md:static md:text-sm md:border-none z-10">
             <div className="items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8">
                 <div className="flex items-center justify-between py-3 md:py-5 md:block">
                     <AppLogo />
                     <div className="md:hidden">
-                        <button className="text-gray-500 hover:text-gray-800"
+                        <button className="text-white hover:text-yellow-300"
                             onClick={() => setState(!state)}
                         >
                             {
@@ -35,12 +35,12 @@ export default function Header() {
                         </button>
                     </div>
                 </div>
-                <div className={`flex-1 pb-3 mt-8 md:block md:pb-0 md:mt-0 ${state ? 'block' : 'hidden'}`}>
+                <div className={`flex-1 pb-3 mt-8 font-medium font-poppins md:block md:pb-0 md:mt-0 ${state ? 'block' : 'hidden'}`}>
                     <ul className="justify-end items-center space-y-6 md:flex md:space-x-6 md:space-y-0">
                         {
                             navigation.map((item, idx) => {
                                 return (
-                                    <li key={idx} className="text-gray-700 hover:text-primary">
+                                    <li key={idx} className="text-white text-base  hover:text-primary">
                                         <a href={item.path} className="block">
                                             {item.title}
                                         </a>
@@ -51,7 +51,7 @@ export default function Header() {
                         <span className='hidden w-px h-6 bg-gray-300 md:block'></span>
                         <div className='space-y-3 items-center gap-x-6 md:flex md:space-y-0'>
                             <li>
-                                <a href="javascript:void(0)" className="block py-3 text-center text-gray-700 hover:text-primary border rounded-lg md:border-none">
+                                <a href="javascript:void(0)" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
                                     Đăng nhập
                                 </a>
                             </li>
