@@ -53,15 +53,15 @@ export default function FeatureListSection(): JSX.Element {
     })
     return (
         <ReactLenis root>
-            <main className="bg-transparent relative" ref={container}>
+            <main className="bg-black relative" ref={container}>
           <>
-            <section className="text-black  h-[30vh]  w-full bg-transparent  flex flex-col justify-center items-center ">
-              <div className="absolute z-0 bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+            <section className="text-white  h-[30vh]  w-full bg-black  flex flex-col justify-center items-center ">
+              <div className="absolute z-0 bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#ffffff2e_1px,transparent_1px),linear-gradient(to_bottom,#ffffff2e_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
 
               <h3 className="text-yellow-600 font-semibold">
                 Features
               </h3>
-              <p className="text-gray-800 text-3xl font-semibold sm:text-4xl">
+              <p className="text-white text-3xl font-semibold sm:text-4xl">
                 Tính năng nổi bật
               </p>
               <p>

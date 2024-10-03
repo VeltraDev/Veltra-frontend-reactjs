@@ -5,54 +5,54 @@ export default () => {
             avatar: "https://api.uifaces.co/our-content/donated/xZ4wg2Xj.jpg",
             name: "Quách Phú Thuận",
             title: "Nhà sáng lập WeConnect",
-            quote: "VELTRA đã thay đổi cách chúng tôi kết nối với khách hàng. Chất lượng video mượt mà và tính năng hỗ trợ linh hoạt giúp doanh nghiệp của chúng tôi tạo nên những trải nghiệm tốt nhất."
+            quote: "Veltra đã thay đổi cách chúng tôi kết nối với khách hàng. Chất lượng video mượt mà và tính năng hỗ trợ linh hoạt giúp doanh nghiệp của chúng tôi tạo nên những trải nghiệm tốt nhất."
         },
         {
             avatar: "https://randomuser.me/api/portraits/men/46.jpg",
             name: "Lê Trần Hoàng Kiên",
             title: "CTO của SoftCloud",
-            quote: "Sự kết hợp giữa công nghệ hiện đại và hỗ trợ nhanh chóng từ đội ngũ VELTRA đã giúp chúng tôi xây dựng nền tảng video call mạnh mẽ, đáp ứng nhu cầu của hàng ngàn khách hàng."
+            quote: "Sự kết hợp giữa công nghệ hiện đại và hỗ trợ nhanh chóng từ đội ngũ Veltra đã giúp chúng tôi xây dựng nền tảng video call mạnh mẽ, đáp ứng nhu cầu của hàng ngàn khách hàng."
         },
         {
             avatar: "https://randomuser.me/api/portraits/men/86.jpg",
             name: "Đoàn Vĩnh Khang",
             title: "Giám đốc vận hành FinTech",
-            quote: "Nhờ VELTRA, quy trình làm việc với đối tác của chúng tôi trở nên dễ dàng hơn. Tốc độ kết nối nhanh chóng và chất lượng hình ảnh sắc nét thực sự mang lại giá trị cho dịch vụ của chúng tôi."
+            quote: "Nhờ Veltra, quy trình làm việc với đối tác của chúng tôi trở nên dễ dàng hơn. Tốc độ kết nối nhanh chóng và chất lượng hình ảnh sắc nét thực sự mang lại giá trị cho dịch vụ của chúng tôi."
         },
         {
             avatar: "https://randomuser.me/api/portraits/men/87.jpg",
             name: "Nguyễn Anh Đức",
             title: "Kỹ sư phát triển phần mềm",
-            quote: "Đội ngũ VELTRA đã mang lại giải pháp gọi video ổn định, phù hợp với dự án của chúng tôi. Chúng tôi hài lòng với khả năng tùy chỉnh và sự hỗ trợ nhiệt tình từ họ."
+            quote: "Đội ngũ Veltra đã mang lại giải pháp gọi video ổn định, phù hợp với dự án của chúng tôi. Chúng tôi hài lòng với khả năng tùy chỉnh và sự hỗ trợ nhiệt tình từ họ."
         },
         {
             avatar: "https://randomuser.me/api/portraits/men/88.jpg",
             name: "Trần Nguyễn Minh Quân",
             title: "Giám đốc sáng tạo",
-            quote: "VELTRA không chỉ là một nền tảng kết nối qua video, mà còn là công cụ tuyệt vời giúp chúng tôi xây dựng trải nghiệm khách hàng hoàn hảo. Chúng tôi rất hài lòng với dịch vụ mà họ cung cấp."
+            quote: "Veltra không chỉ là một nền tảng kết nối qua video, mà còn là công cụ tuyệt vời giúp chúng tôi xây dựng trải nghiệm khách hàng hoàn hảo. Chúng tôi rất hài lòng với dịch vụ mà họ cung cấp."
         },
         {
             avatar: "https://randomuser.me/api/portraits/men/89.jpg",
             name: "Lê Phạm Anh Duy",
             title: "Chuyên gia tư vấn kinh doanh",
-            quote: "VELTRA đã giúp chúng tôi tiết kiệm nhiều thời gian và chi phí trong việc kết nối với khách hàng qua video. Họ là đối tác tin cậy mà chúng tôi sẽ tiếp tục hợp tác lâu dài."
+            quote: "Veltra đã giúp chúng tôi tiết kiệm nhiều thời gian và chi phí trong việc kết nối với khách hàng qua video. Họ là đối tác tin cậy mà chúng tôi sẽ tiếp tục hợp tác lâu dài."
         }
     ];
 
 
 
     return (
-        <section className="relative py-14">
+        <section className="relative py-14 bg-black">
             <div className="relative z-10 max-w-screen-xl mx-auto px-4 md:px-8">
                 <div className="max-w-xl sm:text-center md:mx-auto">
-                    <h3 className="text-gray-800 text-3xl font-semibold sm:text-4xl">
+                    <h3 className="text-white text-3xl font-semibold sm:text-4xl">
                         Khách hàng nói gì về chúng tôi
                     </h3>
-                    <p className="mt-3 text-gray-600">
-                        Những trải nghiệm chân thực từ các khách hàng đã sử dụng VELTRA – nền tảng kết nối qua video chat chất lượng cao.
+                    <p className="mt-3 text-white">
+                        Những trải nghiệm chân thực từ các khách hàng đã sử dụng Veltra – nền tảng kết nối qua video chat chất lượng cao.
                     </p>
                 </div>
-                <div className="mt-12">
+                <div className="mt-12 bg-black">
                     <ul className="grid items-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {
                             testimonials.map((item, idx) => (
@@ -68,7 +68,7 @@ export default () => {
                                                 {item.quote}
                                             </p>
                                         </blockquote>
-                                  <div className="flex items-center gap-x-4 p-4 mt-6 bg-gradient-to-r from-gray-50 to-yellow-100">
+                                        <div className="flex items-center gap-x-4 p-4 mt-6 bg-gradient-to-r from-gray-50 to-yellow-100">
                                             <img src={item.avatar} className="w-16 h-16 rounded-full border-2 border-yellow-500" />
                                             <div>
                                                 <span className="block text-gray-800 font-semibold">{item.name}</span>
@@ -82,7 +82,7 @@ export default () => {
                     </ul>
                 </div>
             </div>
-        <div className="absolute top-0 w-full h-[350px] bg-gradient-to-r from-gray-50 to-yellow-100"></div>
+            <div className="absolute top-0 w-full h-[350px] bg-black"></div>
         </section>
     )
 }
