@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AppLogo from './common/AppLogo'
 
 export default function Header() {
-
     const [state, setState] = useState(false)
+    const [isScrolled, setIsScrolled] = useState(false)
+
     // Replace javascript:void(0) paths with your paths
     const navigation = [
         { title: "Trang chủ", path: "javascript:void(0)" },
@@ -12,8 +13,23 @@ export default function Header() {
         { title: "Blog", path: "javascript:void(0)" }
     ]
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const nav = document.getElementById('header-nav');
+            const navHeight = nav?.offsetHeight || 0;
+            if (window.scrollY > navHeight) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <nav className="bg-black border-b w-full md:static md:text-sm md:border-none z-10">
+        <nav id="header-nav" className={`w-full md:text-sm z-50 transition-all duration-300 fixed top-0 left-0 ${isScrolled ? 'bg-black bg-opacity-70' : 'bg-transparent'}`}>
             <div className="items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8">
                 <div className="flex items-center justify-between py-3 md:py-5 md:block">
                     <AppLogo />
