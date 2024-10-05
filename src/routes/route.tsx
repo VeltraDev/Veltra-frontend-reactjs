@@ -4,6 +4,8 @@ import LandingLayout from "../layouts/LandingLayout";
 import Home from "../pages/Home";
 
 
+import AuthPage from "../pages/Auth";
+import ChatPage from "../pages/Chat";
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -16,6 +18,16 @@ const publicRoutes: Route[] = [
         component: Home,
         layout: LandingLayout,
     },
+    {
+        path: "/auth",
+        component: AuthPage,
+        layout: LandingLayout,
+    },
+    {
+        path: "/chat",
+        component: ChatPage,
+      
+    }
 
     // {
     //     path: "/contact",

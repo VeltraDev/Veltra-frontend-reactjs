@@ -1,13 +1,19 @@
 
-import FeatureListSection from "../containers/HomePage/FeatureListSection"
+import DoubleContainerGradientQna from "../containers/HomePage/DoubleContainerGradientQna"
 import MainHomeSection from "../containers/HomePage/MainHomeSection"
 import TestimonialSection from "../containers/HomePage/TestimonialSection"
+
 function Home() {
     return (
-        <div>
+        <div className="bg-black">
+          
             <MainHomeSection />
-            <FeatureListSection />
+
             <TestimonialSection />
+
+           
+
+            <DoubleContainerGradientQna /> 
         </div>
     )
 }
