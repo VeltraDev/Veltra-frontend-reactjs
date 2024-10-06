@@ -6,6 +6,7 @@ import Home from "../pages/Home";
 
 import AuthPage from "../pages/Auth";
 import ChatPage from "../pages/Chat";
+import MainSocial from "../containers/SocialPage/MainSocial";
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -27,7 +28,11 @@ const publicRoutes: Route[] = [
         path: "/chat",
         component: ChatPage,
       
-    }
+    },
+    {
+        path: "/social",
+        component: MainSocial,
+    },
 
     // {
     //     path: "/contact",
