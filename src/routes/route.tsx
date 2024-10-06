@@ -6,6 +6,8 @@ import Home from "../pages/Home";
 
 import AuthPage from "../pages/Auth";
 import ChatPage from "../pages/Chat";
+import Post from "../pages/PostForm";
+
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -27,7 +29,12 @@ const publicRoutes: Route[] = [
         path: "/chat",
         component: ChatPage,
       
-    }
+    },
+    {
+        path: "/post",
+        component: Post,
+      
+    },
 
     // {
     //     path: "/contact",
