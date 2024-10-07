@@ -29,7 +29,7 @@ export default function SocialMediaPost() {
   }
 
   return (
-    <div className="max-w-md mx-auto bg-black text-white">
+    <div className="max-w-md mx-32 bg-black text-white">
       <div className="flex items-center p-4">
         <img
           alt="Profile picture"

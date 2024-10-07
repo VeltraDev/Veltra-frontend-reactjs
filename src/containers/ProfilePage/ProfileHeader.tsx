@@ -22,7 +22,7 @@ const ProfileHeader: React.FC = () => {
             </div>
             <div className="ml-8">
                 <h2 className="text-2xl font-bold text-white">{accountData.username}</h2>
-                <div className="flex space-x-4 mt-2">
+                <div className="flex items-center space-x-4 mt-2">
                     <Link to="/edit-profile" className="bg-gray-800 text-white px-4 py-2 rounded">Chỉnh sửa trang cá nhân</Link>
                     <button className="bg-gray-800 text-white px-4 py-2 rounded">Xem kho lưu trữ</button>
                     <i className="fas fa-cog text-white text-xl"></i>
