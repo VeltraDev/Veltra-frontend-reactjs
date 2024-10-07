@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import AppLogo from './common/AppLogo'
+import logo from '../assets/logo1.svg'
 
 export default function Header() {
     const [state, setState] = useState(false)
@@ -32,7 +33,8 @@ export default function Header() {
         <nav id="header-nav" className={`w-full md:text-sm z-50 transition-all duration-300 fixed top-0 left-0 ${isScrolled ? 'bg-black bg-opacity-70' : 'bg-transparent'}`}>
             <div className="items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8">
                 <div className="flex items-center justify-between py-3 md:py-5 md:block">
-                    <AppLogo />
+                    {/* <AppLogo /> */}
+                    <img src={logo} className='w-36' alt="" />
                     <div className="md:hidden">
                         <button className="text-white hover:text-yellow-300"
                             onClick={() => setState(!state)}

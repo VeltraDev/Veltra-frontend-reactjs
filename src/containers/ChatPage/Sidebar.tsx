@@ -2,6 +2,8 @@ import { HomeIcon, LogOutIcon, PhoneIcon, SearchIcon, UsersIcon, ZapIcon } from 
 import React, { useState } from 'react';
 import SearchPanel from './SearchPanek';
 
+import logo from '../../assets/logo1.svg'
+
 
 const SidebarItem: React.FC<{ icon: React.ReactNode; label: string; onClick?: () => void }> = ({ icon, label, onClick }) => (
     <li>
@@ -27,9 +29,12 @@ const Sidebar: React.FC = () => {
 
     return (
         <>
-            <div className="flex h-screen py-8 w-20 flex-col justify-between border-e border-gray-800 bg-black">
+            <div className="flex h-screen py-8 w-[72px] flex-col justify-between border-e border-gray-800 bg-black">
+                
                 <ul className="space-y-9 border-gray-800">
-                    <SidebarItem icon={<ZapIcon className='text-purple-500' />} label="General" />
+            
+                    <SidebarItem icon={<img src={logo} className='w-40'></img>} label="General" />
+                    {/* <SidebarItem icon={<ZapIcon className='text-purple-500' />} label="General" /> */}
                     <SidebarItem icon={<HomeIcon />} label="Home" />
                     <SidebarItem icon={<SearchIcon />} label="Search" onClick={toggleSearch} />
                     <SidebarItem icon={<PhoneIcon />} label="Phone" />
@@ -48,6 +53,7 @@ const Sidebar: React.FC = () => {
                         </button>
                     </form>
                 </div>
+             
             </div>
             <SearchPanel isVisible={isSearchVisible} />
         </>

@@ -1,15 +1,16 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { publicRoutes } from './routes/route';
-import LandingLayout from './layouts/LandingLayout';
+import "preline/preline";
+import { IStaticMethods } from "preline/preline";
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import AosInit from './components/aos';
 import BlankLayout from './layouts/BlankLayout';
 import NotFound from './pages/NotFound';
-import Test from './components/ui/Test';
-import AosInit from './components/aos';
+import { publicRoutes } from './routes/route';
+import Preline from "./components/preline";
 
 function App() {
   return (
     <Router>
+      <Preline />
       <AosInit />
       <Routes>
         {publicRoutes.map((route, index) => {
