@@ -4,6 +4,7 @@ const {
 } = require("tailwindcss/lib/util/flattenColorPalette");
 const colors = require("tailwindcss/colors");
 
+const plugin = require('tailwindcss/plugin')
 
 function addVariablesForColors({ addBase, theme }) {
   let allColors = flattenColorPalette(theme("colors"));
@@ -15,16 +16,18 @@ function addVariablesForColors({ addBase, theme }) {
     ":root": newVars,
   });
 }
-export default {
+
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    'node_modules/preline/dist/*.js',
   ],
   theme: {
     extend: {
       colors: {
         black: '#000',
-        white: '#fff',
+        white: '#f5f5f5',
         bgPrimary: '#F7F8F9',
         secondary: '#262626',
         textSecondary: '#878A8D',
@@ -43,7 +46,35 @@ export default {
       },
     },
   },
-  plugins: [addVariablesForColors],
+  plugins: [
+    addVariablesForColors,
+    plugin(function({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-custom': {
+          '&::-webkit-scrollbar': {
+            width: '0.75rem', 
+            
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#f3f4f6', 
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#d1d5db', 
+          },
+          '@media (prefers-color-scheme: dark)': {
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: '#404040',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#737373', 
+            },
+            
+          },
+        },
+      })
+    }),
+    require('preline/plugin'),
+  ],
 };
 
 // /** @type {import('tailwindcss').Config} */
