@@ -54,14 +54,7 @@ export default function Footer(): JSX.Element {
                     </ul>
                 </div>
             </div>
-            <section className="group bg-gradient-to-r from-amber-200 to-gray-50 ">
-                <h1 className="text-[16vw] group-hover:translate-y-4 translate-y-20 leading-[100%] uppercase font-semibold text-center bg-gradient-to-r from-yellow-400 to-yellow-100 bg-clip-text text-transparent transition-all ease-linear">
-                    Veltra
-                </h1>
-                <section className="bg-black text-white font-updock  font-medium   italic h-40 relative z-10 grid place-content-center text-4xl rounded-tr-full rounded-tl-full">
-                    Cảm ơn bạn đã ghé thăm Veltra!
-                </section>
-            </section>
+         
         </footer>
     )
 }
