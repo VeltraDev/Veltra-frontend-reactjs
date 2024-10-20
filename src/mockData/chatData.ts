@@ -182,6 +182,13 @@ export const mockConversations: Conversation[] = [
         sender: 'other',
         content: 'Same here. Want to grab coffee laterz?',
         timestamp: new Date('2024-03-09T15:50:00')
+      },
+       
+      {
+        id: uuidv4(),
+        sender: 'other',
+        content: 'duc map',
+        timestamp: new Date('2024-03-09T15:50:00')
       }
     ],
     lastActivity: new Date('2024-03-09T15:40:00')
