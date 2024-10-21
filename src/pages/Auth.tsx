@@ -2,7 +2,7 @@ import { useState } from "react";
 import SignInForm from "../containers/AuthPage/SignInForm";
 import SignUpForm from "../containers/AuthPage/SignUpForm";
 
-export default function AuthPage() {
+export default function     AuthPage() {
     const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
 
     return (

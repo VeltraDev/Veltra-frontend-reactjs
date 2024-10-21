@@ -3,13 +3,21 @@
 import LandingLayout from "../layouts/LandingLayout";
 import Home from "../pages/Home";
 
-
 import AuthPage from "../pages/Auth";
 import ChatPage from "../pages/Chat";
+import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
+import ResetPasswordPage from "../pages/Auth/ResetPassword";
+import VerifyEmailPage from "../pages/Auth/VerifyEmail";
+import AuthLayout from "../layouts/AuthLayout";
+import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
+import DBLayout from "@/layouts/DBLayout";
+
+
 interface Route {
     path: string;
     component: React.ComponentType<any>;
     layout?: React.ComponentType<any>;
+    params?: Record<string, any>;  
 }
 
 const publicRoutes: Route[] = [
@@ -26,130 +34,32 @@ const publicRoutes: Route[] = [
     {
         path: "/chat",
         component: ChatPage,
-      
+    },
+    {
+        path: "/forgot-password",
+        component: ForgotPasswordPage,
+        layout: AuthLayout,
+        params: { token: ':token' }, 
+    },
+    {
+        path: "/reset-password",
+        component: ResetPasswordPage,
+        layout: AuthLayout,
+        params: { token: ':token' }, 
+    },
+    {
+        path: "/verify-email",
+        component: VerifyEmailPage,
+        layout: AuthLayout,
+        params: { token: ':token' }, 
+    },
+    {
+        path: "/dashboard",
+        component: MainDashBoardPage,
+        layout: DBLayout,
     }
-
-    // {
-    //     path: "/contact",
-    //     component: ContactUs,
-    //     layout: MainLayout,
-    // },
-    // {
-    //     path: "/product",
-    //     component: ProductPage,
-    //     layout: MainLayout,
-    // },
-
-    // {
-    //     path: "/sign-up",
-    //     component: AuthPage,
-    //     layout: MainLayout,
-    // },
-    // {
-    //     path: "/sign-in",
-    //     component: AuthPage,
-    //     layout: MainLayout,
-    // },
-    // {
-    //     path: "/product/:productId",
-    //     component: DetailPage,
-    //     layout: MainLayout,
-    // },
-    // {
-    //     path: "/verify-email",
-    //     component: VerifyEmail,
-    //     layout: BlankLayout,
-    // },
-
-
-    // {
-    //     path: "/cart",
-    //     component: CartPage,
-    //     layout: MainLayout,
-    // },
 ];
-const privateRoutes: Route[] = [
 
-    // {
-    //     path: "/cart",
-    //     component: CartPage,
-    //     layout: MainLayout,
-    // },
-    // {
-    //     path: "/couponpage",
-    //     component: CouponPage,
-    //     layout: MainLayout,
-    // },
-    // {
-    //     path: "/shipping-state",
-    //     component: ShippingState,
-    //     layout: MainLayout,
-    // },
-
-
-
-    // {
-    //     path: "/dashboard/products",
-    //     component: DashBoardProduct,
-    //     layout: DashBoardLayout,
-    // },
-    // {
-    //     path: "/dashboard/categories",
-    //     component: DashBoardCategories,
-    //     layout: DashBoardLayout,
-    // },
-    // {
-    //     path: "/dashboard",
-    //     component: DashBoard,
-    //     layout: DashBoardLayout,
-    // },
-    // {
-    //     path: "/dashboard/products/AddProduct",
-    //     component: AddProduct,
-    //     layout: DashBoardLayout,
-    // },
-    // {
-    //     path: "/dashboard/categories/AddCategory",
-    //     component: AddCategory,
-    //     layout: DashBoardLayout,
-    // },
-    // {
-    //     path: "/dashboard/categories/:idUpdateCategory",
-    //     component: CategoryUpdateForm,
-    //     layout: DashBoardLayout,
-    // },
-    // {
-    //     path: "/dashboard/products/:idUpdateProduct",
-    //     component: ProductUpdateForm,
-    //     layout: DashBoardLayout,
-    // },
-
-    // {
-    //     path: "/wishlist",
-    //     component: WishList,
-    //     layout: DashBoardUser
-    // },
-    // {
-    //     path: "/orderhistory",
-    //     component: OrderHistory,
-    //     layout: DashBoardUser
-    // },
-    // {
-    //     path: "/MyAccount",
-    //     component: ProfilePage,
-    //     layout: DashBoardUser
-    // },
-    // {
-    //     path: "/address",
-    //     component: AddressPage,
-    //     layout: DashBoardUser
-    // },
-
-    // {
-    //     path: "/address/billing-address",
-    //     component: BillingPage,
-    //     layout: MainLayout
-    // },
-];
+const privateRoutes: Route[] = [];
 
 export { privateRoutes, publicRoutes };
