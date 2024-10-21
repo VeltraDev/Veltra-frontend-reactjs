@@ -6,12 +6,12 @@ export default function Header() {
     const [state, setState] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
 
-    // Replace javascript:void(0) paths with your paths
+    // Replace  paths with your paths
     const navigation = [
-        { title: "Trang chủ", path: "javascript:void(0)" },
-        { title: "Giới thiệu", path: "javascript:void(0)" },
-        { title: "Liên hệ", path: "javascript:void(0)" },
-        { title: "Blog", path: "javascript:void(0)" }
+        { title: "Trang chủ", path: "" },
+        { title: "Giới thiệu", path: "" },
+        { title: "Liên hệ", path: "" },
+        { title: "Blog", path: "" }
     ]
 
     useEffect(() => {
@@ -70,12 +70,12 @@ export default function Header() {
                         <span className='hidden w-px h-6 bg-gray-300 md:block'></span>
                         <div className='space-y-3 items-center gap-x-6 md:flex md:space-y-0'>
                             <li>
-                                <a href="javascript:void(0)" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
+                                <a href="" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
                                     Đăng nhập
                                 </a>
                             </li>
                             <li>
-                                <a href="javascript:void(0)" className="block py-3 px-4 font-medium text-center  text-white bg-primary hover:bg-primary active:bg-primary active:shadow-none rounded-lg shadow md:inline">
+                                <a href="" className="block py-3 px-4 font-medium text-center  text-white bg-primary hover:bg-primary active:bg-primary active:shadow-none rounded-lg shadow md:inline">
                                     Đăng ký
                                 </a>
                             </li>
