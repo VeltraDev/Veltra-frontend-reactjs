@@ -2,53 +2,71 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../containers/ChatPage/Sidebar";
 import ChatList from "../containers/ChatPage/ChatList";
 import ChatSection from "../containers/ChatPage/ChatSection";
-import { Conversation, Message, mockConversations } from "../mockData/chatData";
-import { v4 as uuidv4 } from 'uuid';
+import http from '@/utils/http';
+import { Conversation, Message } from "../mockData/chatData";
 
 export default function ChatPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]); 
+  const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = "Chat";
-    if (conversations.length > 0) {
-      setActiveConversation(conversations[0]);
+    const userData = localStorage.getItem('user'); 
+    if (userData) {
+      const user = JSON.parse(userData); 
+      setLoggedInUserId(user?.id || null); 
     }
   }, []);
+ 
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const response = await http.get('/conversations?page=1&limit=10&sortBy=createdAt&order=DESC');
+        setConversations(response.data.data.results);
+      } catch (error) {
+        console.error('Lỗi khi lấy danh sách cuộc trò chuyện:', error);
+      }
+    };
+    fetchConversations();
+  }, []);
 
-  const handleConversationSelect = (conversationId: string) => {
-    const selected = conversations.find(conv => conv.id === conversationId);
-    if (selected) {
-      setActiveConversation(selected);
+  
+  const handleConversationSelect = async (conversationId: string) => {
+    try {
+      const selectedConversation = conversations.find(conv => conv.id === conversationId);
+      if (selectedConversation) {
+        setActiveConversation(selectedConversation);
+
+       
+        const response = await http.get(`/conversations/${conversationId}`);
+        setMessages(response.data.data.messages); 
+    
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy tin nhắn:', error);
     }
   };
 
-  const handleSendMessage = (content: string) => {
-    if (activeConversation) {
-      const newMessage: Message = {
-        id: uuidv4(),
-        sender: 'self',
-        content,
-        timestamp: new Date()
-      };
+  // const handleSendMessage = async (content: string) => {
+  //   if (activeConversation) {
+  //     const newMessage = {
+  //       id: `${Date.now()}`,
+  //       content,
+  //       sender: { id: 'self', firstName: 'You', lastName: '', avatar: null },
+  //       createdAt: new Date().toISOString(),
+  //     };
 
-      const updatedConversation = {
-        ...activeConversation,
-        messages: [...activeConversation.messages, newMessage]
-      };
+  //     // Gửi tin nhắn đến API (tùy vào backend của bạn)
+  //     await http.post(`/conversations/${activeConversation.id}/messages`, { content });
 
-      setConversations(prevConversations =>
-        prevConversations.map(conv =>
-          conv.id === activeConversation.id ? updatedConversation : conv
-        )
-      );
-
-      setActiveConversation(updatedConversation);
-    }
-  };
+  //     // Cập nhật tin nhắn trong state
+  //     setMessages((prev) => [...prev, newMessage]);
+  //   }
+  // };
 
   return (
-    <div className="flex bg-black font-sans  text-white relative">
+    <div className="flex bg-black font-sans text-white relative">
       <Sidebar />
       <ChatList
         conversations={conversations}
@@ -57,7 +75,9 @@ export default function ChatPage() {
       />
       <ChatSection
         conversation={activeConversation}
-        onSendMessage={handleSendMessage}
+        messages={messages}
+        currentUserId={loggedInUserId}
+        // onSendMessage={handleSendMessage}
       />
     </div>
   );
