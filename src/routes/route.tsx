@@ -3,14 +3,16 @@
 import LandingLayout from "../layouts/LandingLayout";
 import Home from "../pages/Home";
 
+import DBLayout from "@/layouts/DBLayout";
+import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
+import AuthLayout from "../layouts/AuthLayout";
 import AuthPage from "../pages/Auth";
-import ChatPage from "../pages/Chat";
 import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
 import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
-import AuthLayout from "../layouts/AuthLayout";
-import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
-import DBLayout from "@/layouts/DBLayout";
+import ChatPage from "../pages/Chat";
+import { RoleDB } from "@/pages/DashBoard/RoleDB";
+
 
 
 interface Route {
@@ -57,7 +59,13 @@ const publicRoutes: Route[] = [
         path: "/dashboard",
         component: MainDashBoardPage,
         layout: DBLayout,
+    },
+    {
+        path: "/dashboard/role",
+        component: RoleDB,
+        layout: DBLayout,
     }
+    
 ];
 
 const privateRoutes: Route[] = [];
