@@ -11,7 +11,8 @@ import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
 import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
-import { RoleDB } from "@/pages/DashBoard/RoleDB";
+import { AddRole } from "@/pages/DashBoard/AddRolePage";
+import RolePage from "@/pages/DashBoard/RolePage";
 
 
 
@@ -62,7 +63,12 @@ const publicRoutes: Route[] = [
     },
     {
         path: "/dashboard/role",
-        component: RoleDB,
+        component: RolePage,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/role/add",
+        component: AddRole,
         layout: DBLayout,
     }
     
