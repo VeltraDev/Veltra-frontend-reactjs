@@ -12,8 +12,9 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
 import { RoleDB } from "@/pages/DashBoard/RoleDB";
-
-
+import Permission from "@/containers/DashBoardPage/Permission/Main";
+import AddPermission from "@/containers/DashBoardPage/Permission/AddPermission"
+import UpdatePermission from "@/containers/DashBoardPage/Permission/UpdatePermission"
 
 interface Route {
     path: string;
@@ -63,6 +64,21 @@ const publicRoutes: Route[] = [
     {
         path: "/dashboard/role",
         component: RoleDB,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/permission",
+        component: Permission,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/permission/addpermission",
+        component: AddPermission,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/permission/updatepermission/:id",
+        component: UpdatePermission,
         layout: DBLayout,
     }
     

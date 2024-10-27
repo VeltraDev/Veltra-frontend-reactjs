@@ -32,7 +32,7 @@ export default function SignInPage() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: "thuyy566@gmail.com",
-            password: "30122004@Kien",
+            password: "veltra123",
         },
     });
 
