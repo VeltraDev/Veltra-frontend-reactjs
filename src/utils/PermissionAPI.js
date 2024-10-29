@@ -7,7 +7,7 @@ export const api = axios.create({
 });
 
 // Token cố định
-const fixedAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImM5MzgyZjNmLWIxOTQtNGIyYi1hYWYxLWExZGExZjcwMzExNyIsImVtYWlsIjoidmVsdHJhLmFkbWluQGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IlZlbHRyYSIsImxhc3ROYW1lIjoiQWRtaW4iLCJyb2xlIjp7ImlkIjoiNWM1Zjg2YzgtMWQ4ZS00ZTYyLThkOTctOGIyNjE1NGJhM2IxIiwibmFtZSI6IkFETUlOIn0sImlhdCI6MTczMDAxMDg2MywiZXhwIjoxNzMwMDEyNjYzfQ.eetMNVR5-vsiwAr0Jt7W8ejOls8PJ53gCDQZaVG6oso';
+const fixedAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImM5MzgyZjNmLWIxOTQtNGIyYi1hYWYxLWExZGExZjcwMzExNyIsImVtYWlsIjoidmVsdHJhLmFkbWluQGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IlZlbHRyYSIsImxhc3ROYW1lIjoiQWRtaW4iLCJyb2xlIjp7ImlkIjoiNWM1Zjg2YzgtMWQ4ZS00ZTYyLThkOTctOGIyNjE1NGJhM2IxIiwibmFtZSI6IkFETUlOIn0sImlhdCI6MTczMDE4NjY5MSwiZXhwIjoxNzMwMTg4NDkxfQ.OCoCCpv60BumpjyT2sDzYUqsk212ErOVMT6HGUzE62w';
 
 // Thiết lập interceptors để thêm token vào header của mỗi yêu cầu
 api.interceptors.request.use((config) => {
@@ -75,3 +75,4 @@ export async function deleteFormById(id) {
     throw new Error(err.message);
   }
 }
+

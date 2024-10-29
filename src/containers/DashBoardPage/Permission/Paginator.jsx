@@ -5,7 +5,7 @@ const Paginator = ({ currentPage, totalPages, onPageChange }) => {
 
   return (
     <nav>
-      <ul className="flex items-center">
+      <ul className="flex items-center justify-center">
         <li
           onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           className={`px-4 py-2 border flex items-center cursor-pointer mx-1.5 ${
@@ -25,7 +25,7 @@ const Paginator = ({ currentPage, totalPages, onPageChange }) => {
             onClick={() => onPageChange(pageNumber)}
             className={`px-4 py-2 cursor-pointer mx-1.5 ${
               currentPage === pageNumber
-                ? 'bg-primaryColor text-white'
+                ? 'bg-gray-500 text-white'
                 : 'hover:bg-[#f5f5f5] border'
             }`}
           >

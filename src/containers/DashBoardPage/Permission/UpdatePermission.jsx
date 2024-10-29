@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { getFormById, updateFormById } from '../../../utils/PermissionAPI';
+import { getFormById, updateFormById, getAllForms } from '../../../utils/PermissionAPI';
 import { Link } from 'react-router-dom';
 import { FaLongArrowAltLeft } from 'react-icons/fa';
 import { TbReload } from 'react-icons/tb';
@@ -9,19 +9,38 @@ import Toast from './Toast';
 import { IoArrowBackOutline } from "react-icons/io5";
 
 const formEdit = () => {
-  const [form, setform] = useState(PermissionModelPromotion);
+  const [form, setForm] = useState({...PermissionModel, modules: []});
   const [editedform, setEditedform] = useState(PermissionModelPromotion);
   const params = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [message, setMessage] = useState('');
+  const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+  const [selectedModule, setSelectedModule] = useState('');
+  const [filteredModules, setFilteredModules] = useState([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchAllModules = async () => {
+      try {
+        const response = await getAllForms(1, 1000, 'module', 'DESC');
+        const allModules = response.data.data?.results?.map((item) => item.module) || [];
+        const uniqueModules = Array.from(new Set(allModules));
+        setForm((prevForm) => ({ ...prevForm, modules: uniqueModules }));
+      } catch (error) {
+        console.error("Error fetching modules:", error);
+      }
+    };
+
+    fetchAllModules();
+  }, []);
 
   const fetchform = async () => {
     try {
       const res = await getFormById(params.id);
       console.log(res)
       if (res.status === 200) {
-        setform(res.data.data);
+        setForm(res.data.data);
         setEditedform(JSON.parse(JSON.stringify(res.data.data)));
       }
     } catch (err) {
@@ -105,7 +124,7 @@ const formEdit = () => {
     setStatus('');
   };
 
-  console.log('Editform', editedform);
+
 
   return (
     <section className="container mt-10">
@@ -224,18 +243,14 @@ const formEdit = () => {
                       />
                     )}
                   </span>
-                  <input
-                    type="text"
-                    className={`w-1/2 px-2 outline-0 uppercase ${
-                      editedform.method != form.method && 'bg-[#FFC107]/[.7]'
-                    }`}
-                    name="method"
-                    id="method"
-                    value={editedform.method}
-                    onChange={handleChangeInput}
-                    placeholder="Nhập method"
-                    required
-                  />
+                  <select className="w-1/2 px-2 outline-0" name="method" placeholder="" value={form.method} onChange={handleChangeInput} required>
+                        <option value="" className='text-gray-500'><input type="text"/>Chọn method</option>
+                        {methods.map((method) => (
+                          <option key={method} value={method} className='text-black'>
+                            {method}
+                          </option>
+                        ))}
+                  </select>
                 </div>
 
                 <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor text-base mb-3">
@@ -255,19 +270,25 @@ const formEdit = () => {
                   {isLoading ? (
                     <span className="animate-sweep-to-right block w-full h-6 bg-slate-400"></span>
                   ) : (
-                    <input
-                      type="text"
+                    <select
                       className={`w-1/2 px-2 outline-0 uppercase ${
-                        editedform.module != form.module && 'bg-[#FFC107]/[.7]'
+                        editedform.module !== form.module && 'bg-[#FFC107]/[.7]'
                       }`}
                       name="module"
                       id="module"
                       value={editedform.module}
                       onChange={handleChangeInput}
-                      placeholder="Nhập module"
                       required
-                    />
+                    >
+                      <option value="" className='text-gray-500'>Chọn module</option>
+                      {(form.modules || []).map((module, index) => (
+                        <option key={index} value={module}>
+                          {module}
+                        </option>
+                      ))}
+                    </select>
                   )}
+
                 </div>
               </div>
             </div>

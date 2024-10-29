@@ -4,6 +4,7 @@ import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo.svg';
 import AppLogo from '@/components/common/AppLogo';
 import { App } from 'antd';
+import {ApiOutlined} from '@ant-design/icons';
 
 interface SidebarProps {
     sidebarOpen: boolean;
@@ -248,6 +249,19 @@ const SideBarDashBoard = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 </NavLink>
                             </li>
                             {/* <!-- Menu Item Profile --> */}
+
+                            {/* <!-- Menu Item Permission --> */}
+                             <li>
+                                <NavLink
+                                    to="/dashboard/permission"
+                                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('profile') && 'bg-graydark dark:bg-meta-4'
+                                        }`}
+                                >
+                                    <ApiOutlined />
+                                    Permission
+                                </NavLink>
+                            </li>                 
+                            {/* <!-- Menu Item Permission --> */}
 
                             {/* <!-- Menu Item Forms --> */}
                             <SidebarLinkGroup

@@ -1,28 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PermissionModel } from '../../DashBoardPage/Permission/PermissionModel';
-import { submitForm } from '../../../utils/PermissionAPI';
+import { submitForm, getAllForms } from '../../../utils/PermissionAPI';
 import Toast from './Toast';
-import { useNavigate } from 'react-router';
-import { FaLongArrowAltLeft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { IoArrowBackOutline } from "react-icons/io5";
 
 const AddForm = () => {
-  const [form, setForm] = useState(PermissionModel);
-  const [imagePreview, setImagePreview] = useState({ poster: '', image: '', hover_image: '' });
+  const [form, setForm] = useState({...PermissionModel, modules: []});
   const [toast, setToast] = useState({ message: '', status: '' });
-  const navigate = useNavigate();
+  const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+  const [selectedModule, setSelectedModule] = useState('');
+  const [filteredModules, setFilteredModules] = useState([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchAllModules = async () => {
+      try {
+        const response = await getAllForms(1, 1000, 'module', 'DESC');
+        const allModules = response.data.data?.results?.map((item) => item.module) || [];
+        const uniqueModules = Array.from(new Set(allModules));
+        setForm((prevForm) => ({ ...prevForm, modules: uniqueModules }));
+      } catch (error) {
+        console.error("Error fetching modules:", error);
+      }
+    };
+
+    fetchAllModules();
+  }, []);
+
+   const handleInputChange = (e) => {
+    const input = e.target.value;
+    setSelectedModule(input);
+
+   
+     const matchingModules = input
+      ? form.modules.filter((module) => module.toLowerCase().includes(input.toLowerCase()))
+      : form.modules;
+    setFilteredModules(matchingModules);
+    setIsDropdownVisible(true);
+  };
+  const handleOptionClick = (module) => {
+    setSelectedModule(module); 
+    setForm((prevForm) => ({ ...prevForm, module }));
+    setIsDropdownVisible(false);
+  };
 
   const handleChangeInput = (e) => {
-    const { name, value, files, type } = e.target;
+    const { name, value, files } = e.target;
     if (files) {
       const file = files[0];
       setForm((prev) => ({ ...prev, [name]: file }));
-      setImagePreview((prev) => ({ ...prev, [name]: URL.createObjectURL(file) }));
     } else {
       setForm((prev) => ({
         ...prev,
-        [name]: type === 'number' ? parseFloat(value) : value,
+        [name]: value,
       }));
     }
   };
@@ -30,8 +61,6 @@ const AddForm = () => {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // Kiểm tra dữ liệu đầu vào
-  const errors = [];
   if (!form.name || typeof form.name !== 'string') {
     setToast({ message: 'Tên quyền hạn phải là chuỗi ký tự và không được để trống', status: 'danger' });
     return;
@@ -44,36 +73,25 @@ const AddForm = () => {
     setToast({ message: 'Method phải là chuỗi ký tự và không được để trống', status: 'danger' });
     return;
   }
-  if (!form.module || typeof form.module !== 'string') {
+  if (!selectedModule || typeof selectedModule !== 'string') {
     setToast({ message: 'Module phải là chuỗi ký tự và không được để trống', status: 'danger' });
     return;
   }
-
-  if (errors.length > 0) {
-    setToast({ message: errors.join(', '), status: 'danger' });
+  if (form.modules.includes(selectedModule)) {
+    setToast({ message: 'Module với tên này đã tồn tại, vui lòng chọn tên module khác', status: 'danger' });
     return;
   }
-
-  // Lấy accessToken
-  const accessToken = JSON.parse(localStorage.getItem('data'))?.access_token;
-
   try {
-    // Upload files and prepare form data
-    const [posterRes, imageRes, hoverImageRes] = await Promise.all([
-    ]);
-
-    const fileUploadRegex = /[^/]*$/;
     const tmpForm = {
       name: form.name,
       apiPath: form.apiPath,
       method: form.method,
-      module: form.module,
+      module: selectedModule,
     };
 
     const res = await submitForm(tmpForm);
     if (res.status === 201) {
       setToast({ message: 'Nhập mới thành công', status: 'success' });
-      setImagePreview({ poster: '', image: '', hover_image: '' });
     }
   } catch (error) {
     console.error('Error creating form:', error);
@@ -111,64 +129,79 @@ const AddForm = () => {
                 <div className="col-span-12 mb-3">
                   <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
                     <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
-                       Name<span className="text-primaryColor">*</span>
+                       Name<span className="text-red-600">*</span>
                     </label>
                     <input
-                        type="text"
-                        className="w-1/2 px-2 outline-0"
-                        name="name"
-                        id="name"
-                        value={form.name}
-                        onChange={handleChangeInput}
-                        placeholder="Nhập tên quyền hạn"
-                        required
+                      type="text"
+                      className="w-1/2 px-2 outline-0"
+                      name="name"
+                      id="name"
+                      value={form.name}
+                      onChange={handleChangeInput}
+                      placeholder="Nhập tên quyền hạn"
+                      required
                     />
                   </div>
                   <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
                     <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
-                       apiPath<span className="text-primaryColor">*</span>
+                       apiPath<span className="text-red-600">*</span>
                     </label>
                     <input
-                        type="text"
-                        className="w-1/2 px-2 outline-0"
-                        name="apiPath"
-                        id="apiPath"
-                        value={form.apiPath}
-                        onChange={handleChangeInput}
-                        placeholder="/api/v1/"
-                        required
+                      type="text"
+                      className="w-1/2 px-2 outline-0"
+                      name="apiPath"
+                      id="apiPath"
+                      value={form.apiPath}
+                      onChange={handleChangeInput}
+                      placeholder="/api/v1/"
+                      required
                     />
                   </div>
                   <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
                     <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
-                       Method<span className="text-primaryColor">*</span>
+                      Method<span className="text-red-600">*</span>
                     </label>
-                    <input
-                        type="text"
-                        className="w-1/2 px-2 outline-0 uppercase"
-                        name="method"
-                        id="method"
-                        value={form.method}
-                        onChange={handleChangeInput}
-                        placeholder="Nhập method"
-                        required
-                    />
+                    <select className="w-1/2 px-2 outline-0 text-gray-500" name="method" placeholder="" value={form.method} onChange={handleChangeInput} required>
+                        <option value="" className='text-gray-500'><input type="text"/>Chọn method</option>
+                        {methods.map((method) => (
+                          <option key={method} value={method} className='text-black'>
+                            {method}
+                          </option>
+                        ))}
+                    </select>
                   </div>
-                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
-                        <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
-                       Module<span className="text-primaryColor">*</span>
-                    </label>
+                  <div className='flex relative w-full border-2 border-[#ccc] rounded-md text-mainTitleColor'>
+                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="moduleInput">Module<span className="text-red-600">*</span></label>
                     <input
-                        type="text"
-                        className="w-1/2 px-2 outline-0 uppercase"
-                        name="module"
-                        id="module"
-                        value={form.module}
-                        onChange={handleChangeInput}
-                        placeholder="Nhập module"
-                        required
+                      type="text"
+                       className="w-1/2 px-2 outline-0"
+                      id="moduleInput"
+                      value={selectedModule}
+                      onChange={handleInputChange}
+                      onFocus={() => setIsDropdownVisible(true)}
+                      onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
+                      placeholder="Chọn hoặc nhập module"
+                      required
                     />
-                  </div> 
+                    {isDropdownVisible && (
+                      <div className="absolute top-full left-28 right-0 border border-gray-300 bg-white z-50 max-h-[150px] overflow-y-auto">
+                        {filteredModules.map((module, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleOptionClick(module)}
+                            style={{
+                              padding: '8px',
+                              cursor: 'pointer',
+                              backgroundColor: selectedModule === module ? '#f0f0f0' : 'transparent'
+                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                          >
+                            {module}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
             </div>
           </div>
