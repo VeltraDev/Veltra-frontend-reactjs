@@ -42,10 +42,17 @@ export default function Permission() {
           : [...prevFilters, filter]
       );
     };
-
-    const toggleFilterComponent = () => {
-      setShowFilterComponent(true);
+  const toggleFilterComponent = () => {
+    setShowFilterComponent(true);
   };
+
+  const labelMapping = {
+  'Name': 'form.name',
+  'ApiPath': 'form.apiPath',
+  'Method': 'form.method',
+  'Module': 'form.module',
+  'CreateAt': 'form.createAt'
+};
 
   const handleClickOutside = (event) => {
     if (
@@ -132,7 +139,7 @@ export default function Permission() {
   };
 
   const formatDate = (isoDate) => {
-    return format(new Date(isoDate), 'dd/MM/yyyy HH:mm:ss');
+    return format(new Date(isoDate), 'dd/MM/yyyy');
   };
 
   const handleSearchChange = (e) => {
@@ -207,23 +214,20 @@ export default function Permission() {
           <div className="absolute right-[27%] cursor-pointer">
             {!showFilterComponent && (<MdOutlineSettings className='w-8 h-8 hover:bg-gray-300 rounded-md' onClick={toggleFilterComponent}/> )}
               {showFilterComponent && ( <div className="bg-white border-2 rounded-md top-[69px] relative ">
-                
-                  <div className="filter-component w-[150px] h-[167px]" ref={filterComponentRef}>
-                    {['Name','ApiPath', 'Method', 'Module', 'CreateAt'].map((filter) => (
-                      <div key={filter} className='py-1 pl-2 border-b-gray-500 border-b-2 hover:bg-gray-300'>
-                        <label>
-                          <input
-                            className=''
-                            type="checkbox"
-                            checked={!visibleFilters.includes(filter)}
-                            onChange={() => toggleFilter(filter)}
-                          />
-                          {"  "}{filter}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                
+                <div className="filter-component w-[150px] h-[167px]" ref={filterComponentRef}>
+                  {Object.keys(labelMapping).map((label) => (
+                    <div key={label} className='py-1 pl-2 border-b-gray-500 border-b-2 hover:bg-gray-300'>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={visibleFilters.includes(labelMapping[label])}
+                          onChange={() => toggleFilter(labelMapping[label])}
+                        />
+                        {"  "}{label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div> )}
           </div>
           <Link className="text-green-600 hover:text-green-900 p-2 rounded-lg bg-green-200 flex font-semibold" to={`/dashboard/permission/addpermission`}>
@@ -240,8 +244,8 @@ export default function Permission() {
                 {visibleFilters.includes('form.apiPath') && <th className="pl-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">apiPath</th>}
                 {visibleFilters.includes('form.method') && <th className="pl-1 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Method</th>}
                 {visibleFilters.includes('form.module') && <th className="pl-10 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Module</th>}
-                {visibleFilters.includes('form.createAt') && <th className="pl-10 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created At</th>}
-                <th className="pl-13 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tool</th>
+                {visibleFilters.includes('form.createAt') && <th className="pl-9 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created At</th>}
+                <th className="pl-19 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tool</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -257,12 +261,12 @@ export default function Permission() {
                     {visibleFilters.includes('form.apiPath') && <td className="pl-3 py-4 whitespace-nowrap text-base text-gray-500">{form.apiPath.length > 20 ? `${form.apiPath.slice(0, 20)}...` : form.apiPath}</td>}
                     {visibleFilters.includes('form.method') && <td className={`py-4 whitespace-nowrap text-base font-bold ${getMethodColorClass(form.method)}`}>{form.method}</td>}
                     {visibleFilters.includes('form.module') && <td className="pl-10 py-4 whitespace-nowrap text-base text-gray-500">{form.module}</td>}
-                    {visibleFilters.includes('form.createAt') && <td className="py-4 whitespace-nowrap text-base text-gray-500">{formatDate(form.createdAt)}</td>}
+                    {visibleFilters.includes('form.createAt') && <td className="pl-9 py-4 whitespace-nowrap text-base text-gray-500">{formatDate(form.createdAt)}</td>}
                     <td className="pl-13 py-4 whitespace-nowrap text-base font-medium">
-                      <Link className="text-orange-600 hover:text-orange-900 p-2 rounded-lg bg-orange-200 inline-block" to={`/dashboard/permission/updatepermission/${form.id}`}>
+                      <Link className="text-orange-600 hover:text-orange-900 p-2 rounded-lg bg-orange-200 inline-block cursor-pointer mx-1" to={`/dashboard/permission/updatepermission/${form.id}`}>
                         <LuPencil className="h-5 w-5" />
                       </Link>
-                      <span className="text-red-600 hover:text-red-900 p-2 rounded-lg bg-red-200 inline-block cursor-pointer" onClick={() => handleDeleteClick(form.id)}>
+                      <span className="text-red-600 hover:text-red-900 p-2 rounded-lg bg-red-200 inline-block cursor-pointer mx-1" onClick={() => handleDeleteClick(form.id)}>
                         <AiOutlineDelete className="h-5 w-5" />
                       </span>
                     </td>

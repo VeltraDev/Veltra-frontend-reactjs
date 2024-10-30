@@ -7,14 +7,18 @@ export const api = axios.create({
 });
 
 // Token cố định
-const fixedAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImM5MzgyZjNmLWIxOTQtNGIyYi1hYWYxLWExZGExZjcwMzExNyIsImVtYWlsIjoidmVsdHJhLmFkbWluQGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IlZlbHRyYSIsImxhc3ROYW1lIjoiQWRtaW4iLCJyb2xlIjp7ImlkIjoiNWM1Zjg2YzgtMWQ4ZS00ZTYyLThkOTctOGIyNjE1NGJhM2IxIiwibmFtZSI6IkFETUlOIn0sImlhdCI6MTczMDE4NjY5MSwiZXhwIjoxNzMwMTg4NDkxfQ.OCoCCpv60BumpjyT2sDzYUqsk212ErOVMT6HGUzE62w';
+//const fixedAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImM5MzgyZjNmLWIxOTQtNGIyYi1hYWYxLWExZGExZjcwMzExNyIsImVtYWlsIjoidmVsdHJhLmFkbWluQGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IlZlbHRyYSIsImxhc3ROYW1lIjoiQWRtaW4iLCJyb2xlIjp7ImlkIjoiNWM1Zjg2YzgtMWQ4ZS00ZTYyLThkOTctOGIyNjE1NGJhM2IxIiwibmFtZSI6IkFETUlOIn0sImlhdCI6MTczMDMwMjY1OSwiZXhwIjoxNzMwMzA0NDU5fQ.fuML2dHVfgcLelk7Y024XfQEUggu4SAIAsgNuiJ5S-k';
 
-// Thiết lập interceptors để thêm token vào header của mỗi yêu cầu
+
 api.interceptors.request.use((config) => {
-  config.headers.Authorization = `Bearer ${fixedAccessToken}`;
+  const accessToken = localStorage.getItem('accessToken'); // Lấy token từ local storage
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
   config.headers['Content-Type'] = 'application/json';
   return config;
 });
+
 
 // Hàm submitForm
 export async function submitForm(form) {

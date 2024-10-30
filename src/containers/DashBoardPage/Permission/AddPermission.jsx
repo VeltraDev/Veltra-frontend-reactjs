@@ -127,8 +127,8 @@ const AddForm = () => {
             <hr />
             <div className="grid grid-cols-12 mt-5 gap-3">
                 <div className="col-span-12 mb-3">
-                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
-                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
+                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10">
+                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc] flex items-center" htmlFor="name">
                        Name<span className="text-red-600">*</span>
                     </label>
                     <input
@@ -142,8 +142,8 @@ const AddForm = () => {
                       required
                     />
                   </div>
-                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
-                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
+                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10">
+                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc] flex items-center" htmlFor="name">
                        apiPath<span className="text-red-600">*</span>
                     </label>
                     <input
@@ -157,8 +157,8 @@ const AddForm = () => {
                       required
                     />
                   </div>
-                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor">
-                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="name">
+                  <div className="flex w-full border-2 border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10">
+                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc] flex items-center" htmlFor="name">
                       Method<span className="text-red-600">*</span>
                     </label>
                     <select className="w-1/2 px-2 outline-0 text-gray-500" name="method" placeholder="" value={form.method} onChange={handleChangeInput} required>
@@ -170,8 +170,8 @@ const AddForm = () => {
                         ))}
                     </select>
                   </div>
-                  <div className='flex relative w-full border-2 border-[#ccc] rounded-md text-mainTitleColor'>
-                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc]" htmlFor="moduleInput">Module<span className="text-red-600">*</span></label>
+                  <div className='flex relative w-full border-2 border-[#ccc] rounded-md text-mainTitleColor my-3 h-10'>
+                    <label className="w-[10%] pl-2 border-r-2 border-[#ccc] flex items-center" htmlFor="moduleInput">Module<span className="text-red-600">*</span></label>
                     <input
                       type="text"
                        className="w-1/2 px-2 outline-0"

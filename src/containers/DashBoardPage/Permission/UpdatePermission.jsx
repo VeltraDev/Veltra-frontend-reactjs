@@ -162,7 +162,7 @@ const formEdit = () => {
 
             <div className="grid grid-cols-12 mt-5 gap-3">
               <div className="col-span-12">
-                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor text-base mb-3">
+                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10 text-base mb-3">
                   <span className="w-[10%] pl-2 border-r-[2px] border-[#ccc] flex items-center">
                     <label className="cursor-pointer" htmlFor="name">
                       Name <span className="text-primaryColor">*</span>
@@ -197,7 +197,7 @@ const formEdit = () => {
                   )}
                 </div>
 
-                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor text-base mb-3">
+                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10 text-base mb-3">
                   <span className="w-[10%] pl-2 border-r-[2px] border-[#ccc] flex items-center">
                     <label htmlFor="apiPath" className="cursor-pointer">
                       apiPath <span className="text-primaryColor">*</span>
@@ -229,7 +229,7 @@ const formEdit = () => {
                   )}
                 </div>
 
-                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor text-base mb-3">
+                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10 text-base mb-3">
                   <span className="w-[10%] pl-2 border-r-[2px] border-[#ccc] flex items-center">
                     <label htmlFor="method" className="cursor-pointer">
                       Method <span className="text-primaryColor">*</span>
@@ -253,7 +253,7 @@ const formEdit = () => {
                   </select>
                 </div>
 
-                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor text-base mb-3">
+                <div className="flex w-full border-[2px] border-[#ccc] rounded-md overflow-hidden text-mainTitleColor my-3 h-10 text-base mb-3">
                   <span className="w-[10%] pl-2 border-r-[2px] border-[#ccc] flex items-center">
                     <label htmlFor="module" className="cursor-pointer">
                       Module <span className="text-primaryColor">*</span>
