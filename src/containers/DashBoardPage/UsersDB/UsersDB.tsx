@@ -337,7 +337,6 @@ const UsersDashBoard = () => {
             onClick={() => handlePageChange(currentPage + 1)}
             className={`w-8 h-8 flex items-center justify-center rounded-full border ${currentPage === totalPages ? 'text-gray-300 border-[#3858D6]' : 'text-blue-500 border-blue-500'}`}
           >
-            {/* Thay thế SVG */}
             <div className="icon-placeholder">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M3.75 12L20.25 12" stroke="#3858D6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>

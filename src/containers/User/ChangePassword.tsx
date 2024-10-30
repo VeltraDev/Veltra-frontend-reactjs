@@ -29,52 +29,40 @@ const ChangePassword = () => {
   }, []);
 
   const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("Tất cả các trường đều bắt buộc phải nhập!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu mới và xác nhận mật khẩu không khớp!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (newPassword === currentPassword) {
-      toast.error("Mật khẩu mới không được trùng với mật khẩu hiện tại!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
-
     try {
       await http.put('/users/update-password', {
         currentPassword,
         newPassword,
         confirmPassword,
       });
+
       toast.success("Đổi mật khẩu thành công!", {
         position: "top-right",
-        autoClose: 3000,
+        autoClose: 2000,
+        onClose: () => {
+        navigate('/auth');
+      },
       });
+
+
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
       console.error('Error changing password:', error);
-      if (error.response && error.response.data && error.response.data.message) {
-        error.response.data.message.forEach((msg) => {
+      const messages = error.response && error.response.data && error.response.data.message;
+
+      if (Array.isArray(messages)) {
+        messages.forEach((msg) => {
           toast.error(msg, {
             position: "top-right",
             autoClose: 5000,
           });
+        });
+      } else if (typeof messages === 'string') {
+        toast.error(messages, {
+          position: "top-right",
+          autoClose: 5000,
         });
       } else {
         toast.error("Có lỗi xảy ra khi đổi mật khẩu!", {
@@ -84,6 +72,7 @@ const ChangePassword = () => {
       }
     }
   };
+
 
   return (
     <div className="flex justify-center min-h-screen bg-gradient-to-r from-[#3a343e] via-[#142f4e] via-30% to-[#145450] to-90% py-10">
