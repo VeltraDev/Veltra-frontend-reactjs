@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Select from "react-select";
-import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Button, Row, Col, Collapse, List, Switch, Input } from "antd";
+import { CaretRightOutlined } from '@ant-design/icons';
 import http from "@/utils/http";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+import { Form, FormItem, FormLabel, FormControl, FormMessage, FormField } from "@/components/ui/form";
+
+const { Panel } = Collapse;
 
 const formSchema = z.object({
     name: z.string().min(1, "Tên là bắt buộc").max(255, "Tên tối đa 255 ký tự"),
@@ -23,15 +18,13 @@ const formSchema = z.object({
     permissions: z.array(z.string()),
 });
 
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZiN2VjOGE2LWQ2YTQtNDUyNy1iODgyLWFiYzYyNzIxOTA2YiIsImVtYWlsIjoidHJhbnF1YW5taWthekBnbWFpbC5jb20iLCJmaXJzdE5hbWUiOiJUcuG6p24gTmd1eeG7hW4gTWluaCIsImxhc3ROYW1lIjoiUXXDom4iLCJyb2xlIjp7ImlkIjoiNWM1Zjg2YzgtMWQ4ZS00ZTYyLThkOTctOGIyNjE1NGJhM2IxIiwibmFtZSI6IkFETUlOIn0sImlhdCI6MTcyOTg1NjMxMSwiZXhwIjoxNzI5ODU4MTExfQ.U5S0OJ8gSwnZ5tpJ1Crdzu20S6On9w33tk4ijvL4FsY';
-
 interface RoleFormProps {
     initialValues?: {
         name: string;
         description: string;
         permissions: string[];
     };
-    onSubmit: (values: z.infer<typeof formSchema>) => void;
+    onSubmit: (values: z.infer<typeof formSchema>, removedPermissions?: string[]) => void;
 }
 
 export const RoleForm: React.FC<RoleFormProps> = ({ initialValues, onSubmit }) => {
@@ -48,11 +41,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ initialValues, onSubmit }) =
     useEffect(() => {
         async function fetchPermissions() {
             try {
-                const response = await http.get("/permissions?page=1&limit=40&sortBy=module&order=DESC", {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const response = await http.get("/permissions?page=1&limit=40&sortBy=module&order=DESC");
                 setPermissions(response.data.data.results || []);
             } catch (error) {
                 console.error("Error fetching permissions:", error);
@@ -62,76 +51,125 @@ export const RoleForm: React.FC<RoleFormProps> = ({ initialValues, onSubmit }) =
         fetchPermissions();
     }, []);
 
-    const permissionOptions = permissions.map(permission => ({
-        value: permission.id,
-        label: permission.name,
-    }));
+    const groupedPermissions = permissions.reduce((acc, permission) => {
+        const module = permission.module || "Other";
+        if (!acc[module]) {
+            acc[module] = [];
+        }
+        acc[module].push(permission);
+        return acc;
+    }, {});
 
-    const availablePermissionOptions = permissionOptions.filter(option => !form.watch("permissions").includes(option.value));
+    const handlePermissionChange = (module, selectedPermissions) => {
+        const currentPermissions = form.getValues("permissions");
+        const newPermissions = currentPermissions.filter(p => !groupedPermissions[module].some(gp => gp.id === p));
+        const uniquePermissions = Array.from(new Set([...newPermissions, ...selectedPermissions]));
+        form.setValue("permissions", uniquePermissions);
+    };
+
+    const handleSubmit = (values: z.infer<typeof formSchema>) => {
+        const removedPermissions = initialValues?.permissions.filter(p => !values.permissions.includes(p)) || [];
+        onSubmit(values, removedPermissions);
+    };
 
     return (
         <>
-            <ToastContainer />
             <Form {...form}>
-                <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    {/* Name Field */}
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tên vai trò</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Tên vai trò" {...field} />
-                                </FormControl>
-                                <FormMessage />
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tên vai trò</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Tên vai trò" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </Col>
+                        <Col span={12}>
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Mô tả</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Mô tả vai trò" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </Col>
+                        <Col span={24}>
+                            <div className="mt-6 mb-4">
+                                <h3 className="text-sm font-medium text-gray-900">Phân quyền</h3>
+                            </div>
+                            <FormItem label="Phân quyền">
+                                <Collapse
+                                    expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+                                    className="border-0"
+                                >
+                                    {Object.keys(groupedPermissions).map(module => (
+                                        <Panel
+                                            header={
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span className="text-sm font-medium text-gray-700">{module}</span>
+                                                    <Switch
+                                                        checked={groupedPermissions[module].every(permission => form.watch("permissions").includes(permission.id))}
+                                                        onChange={checked => {
+                                                            const selectedPermissions = checked
+                                                                ? [...form.watch("permissions"), ...groupedPermissions[module].map(permission => permission.id)]
+                                                                : form.watch("permissions").filter(p => !groupedPermissions[module].some(gp => gp.id === p));
+                                                            handlePermissionChange(module, selectedPermissions);
+                                                        }}
+                                                    />
+                                                </div>
+                                            }
+                                            key={module}
+                                            className="border-0"
+                                        >
+                                            <List
+                                                className="divide-y divide-gray-100"
+                                                dataSource={groupedPermissions[module]}
+                                                renderItem={(permission) => (
+                                                    <List.Item className="px-4 py-2 flex items-center justify-between">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-medium max-w-sm truncate text-gray-700">{permission.name}</span>
+                                                        </div>
+                                                        <Switch
+                                                            checked={form.watch("permissions").includes(permission.id)}
+                                                            onChange={checked => {
+                                                                const selectedPermissions = checked
+                                                                    ? [...form.watch("permissions"), permission.id]
+                                                                    : form.watch("permissions").filter(p => p !== permission.id);
+                                                                handlePermissionChange(module, selectedPermissions);
+                                                            }}
+                                                        />
+                                                    </List.Item>
+                                                )}
+                                            />
+                                        </Panel>
+                                    ))}
+                                </Collapse>
                             </FormItem>
-                        )}
-                    />
-
-                    {/* Description Field */}
-                    <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Mô tả</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Mô tả vai trò" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    {/* Permissions Field */}
-                    <FormField
-                        control={form.control}
-                        name="permissions"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Phân quyền</FormLabel>
-                                <FormControl>
-                                    
-                                        <Select
-                                            isMulti
-                                            options={availablePermissionOptions}
-                                            value={permissionOptions.filter(option => field.value.includes(option.value))}
-                                            onChange={(selectedOptions) => {
-                                                field.onChange(selectedOptions.map(option => option.value));
-                                            }}
-                                        />
-                                    
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <div className="flex justify-center ">
-                        <Button className="text-white" type="submit">
+                        </Col>
+                    </Row>
+                    <div className="flex justify-center">
+                        <Button type="primary" htmlType="submit">
                             Lưu vai trò
                         </Button>
+                        <Link to="/dashboard/role" className="ml-4">
+                            <Button>
+                                Quay lại
+                            </Button>
+                        </Link>
                     </div>
                 </form>
             </Form>

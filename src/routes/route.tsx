@@ -12,7 +12,7 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
 import { AddRole } from "@/pages/DashBoard/AddRolePage";
-import RolePage from "@/pages/DashBoard/RolePage";
+import RoleDB from "@/pages/DashBoard/RolePage";
 
 
 
@@ -63,7 +63,7 @@ const publicRoutes: Route[] = [
     },
     {
         path: "/dashboard/role",
-        component: RolePage,
+        component: RoleDB,
         layout: DBLayout,
     },
     {
