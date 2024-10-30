@@ -207,7 +207,7 @@ const UserSettings = () => {
             ) : (
               <button
                 onClick={() => inputRef.current.click()}
-                className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-[50px] hover:bg-indigo-100" 
+                className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-[50px] hover:bg-indigo-100 font-semibold" 
               >
                 Chọn ảnh đại diện 
               </button>
