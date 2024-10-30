@@ -8,7 +8,6 @@ import UpdateUser from './UserUpdate';
 import userImage from '../../images/user/User-avatar.svg';
 import Modal from 'react-modal';
 
-// Skeleton Loading component
 const Skeleton = ({ width, height }: { width: string, height: string }) => (
   <div
     className="bg-gray-200 animate-pulse rounded"
@@ -18,7 +17,7 @@ const Skeleton = ({ width, height }: { width: string, height: string }) => (
 
 const UsersDashBoard = () => {
   const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true); // State for loading status
+  const [loading, setLoading] = useState(true);
   const [totalUsers, setTotalUsers] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState('');
@@ -63,14 +62,13 @@ const UsersDashBoard = () => {
     }
   }
 
-  // Hàm xử lý tìm kiếm
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchInput(value);
 
-    // Cập nhật các tham số URL
+ 
     const newParams: any = {
-      page: '1', // Reset lại trang về 1 khi tìm kiếm
+      page: '1', 
       limit: limit.toString(),
       sortBy,
       order,
@@ -85,7 +83,6 @@ const UsersDashBoard = () => {
     setSearchParams(newParams);
   };
 
-  // Hàm xử lý chuyển trang
   const handlePageChange = (newPage: number) => {
     setSearchParams({
       search: searchInput,
@@ -96,26 +93,23 @@ const UsersDashBoard = () => {
     });
   };
 
-  // Hàm xử lý sắp xếp
   const handleSort = (newSortBy: string) => {
     let newOrder = 'asc';
     if (sortBy === newSortBy) {
       newOrder = order === 'asc' ? 'desc' : 'asc';
     }
 
-    // Tạo đối tượng params mới từ searchParams hiện tại
+
     const newParams: any = {
-      ...Object.fromEntries(searchParams.entries()), // Lấy tất cả các giá trị hiện tại
+      ...Object.fromEntries(searchParams.entries()), 
       sortBy: newSortBy,
       order: newOrder,
-      page: '1', // Reset lại trang về 1 khi thay đổi sắp xếp
+      page: '1', 
     };
 
-    // Cập nhật lại URL với tất cả các tham số mới
     setSearchParams(newParams);
   };
 
-  // Hàm mở modal xác nhận xóa
   const openDeleteModal = (userId: string) => {
     setUserToDelete(userId);
     setIsModalOpen(true);
@@ -183,7 +177,6 @@ const UsersDashBoard = () => {
         />
       </div>
 
-      {/* Skeleton Loading khi đang tải dữ liệu */}
       {loading ? (
         <div className="mt-6">
           {[...Array(5)].map((_, idx) => (
@@ -282,13 +275,12 @@ const UsersDashBoard = () => {
         </table>
       )}
 
-      {/* Modal xác nhận xóa */}
-      <Modal
+        <Modal
         isOpen={isModalOpen}
         onRequestClose={closeDeleteModal}
         contentLabel="Confirm Delete User"
-        className="bg-white p-6 rounded-lg max-w-md mx-auto mt-20 shadow-lg focus: outline-none"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+        className="bg-white rounded-lg max-w-screen-xl p-4 md:p-6 2xl:p-10 mt-20 shadow-lg focus: outline-none"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center ml-[200px]"
       >
         <h2 className="text-lg font-semibold mb-4">Xác nhận xóa người dùng</h2>
         <p className="mb-6">Bạn có chắc chắn muốn xóa người dùng này không?</p>
@@ -296,7 +288,7 @@ const UsersDashBoard = () => {
           <button onClick={closeDeleteModal} className="px-4 py-2 rounded-3xl bg-gray-300 hover:bg-gray-400">Hủy</button>
           <button onClick={handleDeleteUser} className="px-4 py-2 rounded-3xl bg-red-600 text-white hover:bg-red-700">Xóa</button>
         </div>
-      </Modal>
+      </Modal> 
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-6 text-[14px] text-[#667085]">
@@ -310,7 +302,6 @@ const UsersDashBoard = () => {
             onClick={() => handlePageChange(currentPage - 1)}
             className={`w-8 h-8 flex items-center justify-center rounded-full border ${currentPage === 1 ? 'text-gray-300 border-[#3858D6]' : 'text-blue-500 border-blue-500'}`}
           >
-            {/* Thay thế SVG */}
             <div className="icon-placeholder">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M20.25 12H3.75" stroke="#3858D6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>

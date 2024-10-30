@@ -47,11 +47,9 @@ const DropdownNavbarComponent: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // First, get the user ID from /auth/account
         const accountResponse = await http.get('/auth/account');
         const userId = accountResponse.data.data.user.id;
-        
-        // If user ID is found, fetch the user's details
+
         if (userId) {
           const userResponse = await http.get(`/users/${userId}`);
           const user = userResponse.data.data || {};

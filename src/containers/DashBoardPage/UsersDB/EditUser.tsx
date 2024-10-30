@@ -106,10 +106,13 @@ const EditUser = () => {
 
       toast.success('Cập nhật thành công!', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 1500,
+        onClose: () => {
+        navigate('/dashboard/users');
+      },
       });
 
-      navigate('/dashboard/users');
+     
     } catch (error) {
       console.error('Error uploading file or updating profile:', error);
       toast.error('Có lỗi xảy ra khi cập nhật thông tin!', {

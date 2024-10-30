@@ -84,19 +84,16 @@ const publicRoutes: Route[] = [
 
     {
         path: "/nav-home",  
-        component: DropdownNavbarComponent,          
-        //layout: EditProfileLayout,            
+        component: DropdownNavbarComponent,                   
     },
     {
         path: "/settings/change-password",  
-        component: ChangePassword,       
-        //layout: EditProfileLayout,            
+        component: ChangePassword,                 
     },
 
     {
         path: "/settings",  
-        component: UserSettings,          
-        //layout: EditProfileLayout,            
+        component: UserSettings,                  
     },
 
     
