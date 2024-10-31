@@ -19,36 +19,33 @@ class Http {
       withCredentials: true,
     });
 
-    // Intercept request để gắn Bearer token nếu có
+
+    
     this.instance.interceptors.request.use(
-      (config) => this.attachTokenToRequest(config),
-      (error) => Promise.reject(error)
+      (config) => {
+        const token = localStorage.getItem("accessToken"); 
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${token}`; 
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
     );
 
-    // Intercept response để xử lý lỗi
+
     this.instance.interceptors.response.use(
       (response) => response,
       this.handleError
     );
   }
 
-  // Gắn Bearer token vào header Authorization nếu tồn tại
-  private attachTokenToRequest(config: AxiosRequestConfig) {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-    return config;
-  }
-
-  // Xử lý lỗi trong response
   private handleError = async (error: AxiosError) => {
-    if (error.response?.status === 401 || error.response?.status === 405) {
+    if (error.response?.code === 1552) {
+
       Modal.warning({
-        title: "Phiên đăng nhập hết hạn",
+        title: "Phiên đăng nhập hết hạn", 
         content: "Vui lòng đăng nhập lại để tiếp tục.",
         onOk: () => {
           localStorage.removeItem("accessToken");
@@ -63,16 +60,23 @@ class Http {
 
   // Đặt access token mới
   setToken(token: string) {
+    localStorage.setItem("accessToken", token); 
+    this.instance.defaults.headers.common["Authorization"] = `Bearer ${token}`; 
     console.log("New access token received");
     localStorage.setItem("accessToken", token);
   }
 
   clearToken() {
     localStorage.removeItem("accessToken");
-    delete this.instance.defaults.headers.common["Authorization"];
+
+    delete this.instance.defaults.headers.common["Authorization"]; 
   }
 
-  get<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  get<T = any>(
+    url: string,
+    config?: AxiosRequestConfig
+  ): Promise<AxiosResponse<T>> {
+
     return this.instance.get<T>(url, config);
   }
 

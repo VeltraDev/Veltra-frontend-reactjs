@@ -88,7 +88,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 throw new Error('Failed to fetch user info');
             }
         } catch (err) {
-            console.error('Error fetching user info:', err);
+         
             setError('Failed to fetch user information');
             setUser(null);
         } finally {
