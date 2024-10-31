@@ -12,6 +12,8 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
 
+
+import MainSocial from "../containers/SocialPage/MainSocial";
 import Post from "../pages/PostForm";
 import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
@@ -59,7 +61,12 @@ const publicRoutes: Route[] = [
         component: Post,
       
     },
-            },
+
+        {
+        path: "/social",
+        component: MainSocial,
+    },
+            
     {
         path: "/profile",
         component: Profile,
@@ -113,6 +120,7 @@ const publicRoutes: Route[] = [
         component: UpdatePermission,
         layout: DBLayout,
     }
+
 
 
 
