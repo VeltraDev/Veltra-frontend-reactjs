@@ -12,6 +12,7 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
 
+import Post from "../pages/PostForm";
 import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
 import { RoleDB } from "@/pages/DashBoard/RoleDB";
@@ -28,6 +29,7 @@ import UsersDB from "@/pages/DashBoard/UsersDB";
 import ChangePassword from "@/containers/User/ChangePassword";
 import DropdownNavbarComponent from "@/containers/User/NavUser";
 import UserSettings from "@/containers/User/UserSettings";
+
 
 interface Route {
     path: string;
@@ -51,6 +53,12 @@ const publicRoutes: Route[] = [
         path: "/chat",
         component: ChatPage,
 
+  },
+    {
+        path: "/post",
+        component: Post,
+      
+    },
             },
     {
         path: "/profile",
@@ -105,6 +113,7 @@ const publicRoutes: Route[] = [
         component: UpdatePermission,
         layout: DBLayout,
     }
+
 
 
 
