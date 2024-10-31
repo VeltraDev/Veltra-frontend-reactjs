@@ -2,17 +2,16 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../containers/ChatPage/Sidebar";
 import ChatList from "../containers/ChatPage/ChatList";
 import ChatSection from "../containers/ChatPage/ChatSection";
-
 import { getConversationMessages, getConversations, setActiveConversation, sendMessage } from "@/features/chatSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store";
-import { useSocket } from "@/context/SocketContext"; 
+import { useSocket } from "@/context/SocketContext";
 
 export default function ChatPage() {
   const dispatch = useAppDispatch();
   const conversations = useAppSelector((state) => state.chat.conversations);
   const activeConversation = useAppSelector((state) => state.chat.activeConversation);
-  const { socketService } = useSocket(); 
-  const [typingUser, setTypingUser] = useState<{ id: string; conversationId: string } | null>(null); 
+  const { socketService } = useSocket();
+  const [typingUser, setTypingUser] = useState<{ id: string; conversationId: string } | null>(null);
   useEffect(() => {
     console.log('Fetching conversations...');
     dispatch(getConversations());
@@ -29,7 +28,7 @@ export default function ChatPage() {
 
     const handleTypingInfo = (conversationId: string, user: { id: string }) => {
       if (conversationId === activeConversation?.id) {
-        setTypingUser({ id: user.id, conversationId }); 
+        setTypingUser({ id: user.id, conversationId });
       }
     };
 
@@ -44,7 +43,7 @@ export default function ChatPage() {
 
     return () => {
       socketService.onStopTypingInfo(handleTypingInfo);
-      socketService.onStopTyping  (handleStopTyping);
+      socketService.onStopTyping(handleStopTyping);
     };
   }, [socketService, activeConversation]);
 
@@ -62,7 +61,6 @@ export default function ChatPage() {
     }
   };
 
-
   return (
     <div className="flex bg-black font-sans text-white relative">
       <Sidebar />
@@ -70,14 +68,12 @@ export default function ChatPage() {
         conversations={conversations}
         activeConversationId={activeConversation?.id}
         onSelectConversation={handleConversationSelect}
-        typingUser={typingUser} 
+        typingUser={typingUser}
       />
       <ChatSection
         conversation={activeConversation}
-
         onSendMessage={handleSendMessage}
         typingUser={typingUser}
-
       />
     </div>
   );

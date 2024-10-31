@@ -14,15 +14,14 @@ import ChatPage from "../pages/Chat";
 
         import { AddRole } from "@/pages/DashBoard/AddRolePage";
 import RoleDB from "@/pages/DashBoard/RolePage";
-import { RoleDB } from "@/pages/DashBoard/RoleDB";
-import UsersDB from "@/pages/DashBoard/UsersDB";
+
 import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
+import UsersDB from "@/pages/DashBoard/UsersDB";
 
 
-import UserSettings from "@/containers/User/UserSettings";
-import DropdownNavbarComponent from "@/containers/User/NavUser";
-import CropAvatar from "@/containers/User/CropAvatar";
 import ChangePassword from "@/containers/User/ChangePassword";
+import DropdownNavbarComponent from "@/containers/User/NavUser";
+import UserSettings from "@/containers/User/UserSettings";
 
 interface Route {
     path: string;
@@ -79,7 +78,8 @@ const publicRoutes: Route[] = [
             path: "/dashboard/role/add",
         component: AddRole,
         layout: DBLayout,
-    }
+    },
+    {
         path: "/dashboard/users",
         component: UsersDB,
         layout: DBLayout,
