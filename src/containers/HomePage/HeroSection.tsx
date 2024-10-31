@@ -1,6 +1,5 @@
 
 import { useState } from "react"
-import Test from "../../components/ui/Test"
 
 export default function HeroSection() {
 
@@ -8,9 +7,9 @@ export default function HeroSection() {
 
 
   const navigation = [
-    { title: "Partners", path: "javascript:void(0)" },
-    { title: "Customers", path: "javascript:void(0)" },
-    { title: "Team", path: "javascript:void(0)" },
+    { title: "Partners", path: "" },
+    { title: "Customers", path: "" },
+    { title: "Team", path: "" },
 
   ]
 
@@ -48,10 +47,10 @@ export default function HeroSection() {
           </p>
 
           <div className="items-center gap-x-3 space-y-3 sm:flex sm:space-y-0">
-            <a href="javascript:void(0)" className="block py-2 px-4 text-center text-white font-medium bg-primary duration-150 hover:bg-primary active:bg-primary rounded-lg shadow-lg hover:shadow-none">
+            <a href="" className="block py-2 px-4 text-center text-white font-medium bg-primary duration-150 hover:bg-primary active:bg-primary rounded-lg shadow-lg hover:shadow-none">
               Bắt đầu ngay
             </a>
-            <a href="javascript:void(0)" className="flex items-center justify-center gap-x-2 py-2 px-4 text-white hover:text-gray-500 font-medium duration-150 active:bg-gray-100 border rounded-lg md:inline-flex">
+            <a href="" className="flex items-center justify-center gap-x-2 py-2 px-4 text-white hover:text-gray-500 font-medium duration-150 active:bg-gray-100 border rounded-lg md:inline-flex">
              Truy cập ngay
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                 <path fillRule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clipRule="evenodd" />
