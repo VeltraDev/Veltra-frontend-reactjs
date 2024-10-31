@@ -12,6 +12,8 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
 
+import Profile from "../pages/Profile"
+import EditProfile from '../pages/EditProfile';
 import { RoleDB } from "@/pages/DashBoard/RoleDB";
 import Permission from "@/containers/DashBoardPage/Permission/Main";
 import AddPermission from "@/containers/DashBoardPage/Permission/AddPermission"
@@ -48,6 +50,16 @@ const publicRoutes: Route[] = [
     {
         path: "/chat",
         component: ChatPage,
+
+            },
+    {
+        path: "/profile",
+        component: Profile,
+    },
+    {
+        path: "/edit-profile",
+        component: EditProfile,
+    },
     },
     {
         path: "/forgot-password",
@@ -93,6 +105,7 @@ const publicRoutes: Route[] = [
         component: UpdatePermission,
         layout: DBLayout,
     }
+
 
 
             path: "/dashboard/role/add",
