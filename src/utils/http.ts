@@ -19,16 +19,29 @@ class Http {
       withCredentials: true,
     });
 
+    
+    this.instance.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("accessToken"); 
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${token}`; 
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
     this.instance.interceptors.response.use(
       (response) => response,
       this.handleError
     );
   }
-
   private handleError = async (error: AxiosError) => {
-    if (error.response?.status === 405) {
+    if (error.response?.code === 1552) {
       Modal.warning({
-        title: "Phiên đăng nhập hết hạn",
+        title: "Phiên đăng nhập hết hạn", 
         content: "Vui lòng đăng nhập lại để tiếp tục.",
         onOk: () => {
           localStorage.removeItem("user");
@@ -43,13 +56,15 @@ class Http {
   };
 
   setToken(token: string) {
+    localStorage.setItem("accessToken", token); 
+    this.instance.defaults.headers.common["Authorization"] = `Bearer ${token}`; 
     console.log("New access token received");
   }
 
   clearToken() {
-    delete this.instance.defaults.headers.common["Authorization"];
+    localStorage.removeItem("accessToken");
+    delete this.instance.defaults.headers.common["Authorization"]; 
   }
-
 
   get<T = any>(
     url: string,
