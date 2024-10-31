@@ -1,63 +1,79 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../containers/ChatPage/Sidebar";
 import ChatList from "../containers/ChatPage/ChatList";
 import ChatSection from "../containers/ChatPage/ChatSection";
-import { Conversation, Message, mockConversations } from "../mockData/chatData";
-import { v4 as uuidv4 } from 'uuid';
+import { getConversationMessages, getConversations, setActiveConversation, sendMessage } from "@/features/chatSlice";
+import { useAppDispatch, useAppSelector } from "@/app/store";
+import { useSocket } from "@/context/SocketContext"; 
 
 export default function ChatPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
-  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const dispatch = useAppDispatch();
+  const conversations = useAppSelector((state) => state.chat.conversations);
+  const activeConversation = useAppSelector((state) => state.chat.activeConversation);
+  const { socketService } = useSocket(); 
+  const [typingUser, setTypingUser] = useState<{ id: string; conversationId: string } | null>(null); 
+  useEffect(() => {
+    console.log('Fetching conversations...');
+    dispatch(getConversations());
+  }, [dispatch]);
 
   useEffect(() => {
-    document.title = "Chat";
-    if (conversations.length > 0) {
-      setActiveConversation(conversations[0]);
+    if (conversations.length > 0 && !activeConversation) {
+      dispatch(setActiveConversation(conversations[0]));
     }
-  }, []);
+  }, [conversations, activeConversation, dispatch]);
+
+  useEffect(() => {
+    if (!socketService) return;
+
+    const handleTypingInfo = (conversationId: string, user: { id: string }) => {
+      if (conversationId === activeConversation?.id) {
+        setTypingUser({ id: user.id, conversationId }); 
+      }
+    };
+
+    const handleStopTyping = (conversationId: string) => {
+      if (conversationId === activeConversation?.id) {
+        setTypingUser(null);
+      }
+    };
+
+    socketService.onTypingInfo(handleTypingInfo);
+    socketService.onStopTyping(handleStopTyping);
+
+    return () => {
+      socketService.onStopTypingInfo(handleTypingInfo);
+      socketService.onStopTyping  (handleStopTyping);
+    };
+  }, [socketService, activeConversation]);
 
   const handleConversationSelect = (conversationId: string) => {
-    const selected = conversations.find(conv => conv.id === conversationId);
-    if (selected) {
-      setActiveConversation(selected);
+    dispatch(getConversationMessages({ convo_id: conversationId }));
+    const selectedConversation = conversations.find(convo => convo.id === conversationId);
+    if (selectedConversation) {
+      dispatch(setActiveConversation(selectedConversation));
     }
   };
 
   const handleSendMessage = (content: string) => {
     if (activeConversation) {
-      const newMessage: Message = {
-        id: uuidv4(),
-        sender: 'self',
-        content,
-        timestamp: new Date()
-      };
-
-      const updatedConversation = {
-        ...activeConversation,
-        messages: [...activeConversation.messages, newMessage]
-      };
-
-      setConversations(prevConversations =>
-        prevConversations.map(conv =>
-          conv.id === activeConversation.id ? updatedConversation : conv
-        )
-      );
-
-      setActiveConversation(updatedConversation);
+      dispatch(sendMessage({ token: 'your_token', message: content, convo_id: activeConversation.id, files: [] }));
     }
   };
 
   return (
-    <div className="flex bg-black font-sans  text-white relative">
+    <div className="flex bg-black font-sans text-white relative">
       <Sidebar />
       <ChatList
         conversations={conversations}
         activeConversationId={activeConversation?.id}
         onSelectConversation={handleConversationSelect}
+        typingUser={typingUser} 
       />
       <ChatSection
         conversation={activeConversation}
         onSendMessage={handleSendMessage}
+        typingUser={typingUser}
       />
     </div>
   );
