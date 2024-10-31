@@ -11,9 +11,13 @@ import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
 import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 import ChatPage from "../pages/Chat";
+
+        import { AddRole } from "@/pages/DashBoard/AddRolePage";
+import RoleDB from "@/pages/DashBoard/RolePage";
 import { RoleDB } from "@/pages/DashBoard/RoleDB";
 import UsersDB from "@/pages/DashBoard/UsersDB";
 import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
+
 
 import UserSettings from "@/containers/User/UserSettings";
 import DropdownNavbarComponent from "@/containers/User/NavUser";
@@ -71,6 +75,11 @@ const publicRoutes: Route[] = [
         layout: DBLayout,
     },
     {
+
+            path: "/dashboard/role/add",
+        component: AddRole,
+        layout: DBLayout,
+    }
         path: "/dashboard/users",
         component: UsersDB,
         layout: DBLayout,
@@ -95,6 +104,7 @@ const publicRoutes: Route[] = [
         path: "/settings",  
         component: UserSettings,                  
     },
+
 
     
 ];
