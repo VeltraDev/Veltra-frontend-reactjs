@@ -29,7 +29,7 @@ const Sidebar: React.FC = () => {
 
     return (
         <>
-            <div className="flex h-screen py-8 w-[72px] flex-col justify-between border-e border-gray-800 bg-black">
+            <div className="flex h-screen py-8 max-w-[72px] flex-col justify-between border-e border-gray-800 bg-black">
                 
                 <ul className="space-y-9 border-gray-800">
             
