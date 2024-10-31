@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export interface Message {
+  senderAvatar: string | undefined;
   id: string;
   sender: 'self' | 'other';
   content: string;
