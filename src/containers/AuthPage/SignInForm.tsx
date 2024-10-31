@@ -31,8 +31,10 @@ export default function SignInPage() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+
             username: "thuyy566@gmail.com",
             password: "veltra123",
+
         },
     });
 
