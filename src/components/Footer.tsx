@@ -28,10 +28,10 @@ export default function Footer(): JSX.Element {
                         Veltra mang đến giải pháp kết nối video thời gian thực, tối ưu cho doanh nghiệp và cá nhân.
                     </p>
                     <div className="items-center gap-x-3 space-y-3 sm:flex sm:justify-center sm:space-y-0">
-                        <a href="javascript:void(0)" className="block py-2 px-4 text-center text-white font-medium bg-yellow-600 duration-150 hover:bg-yellow-500 active:bg-yellow-700 rounded-lg shadow-lg hover:shadow-none">
+                        <a href="" className="block py-2 px-4 text-center text-white font-medium bg-yellow-600 duration-150 hover:bg-yellow-500 active:bg-yellow-700 rounded-lg shadow-lg hover:shadow-none">
                             Bắt đầu ngay
                         </a>
-                        <a href="javascript:void(0)" className="flex items-center justify-center gap-x-2 py-2 px-4 text-white hover:text-gray-500 font-medium duration-150 active:bg-gray-100 border rounded-lg md:inline-flex">
+                        <a href="" className="flex items-center justify-center gap-x-2 py-2 px-4 text-white hover:text-gray-500 font-medium duration-150 active:bg-gray-100 border rounded-lg md:inline-flex">
                             Truy cập ngay
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                                 <path fillRule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clipRule="evenodd" />
@@ -54,14 +54,7 @@ export default function Footer(): JSX.Element {
                     </ul>
                 </div>
             </div>
-            <section className="group bg-gradient-to-r from-amber-200 to-gray-50 ">
-                <h1 className="text-[16vw] group-hover:translate-y-4 translate-y-20 leading-[100%] uppercase font-semibold text-center bg-gradient-to-r from-yellow-400 to-yellow-100 bg-clip-text text-transparent transition-all ease-linear">
-                    Veltra
-                </h1>
-                <section className="bg-black text-white font-updock  font-medium   italic h-40 relative z-10 grid place-content-center text-4xl rounded-tr-full rounded-tl-full">
-                    Cảm ơn bạn đã ghé thăm Veltra!
-                </section>
-            </section>
+         
         </footer>
     )
 }
