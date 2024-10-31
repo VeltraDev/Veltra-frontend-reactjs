@@ -17,10 +17,8 @@ import MainSocial from "../containers/SocialPage/MainSocial";
 import Post from "../pages/PostForm";
 import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
-import { RoleDB } from "@/pages/DashBoard/RoleDB";
-import Permission from "@/containers/DashBoardPage/Permission/Main";
-import AddPermission from "@/containers/DashBoardPage/Permission/AddPermission"
-import UpdatePermission from "@/containers/DashBoardPage/Permission/UpdatePermission"
+
+
         import { AddRole } from "@/pages/DashBoard/AddRolePage";
 import RoleDB from "@/pages/DashBoard/RolePage";
 
@@ -31,8 +29,6 @@ import UsersDB from "@/pages/DashBoard/UsersDB";
 import ChangePassword from "@/containers/User/ChangePassword";
 import DropdownNavbarComponent from "@/containers/User/NavUser";
 import UserSettings from "@/containers/User/UserSettings";
-
-
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -75,7 +71,7 @@ const publicRoutes: Route[] = [
         path: "/edit-profile",
         component: EditProfile,
     },
-    },
+   
     {
         path: "/forgot-password",
         component: ForgotPasswordPage,
@@ -104,28 +100,24 @@ const publicRoutes: Route[] = [
         component: RoleDB,
         layout: DBLayout,
     },
+    // {
+
+    //     path: "/dashboard/permission",
+    //     component: Permission,
+    //     layout: DBLayout,
+    // },
+    // {
+    //     path: "/dashboard/permission/addpermission",
+    //     component: AddPermission,
+    //     layout: DBLayout,
+    // },
+    // {
+    //     path: "/dashboard/permission/updatepermission/:id",
+    //     component: UpdatePermission,
+    //     layout: DBLayout,
+    // },
     {
-
-        path: "/dashboard/permission",
-        component: Permission,
-        layout: DBLayout,
-    },
-    {
-        path: "/dashboard/permission/addpermission",
-        component: AddPermission,
-        layout: DBLayout,
-    },
-    {
-        path: "/dashboard/permission/updatepermission/:id",
-        component: UpdatePermission,
-        layout: DBLayout,
-    }
-
-
-
-
-
-            path: "/dashboard/role/add",
+        path: "/dashboard/role/add",
         component: AddRole,
         layout: DBLayout,
     },
