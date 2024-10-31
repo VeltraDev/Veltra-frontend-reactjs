@@ -3,15 +3,22 @@
 import LandingLayout from "../layouts/LandingLayout";
 import Home from "../pages/Home";
 
+import DBLayout from "@/layouts/DBLayout";
+import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
+import AuthLayout from "../layouts/AuthLayout";
 import AuthPage from "../pages/Auth";
-import ChatPage from "../pages/Chat";
 import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
 import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
-import AuthLayout from "../layouts/AuthLayout";
-import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
-import DBLayout from "@/layouts/DBLayout";
+import ChatPage from "../pages/Chat";
+import { RoleDB } from "@/pages/DashBoard/RoleDB";
+import UsersDB from "@/pages/DashBoard/UsersDB";
+import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
 
+import UserSettings from "@/containers/User/UserSettings";
+import DropdownNavbarComponent from "@/containers/User/NavUser";
+import CropAvatar from "@/containers/User/CropAvatar";
+import ChangePassword from "@/containers/User/ChangePassword";
 
 interface Route {
     path: string;
@@ -57,7 +64,39 @@ const publicRoutes: Route[] = [
         path: "/dashboard",
         component: MainDashBoardPage,
         layout: DBLayout,
-    }
+    },
+    {
+        path: "/dashboard/role",
+        component: RoleDB,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/users",
+        component: UsersDB,
+        layout: DBLayout,
+    },
+
+    {
+        path: "/dashboard/users/:userId",  
+        component: EditUser,          
+        layout: DBLayout,             
+    },
+
+    {
+        path: "/nav-home",  
+        component: DropdownNavbarComponent,                   
+    },
+    {
+        path: "/settings/change-password",  
+        component: ChangePassword,                 
+    },
+
+    {
+        path: "/settings",  
+        component: UserSettings,                  
+    },
+
+    
 ];
 
 const privateRoutes: Route[] = [];

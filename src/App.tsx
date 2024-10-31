@@ -10,10 +10,14 @@ import Preline from "./components/preline";
 import BlankLayout from './layouts/BlankLayout';
 import NotFound from './pages/NotFound';
 import { publicRoutes } from './routes/route';
+
+
 import { SocketProvider } from "./context/SocketContext";
+
 
 function App() {
   return (
+
     <Provider store={store}>
       <Router>
         <AuthContextProvider>
@@ -50,6 +54,7 @@ function App() {
         </AuthContextProvider>
       </Router>
     </Provider>
+
   );
 }
 

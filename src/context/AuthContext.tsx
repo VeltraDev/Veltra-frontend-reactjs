@@ -107,7 +107,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
         const refreshInterval = setInterval(() => {
             refreshToken();
-        }, 25 * 60 * 1000);
+        }, 300 * 1000);
 
         return () => clearInterval(refreshInterval);
     }, []);

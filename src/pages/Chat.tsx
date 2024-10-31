@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../containers/ChatPage/Sidebar";
 import ChatList from "../containers/ChatPage/ChatList";
 import ChatSection from "../containers/ChatPage/ChatSection";
+
 import { getConversationMessages, getConversations, setActiveConversation, sendMessage } from "@/features/chatSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store";
 import { useSocket } from "@/context/SocketContext"; 
@@ -61,6 +62,7 @@ export default function ChatPage() {
     }
   };
 
+
   return (
     <div className="flex bg-black font-sans text-white relative">
       <Sidebar />
@@ -72,8 +74,10 @@ export default function ChatPage() {
       />
       <ChatSection
         conversation={activeConversation}
+
         onSendMessage={handleSendMessage}
         typingUser={typingUser}
+
       />
     </div>
   );

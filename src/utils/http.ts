@@ -19,6 +19,7 @@ class Http {
       withCredentials: true,
     });
 
+
     
     this.instance.interceptors.request.use(
       (config) => {
@@ -33,36 +34,41 @@ class Http {
       }
     );
 
+
     this.instance.interceptors.response.use(
       (response) => response,
       this.handleError
     );
   }
+
   private handleError = async (error: AxiosError) => {
     if (error.response?.code === 1552) {
+
       Modal.warning({
         title: "Phiên đăng nhập hết hạn", 
         content: "Vui lòng đăng nhập lại để tiếp tục.",
         onOk: () => {
-          localStorage.removeItem("user");
+          localStorage.removeItem("accessToken");
           window.location.href = "/auth";
         },
       });
 
       return Promise.reject(error);
     }
-
     return Promise.reject(error);
   };
 
+  // Đặt access token mới
   setToken(token: string) {
     localStorage.setItem("accessToken", token); 
     this.instance.defaults.headers.common["Authorization"] = `Bearer ${token}`; 
     console.log("New access token received");
+    localStorage.setItem("accessToken", token);
   }
 
   clearToken() {
     localStorage.removeItem("accessToken");
+
     delete this.instance.defaults.headers.common["Authorization"]; 
   }
 
@@ -70,55 +76,36 @@ class Http {
     url: string,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
+
     return this.instance.get<T>(url, config);
   }
 
-  post<T = any>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<AxiosResponse<T>> {
+  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.post<T>(url, data, config);
   }
 
-  put<T = any>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<AxiosResponse<T>> {
+  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.put<T>(url, data, config);
   }
 
-  patch<T = any>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<AxiosResponse<T>> {
+  patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.patch<T>(url, data, config);
   }
 
-  delete<T = any>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<AxiosResponse<T>> {
+  delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.delete<T>(url, config);
   }
 }
 
 type EntityErrorPayload = {
   message: string;
-  errors: {
-    field: string;
-    message: string;
-  }[];
+  errors: { field: string; message: string }[];
 };
 
+// Custom HttpError class
 export class HttpError extends Error {
   status: number;
-  payload: {
-    message: string;
-    [key: string]: any;
-  };
+  payload: { message: string; [key: string]: any };
 
   constructor({
     status,
@@ -130,21 +117,16 @@ export class HttpError extends Error {
     super(`HTTP Error: ${status}`);
     this.status = status;
     this.payload = payload;
-
     Object.setPrototypeOf(this, HttpError.prototype);
   }
 }
 
+// Custom EntityError class for 422 errors
 export class EntityError extends HttpError {
   status: number;
   payload: EntityErrorPayload;
-  constructor({
-    status,
-    payload,
-  }: {
-    status: 422;
-    payload: EntityErrorPayload;
-  }) {
+
+  constructor({ status, payload }: { status: 422; payload: EntityErrorPayload }) {
     super({ status, payload });
     this.status = status;
     this.payload = payload;
