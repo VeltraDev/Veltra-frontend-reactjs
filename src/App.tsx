@@ -1,8 +1,8 @@
 import "preline/preline";
 import { Provider } from "react-redux";
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { store } from "./app/store";
-import { AuthContextProvider } from "./context/AuthContext";
+
+
 import { Toaster } from 'react-hot-toast';
 import AosInit from './components/aos';
 import Preline from "./components/preline";
@@ -12,7 +12,10 @@ import NotFound from './pages/NotFound';
 import { publicRoutes } from './routes/route';
 
 
-import { SocketProvider } from "./context/SocketContext";
+import { SocketProvider } from "./contexts/SocketContext";
+import { store } from "./redux/store";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 
 function App() {
@@ -20,38 +23,40 @@ function App() {
 
     <Provider store={store}>
       <Router>
-        <AuthContextProvider>
+        <AuthProvider>
           <SocketProvider>
-            <Toaster position="top-right" />
-            <Preline />
-            <AosInit />
-            <Routes>
-              {publicRoutes.map((route, index) => {
-                const Page = route.component;
-                const Layout = route.layout || BlankLayout;
-                return (
-                  <Route
-                    key={index}
-                    path={route.path}
-                    element={
-                      <Layout>
-                        <Page />
-                      </Layout>
-                    }
-                  />
-                );
-              })}
-              <Route
-                path="*"
-                element={
-                  <BlankLayout>
-                    <NotFound />
-                  </BlankLayout>
-                }
-              />
-            </Routes>
+            <ThemeProvider>
+              <Toaster position="top-right" />
+              <Preline />
+              <AosInit />
+              <Routes>
+                {publicRoutes.map((route, index) => {
+                  const Page = route.component;
+                  const Layout = route.layout || BlankLayout;
+                  return (
+                    <Route
+                      key={index}
+                      path={route.path}
+                      element={
+                        <Layout>
+                          <Page />
+                        </Layout>
+                      }
+                    />
+                  );
+                })}
+                <Route
+                  path="*"
+                  element={
+                    <BlankLayout>
+                      <NotFound />
+                    </BlankLayout>
+                  }
+                />
+              </Routes>
+            </ThemeProvider>
           </SocketProvider>
-        </AuthContextProvider>
+        </AuthProvider>
       </Router>
     </Provider>
 
