@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import http from "@/utils/http";
+import { http } from '@/api/http';
 import { Link } from 'react-router-dom';
 import Modal from 'react-modal';
 

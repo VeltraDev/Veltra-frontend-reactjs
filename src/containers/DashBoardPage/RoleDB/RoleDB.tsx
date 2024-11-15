@@ -9,7 +9,7 @@ import { RoleForm } from '../RoleDB/RoleForm';
 import ConfirmDeleteRoleModal from '../RoleDB/ConfirmDeleteRoleModal';
 import { Dropdown, Menu, Checkbox, Button, Input } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import http from '@/utils/http';
+import { http } from '@/api/http';
 
 interface Role {
     id: string;
@@ -93,7 +93,7 @@ export default function RolePage() {
                 }, 500);
                 setRoles(roles.map(role => role.id === roleToEdit.id ? { ...role, ...values } : role));
                 closeEditModal();
-    
+
                 // Remove unselected permissions, if any
                 if (removedPermissions.length > 0) {
                     await handleDeletePermissions(roleToEdit.id, removedPermissions);
@@ -104,7 +104,7 @@ export default function RolePage() {
             }
         }
     };
-    
+
     const handleDeleteRole = async () => {
         if (roleToDelete) {
             try {

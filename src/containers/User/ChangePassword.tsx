@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import http from '@/utils/http';
+import { http } from '@/api/http';
 import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -40,8 +40,8 @@ const ChangePassword = () => {
         position: "top-right",
         autoClose: 2000,
         onClose: () => {
-        navigate('/auth');
-      },
+          navigate('/auth');
+        },
       });
 
 
@@ -77,7 +77,7 @@ const ChangePassword = () => {
   return (
     <div className="flex justify-center min-h-screen bg-gradient-to-r from-[#3a343e] via-[#142f4e] via-30% to-[#145450] to-90% py-10">
       <ToastContainer />
-      <Sidebar/>
+      <Sidebar />
 
       <div className="bg-[#1c2b33] p-6 rounded-lg shadow-lg w-full max-w-4xl">
         <div className="flex justify-between items-center mb-6">

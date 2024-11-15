@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import http from '@/utils/http';
+import { http } from '@/api/http';
 import userImage from '../images/user/User-avatar.svg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,7 +9,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import Sidebar from './SideBar';
 
-import { handleCropSave, uploadImage } from '../DashBoardPage/UsersDB/uploadImageUtils'; 
+import { handleCropSave, uploadImage } from '../DashBoardPage/UsersDB/uploadImageUtils';
 
 const UserSettings = () => {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ const UserSettings = () => {
       setPreviewAvatar(URL.createObjectURL(file));
       setSelectedFile(file);
       setIsCropperOpen(true);
-      if (inputRef.current) inputRef.current.value = ''; 
+      if (inputRef.current) inputRef.current.value = '';
     }
   };
 
@@ -95,8 +95,8 @@ const UserSettings = () => {
 
   return (
     <div className="flex justify-center min-h-screen bg-gradient-to-r from-[#3a343e] via-[#142f4e] via-30% to-[#145450] to-90% py-10">
-       <ToastContainer />
-        <Sidebar/>
+      <ToastContainer />
+      <Sidebar />
 
       {isCropperOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -153,11 +153,11 @@ const UserSettings = () => {
               <div className=''>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <g clip-path="url(#clip0_167_39861)">
-                    <path d="M8.94252 7.99962L15.8045 1.13762C15.926 1.01189 15.9932 0.843484 15.9916 0.668686C15.9901 0.493888 15.92 0.32668 15.7964 0.203075C15.6728 0.0794693 15.5056 0.00935665 15.3308 0.0078377C15.156 0.00631876 14.9876 0.073515 14.8619 0.194954L7.99986 7.05695L1.13786 0.194954C1.01212 0.073515 0.843721 0.00631876 0.668923 0.0078377C0.494126 0.00935665 0.326917 0.0794693 0.203312 0.203075C0.0797065 0.32668 0.00959389 0.493888 0.00807494 0.668686C0.00655599 0.843484 0.0737523 1.01189 0.195191 1.13762L7.05719 7.99962L0.195191 14.8616C0.0702103 14.9866 0 15.1562 0 15.333C0 15.5097 0.0702103 15.6793 0.195191 15.8043C0.320209 15.9293 0.489748 15.9995 0.666524 15.9995C0.8433 15.9995 1.01284 15.9293 1.13786 15.8043L7.99986 8.94229L14.8619 15.8043C14.9869 15.9293 15.1564 15.9995 15.3332 15.9995C15.51 15.9995 15.6795 15.9293 15.8045 15.8043C15.9295 15.6793 15.9997 15.5097 15.9997 15.333C15.9997 15.1562 15.9295 14.9866 15.8045 14.8616L8.94252 7.99962Z" fill="#858D9D"/>
+                    <path d="M8.94252 7.99962L15.8045 1.13762C15.926 1.01189 15.9932 0.843484 15.9916 0.668686C15.9901 0.493888 15.92 0.32668 15.7964 0.203075C15.6728 0.0794693 15.5056 0.00935665 15.3308 0.0078377C15.156 0.00631876 14.9876 0.073515 14.8619 0.194954L7.99986 7.05695L1.13786 0.194954C1.01212 0.073515 0.843721 0.00631876 0.668923 0.0078377C0.494126 0.00935665 0.326917 0.0794693 0.203312 0.203075C0.0797065 0.32668 0.00959389 0.493888 0.00807494 0.668686C0.00655599 0.843484 0.0737523 1.01189 0.195191 1.13762L7.05719 7.99962L0.195191 14.8616C0.0702103 14.9866 0 15.1562 0 15.333C0 15.5097 0.0702103 15.6793 0.195191 15.8043C0.320209 15.9293 0.489748 15.9995 0.666524 15.9995C0.8433 15.9995 1.01284 15.9293 1.13786 15.8043L7.99986 8.94229L14.8619 15.8043C14.9869 15.9293 15.1564 15.9995 15.3332 15.9995C15.51 15.9995 15.6795 15.9293 15.8045 15.8043C15.9295 15.6793 15.9997 15.5097 15.9997 15.333C15.9997 15.1562 15.9295 14.9866 15.8045 14.8616L8.94252 7.99962Z" fill="#858D9D" />
                   </g>
                   <defs>
                     <clipPath id="clip0_167_39861">
-                      <rect width="16" height="16" fill="white"/>
+                      <rect width="16" height="16" fill="white" />
                     </clipPath>
                   </defs>
                 </svg>
@@ -166,22 +166,22 @@ const UserSettings = () => {
             </div>
 
             <div className="py-2 px-4 flex justify-center items-center bg-[#3858D6] rounded-[50px] gap-2 focus: cursor-pointer"
-                onClick={handleSave}            
+              onClick={handleSave}
             >
               <div className=''>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M7.99985 10.6667C8.73624 10.6667 9.3332 10.0697 9.3332 9.33334C9.3332 8.59696 8.73624 8 7.99985 8C7.26346 8 6.6665 8.59696 6.6665 9.33334C6.6665 10.0697 7.26346 10.6667 7.99985 10.6667Z" fill="white"/>
-                  <path d="M15.024 2.748L13.252 0.976C13.0747 0.801469 12.8783 0.647406 12.6667 0.516656V2C12.6644 3.84003 11.1733 5.33113 9.33331 5.33334H6.66666C4.82662 5.33113 3.33553 3.84003 3.33334 2V0C1.49331 0.00221875 0.00221875 1.49331 0 3.33334V12.6667C0.00221875 14.5067 1.49331 15.9978 3.33334 16H12.6667C14.5067 15.9978 15.9978 14.5067 16 12.6667V5.10469C16.0025 4.22028 15.651 3.37166 15.024 2.748ZM8 12C6.52725 12 5.33334 10.8061 5.33334 9.33334C5.33334 7.86059 6.52725 6.66669 8 6.66669C9.47275 6.66669 10.6667 7.86059 10.6667 9.33334C10.6667 10.8061 9.47275 12 8 12Z" fill="white"/>
-                  <path d="M6.6665 3.99997H9.33315C10.4377 3.99997 11.3332 3.10453 11.3332 1.99997V0.0426562C11.1882 0.0190312 11.0419 0.00478125 10.8952 0H4.6665V2C4.6665 3.10453 5.56194 3.99997 6.6665 3.99997Z" fill="white"/>
+                  <path d="M7.99985 10.6667C8.73624 10.6667 9.3332 10.0697 9.3332 9.33334C9.3332 8.59696 8.73624 8 7.99985 8C7.26346 8 6.6665 8.59696 6.6665 9.33334C6.6665 10.0697 7.26346 10.6667 7.99985 10.6667Z" fill="white" />
+                  <path d="M15.024 2.748L13.252 0.976C13.0747 0.801469 12.8783 0.647406 12.6667 0.516656V2C12.6644 3.84003 11.1733 5.33113 9.33331 5.33334H6.66666C4.82662 5.33113 3.33553 3.84003 3.33334 2V0C1.49331 0.00221875 0.00221875 1.49331 0 3.33334V12.6667C0.00221875 14.5067 1.49331 15.9978 3.33334 16H12.6667C14.5067 15.9978 15.9978 14.5067 16 12.6667V5.10469C16.0025 4.22028 15.651 3.37166 15.024 2.748ZM8 12C6.52725 12 5.33334 10.8061 5.33334 9.33334C5.33334 7.86059 6.52725 6.66669 8 6.66669C9.47275 6.66669 10.6667 7.86059 10.6667 9.33334C10.6667 10.8061 9.47275 12 8 12Z" fill="white" />
+                  <path d="M6.6665 3.99997H9.33315C10.4377 3.99997 11.3332 3.10453 11.3332 1.99997V0.0426562C11.1882 0.0190312 11.0419 0.00478125 10.8952 0H4.6665V2C4.6665 3.10453 5.56194 3.99997 6.6665 3.99997Z" fill="white" />
                 </svg>
               </div>
               <button
-               className='text-[#ffffff]'
+                className='text-[#ffffff]'
                 disabled={loading}
               >
-               Lưu thông tin
+                Lưu thông tin
               </button>
-            </div>  
+            </div>
           </div>
         </div>
 
@@ -196,7 +196,7 @@ const UserSettings = () => {
                 <Skeleton circle={true} height={96} width={96} />
               ) : (
                 <img
-                  src={avatar || userImage} 
+                  src={avatar || userImage}
                   className="w-full h-full object-cover"
                 />
               )}
@@ -207,9 +207,9 @@ const UserSettings = () => {
             ) : (
               <button
                 onClick={() => inputRef.current.click()}
-                className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-[50px] hover:bg-indigo-100 font-semibold" 
+                className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-[50px] hover:bg-indigo-100 font-semibold"
               >
-                Chọn ảnh đại diện 
+                Chọn ảnh đại diện
               </button>
             )}
             <input

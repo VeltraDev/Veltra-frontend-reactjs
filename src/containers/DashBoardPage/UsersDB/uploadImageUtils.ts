@@ -1,6 +1,6 @@
 // avatarUtils.ts
 import { v4 as uuidv4 } from 'uuid';
-import http from '@/utils/http';
+import { http } from '@/api/http';
 import React from 'react';
 
 export const handleCropSave = (

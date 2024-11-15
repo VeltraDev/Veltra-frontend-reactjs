@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPopper } from '@popperjs/core';
-import http from '@/utils/http';
+import { http } from '@/api/http';
 import userImage from '../images/user/User-avatar.svg';
 import { useNavigate } from 'react-router-dom';
 

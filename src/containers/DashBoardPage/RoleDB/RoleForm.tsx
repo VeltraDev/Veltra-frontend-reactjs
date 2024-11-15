@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button, Row, Col, Collapse, List, Switch, Input } from "antd";
 import { CaretRightOutlined } from '@ant-design/icons';
-import http from "@/utils/http";
+import { http } from '@/api/http';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import http from '@/utils/http';
+import { http } from '@/api/http';
 import AvatarEditor from 'react-avatar-editor';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -108,11 +108,11 @@ const EditUser = () => {
         position: 'top-right',
         autoClose: 1500,
         onClose: () => {
-        navigate('/dashboard/users');
-      },
+          navigate('/dashboard/users');
+        },
       });
 
-     
+
     } catch (error) {
       console.error('Error uploading file or updating profile:', error);
       toast.error('Có lỗi xảy ra khi cập nhật thông tin!', {
