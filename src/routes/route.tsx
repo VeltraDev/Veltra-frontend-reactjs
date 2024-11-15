@@ -10,7 +10,7 @@ import AuthPage from "../pages/Auth";
 import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
 import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
-import ChatPage from "../pages/Chat";
+
 
 
 import MainSocial from "../containers/SocialPage/MainSocial";
@@ -19,7 +19,7 @@ import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
 
 
-        import { AddRole } from "@/pages/DashBoard/AddRolePage";
+import { AddRole } from "@/pages/DashBoard/AddRolePage";
 import RoleDB from "@/pages/DashBoard/RolePage";
 
 import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
@@ -29,11 +29,12 @@ import UsersDB from "@/pages/DashBoard/UsersDB";
 import ChangePassword from "@/containers/User/ChangePassword";
 import DropdownNavbarComponent from "@/containers/User/NavUser";
 import UserSettings from "@/containers/User/UserSettings";
+import ChatPage from "@/pages/ChatPage";
 interface Route {
     path: string;
     component: React.ComponentType<any>;
     layout?: React.ComponentType<any>;
-    params?: Record<string, any>;  
+    params?: Record<string, any>;
 }
 
 const publicRoutes: Route[] = [
@@ -51,18 +52,18 @@ const publicRoutes: Route[] = [
         path: "/chat",
         component: ChatPage,
 
-  },
+    },
     {
         path: "/post",
         component: Post,
-      
+
     },
 
-        {
+    {
         path: "/social",
         component: MainSocial,
     },
-            
+
     {
         path: "/profile",
         component: Profile,
@@ -71,24 +72,24 @@ const publicRoutes: Route[] = [
         path: "/edit-profile",
         component: EditProfile,
     },
-   
+
     {
         path: "/forgot-password",
         component: ForgotPasswordPage,
         layout: AuthLayout,
-        params: { token: ':token' }, 
+        params: { token: ':token' },
     },
     {
         path: "/reset-password",
         component: ResetPasswordPage,
         layout: AuthLayout,
-        params: { token: ':token' }, 
+        params: { token: ':token' },
     },
     {
         path: "/verify-email",
         component: VerifyEmailPage,
         layout: AuthLayout,
-        params: { token: ':token' }, 
+        params: { token: ':token' },
     },
     {
         path: "/dashboard",
@@ -128,28 +129,28 @@ const publicRoutes: Route[] = [
     },
 
     {
-        path: "/dashboard/users/:userId",  
-        component: EditUser,          
-        layout: DBLayout,             
+        path: "/dashboard/users/:userId",
+        component: EditUser,
+        layout: DBLayout,
     },
 
     {
-        path: "/nav-home",  
-        component: DropdownNavbarComponent,                   
+        path: "/nav-home",
+        component: DropdownNavbarComponent,
     },
     {
-        path: "/settings/change-password",  
-        component: ChangePassword,                 
+        path: "/settings/change-password",
+        component: ChangePassword,
     },
 
     {
-        path: "/settings",  
-        component: UserSettings,                  
+        path: "/settings",
+        component: UserSettings,
     },
 
 
 
-    
+
 ];
 
 const privateRoutes: Route[] = [];
