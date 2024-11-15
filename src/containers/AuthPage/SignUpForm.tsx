@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import http from "@/utils/http";
+import { http } from '@/api/http';
 import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
@@ -73,7 +73,7 @@ export default function TrangDangKy() {
                     email: values.email,
                     password: values.password,
                 },
-               
+
             );
 
             if (response.data && response.data.code === 1000) {
