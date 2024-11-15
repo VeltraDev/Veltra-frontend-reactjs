@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { RoleForm } from "@/containers/DashBoardPage/RoleDB/RoleForm";
-import http from "@/utils/http";
-import { toast , ToastContainer} from "react-toastify";
+import { http } from '@/api/http';
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export function AddRole() {
@@ -28,6 +28,6 @@ export function AddRole() {
                 <RoleForm onSubmit={handleSubmit} />
             </div>
         </>
-        
+
     );
 }
