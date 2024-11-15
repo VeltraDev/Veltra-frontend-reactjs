@@ -16,7 +16,7 @@ import DashboardMessages from './pages/dashboard/DashboardMessages';
 import DashboardSettings from './pages/dashboard/DashboardSettings';
 import NewsFeedPage from './pages/NewsFeedPage';
 import VideoCallPage from './pages/VideoCallPage';
-
+import NewsFeedPageV2 from './pages/NewsFeedPageV2';
 
 function App() {
   const { isLoading } = useAuth();
@@ -43,17 +43,21 @@ function App() {
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/newsfeed" element={<NewsFeedPage />} />
             <Route path="/call/:conversationId" element={<VideoCallPage />} />
+            <Route path="/newsfeed-v2" element={<NewsFeedPageV2 />} />
           </Route>
 
           {/* Admin Routes */}
           {/* <Route element={<AdminRoute />}> */}
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
-              <Route path="/dashboard/users" element={<DashboardUsers />} />
-              <Route path="/dashboard/messages" element={<DashboardMessages />} />
-              <Route path="/dashboard/settings" element={<DashboardSettings />} />
-            </Route>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route
+              path="/dashboard/analytics"
+              element={<DashboardAnalytics />}
+            />
+            <Route path="/dashboard/users" element={<DashboardUsers />} />
+            <Route path="/dashboard/messages" element={<DashboardMessages />} />
+            <Route path="/dashboard/settings" element={<DashboardSettings />} />
+          </Route>
           {/* </Route> */}
 
           {/* Redirect root to chat for authenticated users */}
