@@ -73,27 +73,32 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
     };
 
-
     const fetchUserInfo = async (token: string) => {
         try {
-            const response = await http.get<{ code: number; result: User }>('/auth/account', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                throw new Error('No token found in localStorage');
+            }
+
+            const response = await http.get('/auth/account', {
+                headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (response.data.code === 200) {
-                setUser(response.data.result);
+            console.log('API response:', response.data);
+
+            // Check for successful status
+            if (response.data.statusCode === 200 && response.data.code === 1000) {
+                setUser(response.data.data.user); // Adjust path to match API structure
             } else {
-                throw new Error('Failed to fetch user info');
+                throw new Error(`Unexpected response code: ${response.data.code}`);
             }
         } catch (err) {
             console.error('Error fetching user info:', err);
-            setError('Failed to fetch user information');
+            setError('Failed to fetch user info');
             setUser(null);
-        } finally {
-            setLoading(false);
         }
+
+
     };
 
     useEffect(() => {
@@ -111,8 +116,6 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
         return () => clearInterval(refreshInterval);
     }, []);
-
-
     return (
         <AuthContext.Provider value={{ user, loading, error, logout }}>
             {children}
