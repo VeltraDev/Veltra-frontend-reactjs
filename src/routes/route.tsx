@@ -30,6 +30,7 @@ import ChangePassword from "@/containers/User/ChangePassword";
 import DropdownNavbarComponent from "@/containers/User/NavUser";
 import UserSettings from "@/containers/User/UserSettings";
 import ChatPage from "@/pages/ChatPage";
+import VideoCallPage from "@/pages/VideoCallPage";
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -53,6 +54,12 @@ const publicRoutes: Route[] = [
         component: ChatPage,
 
     },
+    {
+        path: "/call/:conversationId",
+        component: VideoCallPage,
+
+    },
+
     {
         path: "/post",
         component: Post,
