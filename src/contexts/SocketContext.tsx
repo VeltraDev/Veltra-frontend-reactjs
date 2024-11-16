@@ -1,11 +1,12 @@
-// SocketContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { socketService } from "../services/socket";
 import { RootState } from "../redux/store";
+import { toast } from "react-hot-toast";
 
 interface SocketContextType {
     socketService: typeof socketService;
+    isConnected: boolean;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -16,25 +17,32 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     const isAuthenticated = useSelector(
         (state: RootState) => state.auth.isAuthenticated
     );
-    const [socketInitialized, setSocketInitialized] = useState(false);
+    const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+    const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        if (isAuthenticated && !socketInitialized) {
-            socketService.connect();
-            setSocketInitialized(true);
+        if (isAuthenticated && accessToken) {
+            try {
+                socketService.connect();
+                setIsConnected(true);
+            } catch (error) {
+                console.error("Failed to connect to socket:", error);
+                toast.error("Failed to connect to chat server");
+                setIsConnected(false);
+            }
+        } else {
+            socketService.disconnect();
+            setIsConnected(false);
         }
 
         return () => {
-            if (socketInitialized) {
-                console.log("Cleaning up socket connection");
-                socketService.disconnect();
-                setSocketInitialized(false);
-            }
+            socketService.disconnect();
+            setIsConnected(false);
         };
-    }, [isAuthenticated, socketInitialized]);
+    }, [isAuthenticated, accessToken]);
 
     return (
-        <SocketContext.Provider value={{ socketService }}>
+        <SocketContext.Provider value={{ socketService, isConnected }}>
             {children}
         </SocketContext.Provider>
     );
