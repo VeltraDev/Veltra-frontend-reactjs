@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { http } from '@/api/http';
 import { useNavigate } from "react-router-dom";
+import PasswordInput from "@/components/auth/PasswordInput";
 
 const formSchema = z.object({
     firstname: z.string().min(1, "Vui lòng nhập tên."),
@@ -165,7 +166,7 @@ export default function TrangDangKy() {
                     )}
                 />
 
-                <FormField
+                {/* <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
@@ -173,12 +174,13 @@ export default function TrangDangKy() {
                             <FormLabel className="text-white">Mật khẩu</FormLabel>
                             <FormControl>
                                 <Input className="text-blue-500" type="password" {...field} />
+                               
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
-                />
-
+                /> */}
+                <PasswordInput />
                 <FormField
                     control={form.control}
                     name="passwordConfirmation"
