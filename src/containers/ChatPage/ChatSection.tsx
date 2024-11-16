@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Conversation, Message } from '@/redux/chatSlice';
 import { RootState } from '@/redux/store';
 import { useSocket } from '@/contexts/SocketContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useConversation } from '@/hooks/useConversation';
 import MessageList from '@/components/chat/MessageList';
 import MessageInput from '@/components/chat/MessageInput';
 import GroupInfoPanel from '@/components/chat/GroupInfoPanel';
 import ThreadPanel from '@/components/chat/ThreadPanel';
 import ForwardMessageDialog from '@/components/chat/ForwardMessageDialog';
 import { toast } from 'react-hot-toast';
-import { 
+import {
   Phone, Video, Search, UserPlus, MoreVertical,
   MessageSquare, Star, Archive, Bell, BellOff, Info,
   Share2, Shield, ArrowLeft, Users
@@ -18,19 +18,23 @@ import {
 import ChatHeader from '@/components/chat/ChatHeader';
 
 interface ChatSectionProps {
-  conversation: Conversation | null;
+  conversationId?: string;
   typingUser: { id: string; conversationId: string } | null;
   onToggleSidebar?: () => void;
   onToggleChatList?: () => void;
 }
 
 export default function ChatSection({
-  conversation,
+  conversationId,
   typingUser,
   onToggleSidebar,
   onToggleChatList
 }: ChatSectionProps) {
-  const [message, setMessage] = useState('');
+  const { currentTheme } = useTheme();
+  const { conversation, isLoading, error } = useConversation(conversationId);
+  const messages = useSelector((state: RootState) => state.chat.messages);
+  const currentUser = useSelector((state: RootState) => state.auth.user);
+
   const [showForwardDialog, setShowForwardDialog] = useState(false);
   const [messageToForward, setMessageToForward] = useState<Message | null>(null);
   const [showGroupInfo, setShowGroupInfo] = useState(false);
@@ -39,40 +43,19 @@ export default function ChatSection({
   const [isMuted, setIsMuted] = useState(false);
   const [isStarred, setIsStarred] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
-  const [showMoreActions, setShowMoreActions] = useState(false);
-  
-  const messages = useSelector((state: RootState) => state.chat.messages);
-  const currentUser = useSelector((state: RootState) => state.auth.user);
-  const { socketService } = useSocket();
-  const { currentTheme } = useTheme();
 
-  const isAdmin = conversation?.admin?.id === currentUser?.id;
-  const isGroup = conversation?.isGroup;
-
-  useEffect(() => {
-    if (conversation) {
-      socketService.joinConversation(conversation.id);
-    }
-  }, [conversation, socketService]);
-
-  const handleSendMessage = (content: string) => {
-    if (content.trim() && conversation) {
-      socketService.sendMessage(conversation.id, content);
-      setMessage('');
-    }
-  };
-
-  const handleTyping = () => {
-    if (conversation) {
-      socketService.sendTypingStatus(conversation.id);
-    }
-  };
-
-  const handleVideoCall = () => toast.info('Video call feature coming soon');
-  const handleVoiceCall = () => toast.info('Voice call feature coming soon');
-  const handleSearch = () => toast.info('Search feature coming soon');
-  const handleShare = () => toast.info('Share feature coming soon');
-  const handleReport = () => toast.info('Report feature coming soon');
+  if (error) {
+    return (
+      <div className={`flex-1 ${currentTheme.bg} flex items-center justify-center`}>
+        <div className="text-center space-y-4">
+          <Shield className={`w-16 h-16 ${currentTheme.iconColor} mx-auto`} />
+          <h2 className={`text-xl font-semibold ${currentTheme.headerText}`}>
+            {error}
+          </h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!conversation) {
     return (
@@ -105,7 +88,6 @@ export default function ChatSection({
           onToggleArchive={() => setIsArchived(!isArchived)}
         />
 
-
         {/* Messages */}
         <MessageList
           messages={messages}
@@ -117,17 +99,14 @@ export default function ChatSection({
         />
 
         {/* Message Input */}
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          onTyping={handleTyping}
-        />
+        <MessageInput conversationId={conversation.id} />
       </div>
 
       {/* Side Panels */}
       {(showGroupInfo || showThreadPanel) && (
         <>
           {/* Overlay for mobile */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-20 lg:hidden"
             onClick={() => {
               setShowGroupInfo(false);
