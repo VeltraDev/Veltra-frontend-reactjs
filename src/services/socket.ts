@@ -1,26 +1,49 @@
 import { io, Socket } from "socket.io-client";
 import { store } from "../redux/store";
 import {
-  updateMessagesAndConversations,
-  removeUserFromConversation,
-  addNewConversation,
-  getConversations,
-  updateOnlineUsers,
-  setTypingUser,
-  removeTypingUser,
-  addMessage,
-  setCallAnswered,
-  setIncomingCall,
-  endCall,
-  addIceCandidate,
+   updateMessagesAndConversations,
+    removeUserFromConversation,
+    addNewConversation,
+    getConversations,
+    updateOnlineUsers,
+    setTypingUser,
+    removeTypingUser,
+    addMessage,
+    setCallAnswered,
+    setIncomingCall,
+    endCall,
+    addIceCandidate,
+    updateConversation,
+    removeConversation,
+    updateGroupMembers,
+    removeGroupMembers,
 } from "../redux/chatSlice";
 import React from "react";
 import toast from "react-hot-toast";
+import { createRoot } from "react-dom/client";
+import CallNotification from "@/components/chat/CallNotification";
+
+interface MessagePayload {
+  conversationId: string;
+  content: string;
+  files?: Array<{
+    url: string;
+    type: 'image' | 'document';
+  }>;
+}
 
 class SocketService {
   public socket: Socket | null = null;
   private readonly url: string = "wss://veltra2.duckdns.org";
   private typingTimeout: Record<string, NodeJS.Timeout> = {};
+  private callNotificationContainer: HTMLDivElement | null = null;
+
+  constructor() {
+      // Create container for call notifications
+    this.callNotificationContainer = document.createElement('div');
+    this.callNotificationContainer.id = 'call-notifications';
+    document.body.appendChild(this.callNotificationContainer);
+  }
 
   public connect(): void {
     if (this.socket?.connected) return;
@@ -60,6 +83,30 @@ class SocketService {
     this.socket.on("disconnect", () => {
       console.log("Disconnected from chat server");
     });
+  // Call events
+    this.socket.on("receive-call", (data) => {
+      console.log('asfasf')
+  if (!this.callNotificationContainer) return;
+
+  // Create a root for call notification
+  const notificationRoot = createRoot(this.callNotificationContainer);
+
+  // Render the CallNotification component
+  notificationRoot.render(
+    React.createElement(CallNotification, {
+      caller: data.from,
+      onAccept: () => {
+        store.dispatch(setIncomingCall({ from: data.from, offer: data.offer }));
+        notificationRoot.unmount();
+      },
+      onReject: () => {
+        this.socket?.emit('call-rejected', { to: data.from.id });
+        notificationRoot.unmount();
+      }
+    })
+  );
+    });
+
 
     // User status events
     this.socket.on("userOnline", ({ user }) => {
@@ -175,6 +222,47 @@ class SocketService {
       { duration: 30000, position: "top-center" }
     );
   });
+    
+      // Group management events
+    this.socket.on("usersAdded", ({ conversation, message, addedUsers }: GroupUpdateEvent) => {
+      store.dispatch(updateGroupMembers({ conversation, addedUsers }));
+      toast.success(message);
+    });
+
+    this.socket.on("conversationAdminGroupUpdated", ({ conversation, message }: GroupUpdateEvent) => {
+      store.dispatch(updateConversation(conversation));
+      toast.success(message);
+    });
+
+    this.socket.on("conversationGroupInfoUpdated", ({ conversation, message }: GroupUpdateEvent) => {
+      store.dispatch(updateConversation(conversation));
+      toast.success(message);
+    });
+
+    this.socket.on("stopTypingByAdminDeleted", ({ conversationId }) => {
+      toast.error("You have been removed from this group");
+      store.dispatch(removeConversation(conversationId));
+    });
+
+    this.socket.on("usersRemovedFromGroup", ({ conversation, message, removedUsers }: GroupUpdateEvent) => {
+      store.dispatch(removeGroupMembers({ conversation, removedUsers }));
+      toast.info(message);
+    });
+
+    this.socket.on("conversationDeleted", ({ conversationId, message }) => {
+      store.dispatch(removeConversation(conversationId));
+      toast.info(message);
+    });
+
+    this.socket.on("userLeftConversation", ({ userId, conversationId, message }) => {
+      store.dispatch(removeUserFromConversation({ conversationId, userId }));
+      toast.info(message);
+    });
+
+    this.socket.on("conversationCreated", ({ conversation, message }) => {
+      store.dispatch(addNewConversation(conversation));
+      toast.success(message);
+    });
     // Typing events
     this.socket.on("typingInfo", ({ conversationId, user }) => {
       store.dispatch(setTypingUser({ conversationId, user }));
@@ -209,13 +297,38 @@ class SocketService {
     }
   }
 
-  public sendMessage(conversationId: string, content: string): void {
-    if (this.socket) {
-      this.socket.emit("sendMessage", { conversationId, content });
-      // Clear typing indicator when sending message
-      this.sendStopTyping(conversationId);
-    }
+public async sendMessage(payload: Partial<MessagePayload>): Promise<void> {
+  if (!this.socket) return;
+
+  // Kiểm tra payload
+  if (!payload.conversationId) {
+    console.error('Missing conversationId');
+    return;
   }
+
+  // Đảm bảo content và files luôn tồn tại
+  const messagePayload = {
+    conversationId: payload.conversationId,
+    content: payload.content || '',
+    files: payload.files || []
+  };
+
+  try {
+    // Sử dụng callback để xử lý phản hồi từ server
+    this.socket.emit("sendMessage", messagePayload, (response: any) => {
+      if (response?.id) {
+        console.log('Message sent successfully:', response);
+      } else {
+        console.error('Failed to send message:', response?.message || 'Unknown error');
+      }
+    });
+
+    // Gửi sự kiện dừng nhập văn bản (stop typing)
+    this.sendStopTyping(payload.conversationId);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+}
 
   public sendTyping(conversationId: string): void {
     if (!this.socket) return;
