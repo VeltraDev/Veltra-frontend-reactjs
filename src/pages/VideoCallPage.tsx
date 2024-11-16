@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useSocket } from '@/contexts/SocketContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, X } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, X, Phone } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function VideoCallPage() {
     const navigate = useNavigate();
     const { conversationId } = useParams();
+    const dispatch = useDispatch();
     const { currentTheme } = useTheme();
     const { socketService } = useSocket();
 
@@ -24,10 +25,10 @@ export default function VideoCallPage() {
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
+    const incomingCall = useSelector((state: RootState) => state.chat.call.incomingCall);
     const conversation = useSelector((state: RootState) =>
         state.chat.conversations.find(c => c.id === conversationId)
     );
-
     const currentUser = useSelector((state: RootState) => state.auth.user);
 
     useEffect(() => {
@@ -106,7 +107,18 @@ export default function VideoCallPage() {
             }
         };
 
-        initializeCall();
+        // Handle incoming call
+        const handleIncomingCall = async (data: { from: any; offer: RTCSessionDescriptionInit }) => {
+            setIncomingCall(data);
+            setCallStatus('ringing');
+        };
+
+        socketService.socket?.on('receive-call', handleIncomingCall);
+
+        // Only initialize call if we're not receiving one
+        if (!incomingCall) {
+            initializeCall();
+        }
 
         return () => {
             // Cleanup
@@ -116,8 +128,9 @@ export default function VideoCallPage() {
             if (peerConnectionRef.current) {
                 peerConnectionRef.current.close();
             }
+            socketService.socket?.off('receive-call', handleIncomingCall);
         };
-    }, [conversation, currentUser]);
+    }, [conversation, currentUser, incomingCall]);
 
     // Handle socket events
     useEffect(() => {
@@ -163,6 +176,36 @@ export default function VideoCallPage() {
         };
     }, [socketService.socket]);
 
+    const answerCall = async () => {
+        if (!incomingCall || !peerConnectionRef.current) return;
+
+        try {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+            const answer = await peerConnectionRef.current.createAnswer();
+            await peerConnectionRef.current.setLocalDescription(answer);
+
+            socketService.socket?.emit('call-answered', {
+                to: incomingCall.from.id,
+                answer
+            });
+
+            setCallStatus('connected');
+            setIncomingCall(null);
+        } catch (error) {
+            console.error('Error answering call:', error);
+            toast.error('Failed to answer call');
+        }
+    };
+
+    const rejectCall = () => {
+        if (!incomingCall) return;
+
+        socketService.socket?.emit('call-rejected', {
+            to: incomingCall.from.id
+        });
+        navigate('/chat');
+    };
+
     const toggleMute = () => {
         if (localStream) {
             localStream.getAudioTracks().forEach(track => {
@@ -188,6 +231,36 @@ export default function VideoCallPage() {
         });
         navigate('/chat');
     };
+
+    // Show incoming call UI
+    if (incomingCall && callStatus === 'ringing') {
+        return (
+            <div className="fixed inset-0 bg-black flex flex-col items-center justify-center">
+                <div className="text-center space-y-6">
+                    <div className="w-24 h-24 rounded-full bg-blue-500 mx-auto flex items-center justify-center animate-pulse">
+                        <Video className="w-12 h-12 text-white" />
+                    </div>
+                    <h2 className="text-2xl text-white font-semibold">
+                        Incoming call from {incomingCall.from.firstName}
+                    </h2>
+                    <div className="flex items-center justify-center space-x-6">
+                        <button
+                            onClick={rejectCall}
+                            className="p-4 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
+                        >
+                            <PhoneOff className="w-8 h-8 text-white" />
+                        </button>
+                        <button
+                            onClick={answerCall}
+                            className="p-4 rounded-full bg-green-500 hover:bg-green-600 transition-colors"
+                        >
+                            <Phone className="w-8 h-8 text-white" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 bg-black flex flex-col">
