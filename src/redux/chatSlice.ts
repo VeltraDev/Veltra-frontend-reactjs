@@ -364,6 +364,46 @@ const chatSlice = createSlice({
         conversation.users = conversation.users.filter((u) => u.id !== userId);
       }
     },
+     updateGroupMembers: (state, action: PayloadAction<{ conversation: Conversation; addedUsers?: User[] }>) => {
+      const { conversation, addedUsers } = action.payload;
+      const index = state.conversations.findIndex(c => c.id === conversation.id);
+      if (index !== -1) {
+        state.conversations[index] = conversation;
+        if (state.activeConversation?.id === conversation.id) {
+          state.activeConversation = conversation;
+        }
+      }
+    },
+
+    removeGroupMembers: (state, action: PayloadAction<{ conversation: Conversation; removedUsers?: User[] }>) => {
+      const { conversation, removedUsers } = action.payload;
+      const index = state.conversations.findIndex(c => c.id === conversation.id);
+      if (index !== -1) {
+        state.conversations[index] = conversation;
+        if (state.activeConversation?.id === conversation.id) {
+          state.activeConversation = conversation;
+        }
+      }
+    },
+
+    updateConversation: (state, action: PayloadAction<Conversation>) => {
+      const conversation = action.payload;
+      const index = state.conversations.findIndex(c => c.id === conversation.id);
+      if (index !== -1) {
+        state.conversations[index] = conversation;
+        if (state.activeConversation?.id === conversation.id) {
+          state.activeConversation = conversation;
+        }
+      }
+    },
+
+    removeConversation: (state, action: PayloadAction<string>) => {
+      const conversationId = action.payload;
+      state.conversations = state.conversations.filter(c => c.id !== conversationId);
+      if (state.activeConversation?.id === conversationId) {
+        state.activeConversation = null;
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -504,6 +544,10 @@ export const {
   addIceCandidate,
   clearIceCandidates,
   endCall,
+  updateGroupMembers,
+  removeGroupMembers,
+  updateConversation,
+  removeConversation
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
