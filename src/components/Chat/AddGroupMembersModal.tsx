@@ -4,6 +4,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Conversation, User } from '@/types';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddGroupMembersModalProps {
     isOpen: boolean;
@@ -46,11 +47,16 @@ export default function AddGroupMembersModal({
     // Filter users based on search and current members
     const filteredUsers = useMemo(() => {
         return allUsers.filter(user => {
+            // Check if user is already a member
             const isAlreadyMember = conversation.users.some(member => member.id === user.id);
+
+            // Check if user matches search term
             const matchesSearch =
                 user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+                user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
+            // Only show users who are not members and match search
             return !isAlreadyMember && matchesSearch;
         });
     }, [allUsers, conversation.users, searchTerm]);
@@ -65,7 +71,12 @@ export default function AddGroupMembersModal({
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className={`${currentTheme.bg} rounded-xl max-w-md w-full overflow-hidden animate-fadeInScale`}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={`${currentTheme.bg} rounded-xl max-w-md w-full overflow-hidden`}
+            >
                 {/* Header */}
                 <div className={`p-4 border-b ${currentTheme.border}`}>
                     <div className="flex items-center justify-between">
@@ -97,57 +108,103 @@ export default function AddGroupMembersModal({
                         />
                     </div>
 
-                    {/* User List */}
-                    <div className={`max-h-96 overflow-y-auto scrollbar-custom ${currentTheme.input} rounded-lg`}>
-                        {filteredUsers.length === 0 ? (
-                            <div className="p-4 text-center">
-                                <p className={currentTheme.mutedText}>No users found</p>
-                            </div>
-                        ) : (
-                            filteredUsers.map(user => (
-                                <div
-                                    key={user.id}
-                                    className={`
-                    flex items-center justify-between p-3
-                    ${currentTheme.buttonHover} transition-colors
-                  `}
-                                >
-                                    <div className="flex items-center space-x-3">
+                    {/* Selected Users */}
+                    {selectedUsers.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                            {selectedUsers.map(userId => {
+                                const user = allUsers.find(u => u.id === userId);
+                                if (!user) return null;
+
+                                return (
+                                    <motion.div
+                                        key={user.id}
+                                        initial={{ scale: 0.8, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        exit={{ scale: 0.8, opacity: 0 }}
+                                        className={`
+                      flex items-center space-x-2 px-2 py-1 rounded-full
+                      ${currentTheme.input} border ${currentTheme.border}
+                    `}
+                                    >
                                         <img
                                             src={user.avatar || `https://ui-avatars.com/api/?name=${user.firstName}`}
                                             alt={user.firstName}
-                                            className="w-10 h-10 rounded-full"
+                                            className="w-6 h-6 rounded-full"
                                         />
-                                        <div>
-                                            <p className={`font-medium ${currentTheme.text}`}>
-                                                {user.firstName} {user.lastName}
-                                            </p>
-                                            <p className={`text-sm ${currentTheme.mutedText}`}>
-                                                {user.email}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            if (selectedUsers.includes(user.id)) {
-                                                setSelectedUsers(prev => prev.filter(id => id !== user.id));
-                                            } else {
-                                                setSelectedUsers(prev => [...prev, user.id]);
-                                            }
-                                        }}
+                                        <span className={`text-sm ${currentTheme.text}`}>
+                                            {user.firstName}
+                                        </span>
+                                        <button
+                                            onClick={() => setSelectedUsers(prev => prev.filter(id => id !== user.id))}
+                                            className={`p-1 rounded-full ${currentTheme.buttonHover}`}
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* User List */}
+                    <div className={`max-h-96 overflow-y-auto scrollbar-custom ${currentTheme.input} rounded-lg`}>
+                        <AnimatePresence>
+                            {filteredUsers.length === 0 ? (
+                                <div className="p-4 text-center">
+                                    <p className={currentTheme.mutedText}>No users found</p>
+                                </div>
+                            ) : (
+                                filteredUsers.map((user, index) => (
+                                    <motion.div
+                                        key={user.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ delay: index * 0.05 }}
                                         className={`
-                      p-2 rounded-lg transition-colors
-                      ${selectedUsers.includes(user.id)
-                                                ? 'bg-blue-500 text-white'
-                                                : currentTheme.buttonHover
-                                            }
+                      flex items-center justify-between p-3
+                      ${currentTheme.buttonHover} transition-colors
+                      ${selectedUsers.includes(user.id) ? 'bg-blue-500/10' : ''}
                     `}
                                     >
-                                        <Check className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            ))
-                        )}
+                                        
+                                        <div className="flex items-center space-x-3">
+                                            <img
+                                                src={user.avatar || `https://ui-avatars.com/api/?name=${user.firstName}`}
+                                                alt={user.firstName}
+                                                className="w-10 h-10 rounded-full"
+                                            />
+                                            <div>
+                                                <p className={`font-medium ${currentTheme.text}`}>
+                                                    {user.firstName} {user.lastName}
+                                                </p>
+                                                <p className={`text-sm ${currentTheme.mutedText}`}>
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                if (selectedUsers.includes(user.id)) {
+                                                    setSelectedUsers(prev => prev.filter(id => id !== user.id));
+                                                } else {
+                                                    setSelectedUsers(prev => [...prev, user.id]);
+                                                }
+                                            }}
+                                            className={`
+                        p-2 rounded-lg transition-colors
+                        ${selectedUsers.includes(user.id)
+                                                    ? 'bg-blue-500 text-white'
+                                                    : currentTheme.buttonHover
+                                                }
+                      `}
+                                        >
+                                            <Check className="w-5 h-5" />
+                                        </button>
+                                    </motion.div>
+                                ))
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Actions */}
@@ -181,7 +238,7 @@ export default function AddGroupMembersModal({
                         </button>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

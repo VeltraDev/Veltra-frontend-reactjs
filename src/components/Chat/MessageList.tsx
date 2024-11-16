@@ -27,7 +27,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
   }, [messages, typingUsers]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex-1 overflow-y-auto p-4 scrollbar-custom">
       <div className="space-y-1">
         {messages.map((message, index) => {
           const isLastMessageFromSender =
