@@ -16,7 +16,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const typingUsers = useSelector((state: RootState) =>
     state.chat.typingUsers[conversationId] || []
-  ).filter(user => user.id !== currentUser?.id); 
+  ).filter(user => user?.id !== currentUser?.id);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,16 +26,20 @@ export default function MessageList({ messages, conversationId }: MessageListPro
     scrollToBottom();
   }, [messages, typingUsers]);
 
+
+  const validMessages = messages.filter(message =>
+    message && message.id && message.sender && message.sender.id
+  );
   return (
     <div className="flex-1 overflow-y-auto p-4 scrollbar-custom">
       <div className="space-y-1">
-        {messages.map((message, index) => {
+        {validMessages.map((message, index) => {
           const isLastMessageFromSender =
-            index === messages.length - 1 ||
-            messages[index + 1].sender.id !== message.sender.id;
+            index === validMessages.length - 1 ||
+            validMessages[index + 1]?.sender?.id !== message.sender.id;
 
           const showAvatar = isLastMessageFromSender && message.sender.id !== currentUser?.id;
-          const isPrevSenderSame = index > 0 && messages[index - 1].sender.id === message.sender.id;
+          const isPrevSenderSame = index > 0 && validMessages[index - 1]?.sender?.id === message.sender.id;
 
           return (
             <MessageItem
@@ -43,6 +47,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
               message={message}
               showAvatar={showAvatar}
               isPrevSenderSame={isPrevSenderSame}
+              onForward={() => { }} 
             />
           );
         })}
@@ -57,7 +62,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
             </div>
             <span className={`text-sm ${currentTheme.text}`}>
               {typingUsers.length === 1
-                ? `${typingUsers[0].firstName} is typing...`
+                ? `${typingUsers[0]?.firstName || 'Someone'} is typing...`
                 : `${typingUsers.length} people are typing...`
               }
             </span>

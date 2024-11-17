@@ -1,183 +1,160 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { Conversation } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
-import { toast } from 'react-hot-toast';
 import {
-    Phone, Video, Search, MoreVertical,
-    MessageSquare, Star, Archive, Bell, BellOff, Info,
-    Share2, Shield, ArrowLeft, Users
+    Menu, Phone, Video, Search, Info,
+    MoreVertical, ArrowLeft
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import UserStatus from './UserStatus';
-import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
-    conversation: Conversation;
-    onToggleChatList?: () => void;
     onToggleGroupInfo: () => void;
-    onToggleThread: () => void;
-    isMuted: boolean;
-    isStarred: boolean;
-    isArchived: boolean;
-    onToggleMute: () => void;
-    onToggleStar: () => void;
-    onToggleArchive: () => void;
+    onToggleChatList?: () => void;
 }
 
-export default function ChatHeader({
-    conversation,
-    onToggleChatList,
-    onToggleGroupInfo,
-    onToggleThread,
-    isMuted,
-    isStarred,
-    isArchived,
-    onToggleMute,
-    onToggleStar,
-    onToggleArchive
-}: ChatHeaderProps) {
+export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: ChatHeaderProps) {
     const { currentTheme } = useTheme();
-    const currentUser = useSelector((state: RootState) => state.auth.user);
-    const [showMoreActions, setShowMoreActions] = useState(false);
+    const navigate = useNavigate();
+    const currentUser = useSelector((state: RootState) => state.auth.user?.user);
+    const conversation = useSelector((state: RootState) => state.chat.activeConversation);
+    const onlineUsers = useSelector((state: RootState) => state.chat.onlineUsers);
 
-    const isAdmin = conversation?.admin?.id === currentUser?.id;
-    const isGroup = conversation?.isGroup;
-    const otherUser = !isGroup ? conversation.users.find(u => u.id !== currentUser?.id) : null;
+    const handleVideoCall = async () => {
+        if (!conversation || !currentUser) return;
 
-
-    const navigate = useNavigate()
-    const handleVideoCall = () => {
         if (conversation.isGroup) {
             toast.error('Video calls are not available in group chats');
             return;
         }
-        navigate(`/call/${conversation.id}`);
+
+        const otherUser = conversation.users.find((u: any) => u.id !== currentUser.id);
+        if (!otherUser) {
+            toast.error('Cannot find user to call');
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            navigate(`/call/${conversation.id}`);
+        } catch (err) {
+            console.error('Media permission error:', err);
+            toast.error('Please allow camera and microphone access to make a call');
+        }
     };
-    const handleVoiceCall = () => toast.info('Voice call feature coming soon');
-    const handleSearch = () => toast.info('Search feature coming soon');
-    const handleShare = () => toast.info('Share feature coming soon');
-    const handleReport = () => toast.info('Report feature coming soon');
+
+
+
+
+    // Tìm người dùng khác nếu không phải nhóm
+    const otherUser = conversation?.isGroup === false && currentUser
+        ? conversation.users?.find((u: any) => u.id !== currentUser.id)
+        : null;
+
+
+
+
+    // Kiểm tra trạng thái online của otherUser
+    const isOnline = otherUser
+        ? onlineUsers.some((user: any) => user.id === otherUser.id)
+        : false;
+
+   
+
+
+
 
     return (
-        <div className={`px-4 py-3 ${currentTheme.bg} border-b ${currentTheme.border} flex items-center justify-between`}>
-            <div className="flex items-center space-x-3">
+        <div className={`p-4 border-b ${currentTheme.border} flex items-center justify-between bg-opacity-90 backdrop-blur-sm`}>
+            <div className="flex items-center space-x-4">
                 <button
                     onClick={onToggleChatList}
-                    className={`lg:hidden p-2 rounded-xl ${currentTheme.buttonHover}`}
+                    className="lg:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                    <ArrowLeft className={`w-5 h-5 ${currentTheme.iconColor}`} />
+                    <ArrowLeft className="w-5 h-5" />
                 </button>
 
-                <div
-                    className="flex items-center space-x-3 cursor-pointer group"
-                    onClick={onToggleGroupInfo}
-                >
+                {/* Avatar */}
+                {conversation && (
                     <div className="relative">
                         <img
-                            src={conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`}
-                            alt={conversation.name}
-                            className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20"
+                            src={
+                                conversation.isGroup
+                                    ? conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`
+                                    : otherUser?.picture || `https://ui-avatars.com/api/?name=${otherUser?.name}`
+                            }
+                            alt={conversation.isGroup ? conversation.name : otherUser?.name}
+                            className="w-10 h-10 rounded-full object-cover"
                         />
-                        {isGroup ? (
-                            <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1">
-                                <Users className="w-3 h-3 text-white" />
-                            </div>
-                        ) : otherUser && (
-                            <UserStatus
-                                userId={otherUser.id}
-                                className="absolute -bottom-1 -right-1"
-                            />
+                        {!conversation.isGroup && (
+                            <div className={`
+            absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+            border-2 border-white dark:border-gray-900
+            transition-all duration-200
+          `} />
                         )}
-                    </div>
 
+                    </div>
+                )}
+
+                {/* Info */}
+                {conversation && (
                     <div>
-                        <h2 className={`font-semibold ${currentTheme.headerText} flex items-center space-x-2`}>
-                            <span>{conversation.name}</span>
-                            {isGroup && isAdmin && (
-                                <span className="text-xs text-blue-500">(Admin)</span>
-                            )}
+                        <h2 className={`font-semibold ${currentTheme.text}`}>
+                            {conversation.isGroup ? conversation.name : `${otherUser?.firstName ?? 'No First Name'} ${otherUser?.lastName ?? 'No Last Name'}` || "No User"}
                         </h2>
                         <p className={`text-sm ${currentTheme.mutedText}`}>
-                            {isGroup ? (
-                                `${conversation.users.length} members`
-                            ) : otherUser && (
-                                <UserStatus userId={otherUser.id} showText />
-                            )}
+                            {conversation.isGroup
+                                ? `${conversation.users?.length || 0} members`
+                                : otherUser ? (isOnline ? 'Online' : 'Offline') : 'User not found'}
                         </p>
+
                     </div>
-                </div>
+                )}
+
+
             </div>
 
+            {/* Actions */}
             <div className="flex items-center space-x-2">
+                {!conversation.isGroup && (
+                    <>
+                        <button
+                            className={`p-2 rounded-xl ${currentTheme.buttonHover}`}
+                            onClick={() => toast.info('Voice call coming soon')}
+                        >
+                            <Phone className={`w-5 h-5 ${currentTheme.iconColor}`} />
+                        </button>
+                        <button
+                            className={`p-2 rounded-xl ${currentTheme.buttonHover}`}
+                            onClick={handleVideoCall}
+                        >
+                            <Video className={`w-5 h-5 ${currentTheme.iconColor}`} />
+                        </button>
+                    </>
+                )}
                 <button
-                    onClick={handleVoiceCall}
-                    className={`p-2 rounded-xl ${currentTheme.buttonHover} hidden sm:block`}
-                    title="Voice Call"
-                >
-                    <Phone className={`w-5 h-5 ${currentTheme.iconColor}`} />
-                </button>
-
-                <button
-                    onClick={handleVideoCall}
-                    className={`p-2 rounded-xl ${currentTheme.buttonHover} hidden sm:block`}
-                    title="Video Call"
-                >
-                    <Video className={`w-5 h-5 ${currentTheme.iconColor}`} />
-                </button>
-
-                <button
-                    onClick={handleSearch}
                     className={`p-2 rounded-xl ${currentTheme.buttonHover}`}
-                    title="Search in Chat"
+                    onClick={() => toast.info('Search coming soon')}
                 >
                     <Search className={`w-5 h-5 ${currentTheme.iconColor}`} />
                 </button>
-
-                <div className="relative">
-                    <button
-                        onClick={() => setShowMoreActions(!showMoreActions)}
-                        className={`p-2 rounded-xl ${currentTheme.buttonHover} ${showMoreActions ? 'bg-blue-500/10' : ''
-                            }`}
-                    >
-                        <MoreVertical className={`w-5 h-5 ${showMoreActions ? 'text-blue-500' : currentTheme.iconColor
-                            }`} />
-                    </button>
-
-                    {showMoreActions && (
-                        <div className={`
-              absolute right-0 top-full mt-2 w-56
-              ${currentTheme.bg} rounded-xl shadow-lg
-              border ${currentTheme.border}
-              py-1 z-50
-            `}>
-                            {[
-                                { icon: Info, label: 'View Info', onClick: onToggleGroupInfo },
-                                { icon: isMuted ? Bell : BellOff, label: isMuted ? 'Unmute' : 'Mute', onClick: onToggleMute },
-                                { icon: Star, label: isStarred ? 'Unstar' : 'Star', onClick: onToggleStar },
-                                { icon: Archive, label: isArchived ? 'Unarchive' : 'Archive', onClick: onToggleArchive },
-                                { icon: MessageSquare, label: 'Start Thread', onClick: onToggleThread },
-                                { icon: Shield, label: 'Report', onClick: handleReport },
-                                { icon: Share2, label: 'Share Chat', onClick: handleShare }
-                            ].map((item, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => {
-                                        item.onClick();
-                                        setShowMoreActions(false);
-                                    }}
-                                    className={`
-                    w-full px-4 py-2 text-left flex items-center space-x-3
-                    ${currentTheme.buttonHover} transition-colors
-                  `}
-                                >
-                                    <item.icon className={`w-4 h-4 ${currentTheme.iconColor}`} />
-                                    <span className={currentTheme.text}>{item.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                <button
+                    className={`p-2 rounded-xl ${currentTheme.buttonHover}`}
+                    onClick={onToggleGroupInfo}
+                >
+                    <Info className={`w-5 h-5 ${currentTheme.iconColor}`} />
+                </button>
+                <button
+                    className={`p-2 rounded-xl ${currentTheme.buttonHover}`}
+                    onClick={() => toast.info('More options coming soon')}
+                >
+                    <MoreVertical className={`w-5 h-5 ${currentTheme.iconColor}`} />
+                </button>
             </div>
         </div>
     );
