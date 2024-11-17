@@ -7,6 +7,8 @@ import {
 } from "../services/api/conversationService";
 
 // Types
+
+
 export interface User {
   id: string;
   email: string;
@@ -39,22 +41,37 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string;
 }
-
+interface CallState {
+  incomingCall: {
+    from: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      avatar?: string | null;
+    };
+    offer: RTCSessionDescriptionInit;
+  } | null;
+  isCallActive: boolean;
+  callAnswered: RTCSessionDescriptionInit | null;
+  iceCandidates: RTCIceCandidate[];
+}
 // Update the ChatState interface
 interface ChatState {
   conversations: Conversation[];
   activeConversation: Conversation | null;
   messages: Message[];
-  status: "idle" | "loading" | "succeeded" | "failed";
+  isLoading: boolean;
   error: string | null;
-  onlineUsers: string[];
   typingUsers: Record<string, User[]>;
+  onlineUsers: User[]; // Changed to store full User objects
   call: {
-    isIncoming: boolean;
-    isActive: boolean;
-    recipientId: string | null;
-    callerId: string | null;
-    offer: RTCSessionDescriptionInit | null;
+    incomingCall: null | {
+      from: User;
+      offer: RTCSessionDescriptionInit;
+    };
+    isCallActive: boolean;
+    callAnswered: RTCSessionDescriptionInit | null;
+    iceCandidates: RTCIceCandidate[];
   };
 }
 
@@ -62,17 +79,16 @@ const initialState: ChatState = {
   conversations: [],
   activeConversation: null,
   messages: [],
-  status: "idle",
+  isLoading: false,
   error: null,
-  onlineUsers: [],
   typingUsers: {},
+  onlineUsers: [],
   call: {
-    isIncoming: false,
-    isActive: false,
-    recipientId: null,
-    callerId: null,
-    offer: null,
-  },
+    incomingCall: null,
+    isCallActive: false,
+    callAnswered: null,
+    iceCandidates: []
+  }
 };
 
 // Helper function to sort conversations by latest message
@@ -222,36 +238,47 @@ const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    setIncomingCall: (state, action) => {
-      state.call = {
-        ...state.call,
-        isIncoming: true,
-        isActive: true,
-        recipientId: null,
-        callerId: action.payload.from,
-        offer: action.payload.offer
-      };
+  setIncomingCall: (state, action: PayloadAction<{
+      from: User;
+      offer: RTCSessionDescriptionInit;
+      conversationId: string;
+    }>) => {
+      state.call.incomingCall = action.payload;
+      state.call.isCallActive = true;
     },
-    setCallAnswered: (state, action) => {
-      state.call.offer = action.payload;
-    },
-    addIceCandidate: (state, action: PayloadAction<RTCIceCandidate>) => {
-      state.call.iceCandidates.push(action.payload);
-    },
-    clearIceCandidates: (state) => {
-      state.call.iceCandidates = [];
-    },
-    endCall: (state) => {
-      state.call = initialState.call;
-    },
-    updateOnlineUsers: (state, action) => {
-      const { user, status } = action.payload;
-      if (status === "online") {
-        if (!state.onlineUsers.includes(user.id)) {
-          state.onlineUsers.push(user.id);
+  setCallAnswered: (state, action: PayloadAction<RTCSessionDescriptionInit>) => {
+    state.call.callAnswered = action.payload;
+    state.call.isCallActive = true;
+  },
+  addIceCandidate: (state, action: PayloadAction<RTCIceCandidate>) => {
+    state.call.iceCandidates.push(action.payload);
+  },
+  clearIceCandidates: (state) => {
+    state.call.iceCandidates = [];
+  },
+  endCall: (state) => {
+    state.call.incomingCall = null;
+    state.call.isCallActive = false;
+    state.call.callAnswered = null;
+    state.call.iceCandidates = [];
+  },
+ updateOnlineUsers: (state, action: PayloadAction<User[] | { user: User; status: 'online' | 'offline' }>) => {
+      // If receiving initial online users list
+      if (Array.isArray(action.payload)) {
+        state.onlineUsers = action.payload;
+      } 
+      // If receiving single user status update
+      else {
+        const { user, status } = action.payload;
+        if (status === 'online') {
+          // Add user if not already online
+          if (!state.onlineUsers.find(u => u.id === user.id)) {
+            state.onlineUsers.push(user);
+          }
+        } else {
+          // Remove user from online list
+          state.onlineUsers = state.onlineUsers.filter(u => u.id !== user.id);
         }
-      } else {
-        state.onlineUsers = state.onlineUsers.filter((id) => id !== user.id);
       }
     },
     resetPagination: (state) => {
