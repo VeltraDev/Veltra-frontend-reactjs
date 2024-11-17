@@ -1,48 +1,58 @@
 import { io, Socket } from "socket.io-client";
 import { store } from "../redux/store";
 import {
-   updateMessagesAndConversations,
-    removeUserFromConversation,
-    addNewConversation,
-    getConversations,
-    updateOnlineUsers,
-    setTypingUser,
-    removeTypingUser,
-    addMessage,
-    setCallAnswered,
-    setIncomingCall,
-    endCall,
-    addIceCandidate,
-    updateConversation,
-    removeConversation,
-    updateGroupMembers,
-    removeGroupMembers,
+  updateMessagesAndConversations,
+  removeUserFromConversation,
+  addNewConversation,
+  getConversations,
+  updateOnlineUsers,
+  setTypingUser,
+  removeTypingUser,
+  addMessage,
+  setCallAnswered,
+  setIncomingCall,
+  endCall,
+  addIceCandidate,
+  updateConversation,
+  removeConversation,
+  updateGroupMembers,
+  removeGroupMembers,
+  User,
 } from "../redux/chatSlice";
+import { toast } from "react-hot-toast";
 import React from "react";
-import toast from "react-hot-toast";
-import { createRoot } from "react-dom/client";
-import CallNotification from "@/components/chat/CallNotification";
-
-interface MessagePayload {
-  conversationId: string;
-  content: string;
-  files?: Array<{
-    url: string;
-    type: 'image' | 'document';
-  }>;
-}
+import { createRoot } from 'react-dom/client';
+import CallNotification from "../components/chat/CallNotification";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 class SocketService {
   public socket: Socket | null = null;
   private readonly url: string = "wss://veltra2.duckdns.org";
   private typingTimeout: Record<string, NodeJS.Timeout> = {};
-  private callNotificationContainer: HTMLDivElement | null = null;
+  private notificationRoot: ReturnType<typeof createRoot> | null = null;
+  private notificationContainer: HTMLDivElement | null = null;
 
-  constructor() {
-      // Create container for call notifications
-    this.callNotificationContainer = document.createElement('div');
-    this.callNotificationContainer.id = 'call-notifications';
-    document.body.appendChild(this.callNotificationContainer);
+  private createNotificationContainer() {
+    if (!this.notificationContainer) {
+      this.notificationContainer = document.createElement('div');
+      this.notificationContainer.style.position = 'fixed';
+      this.notificationContainer.style.top = '20px';
+      this.notificationContainer.style.right = '20px';
+      this.notificationContainer.style.zIndex = '9999';
+      document.body.appendChild(this.notificationContainer);
+      this.notificationRoot = createRoot(this.notificationContainer);
+    }
+  }
+
+  private cleanupNotification() {
+    if (this.notificationRoot) {
+      this.notificationRoot.unmount();
+      this.notificationRoot = null;
+    }
+    if (this.notificationContainer) {
+      document.body.removeChild(this.notificationContainer);
+      this.notificationContainer = null;
+    }
   }
 
   public connect(): void {
@@ -82,169 +92,92 @@ class SocketService {
 
     this.socket.on("disconnect", () => {
       console.log("Disconnected from chat server");
-    });
-  // Call events
-    this.socket.on("receive-call", (data) => {
-      console.log('asfasf')
-  if (!this.callNotificationContainer) return;
-
-  // Create a root for call notification
-  const notificationRoot = createRoot(this.callNotificationContainer);
-
-  // Render the CallNotification component
-  notificationRoot.render(
-    React.createElement(CallNotification, {
-      caller: data.from,
-      onAccept: () => {
-        store.dispatch(setIncomingCall({ from: data.from, offer: data.offer }));
-        notificationRoot.unmount();
-      },
-      onReject: () => {
-        this.socket?.emit('call-rejected', { to: data.from.id });
-        notificationRoot.unmount();
-      }
-    })
-  );
+      this.cleanupNotification();
     });
 
-
-    // User status events
-    this.socket.on("userOnline", ({ user }) => {
-      store.dispatch(updateOnlineUsers({ user, status: "online" }));
+    // Online users events
+    this.socket.on("onlineUsers", (data: { users: User[] }) => {
+      console.log("Received initial online users:", data.users);
+      store.dispatch(updateOnlineUsers(data.users));
+    });
+this.socket.on("userOnline", (data: { user: User }) => {
+      console.log("User connected:", data.user);
+      store.dispatch(updateOnlineUsers({ user: data.user, status: 'online' }));
     });
 
-    this.socket.on("userOffline", ({ user }) => {
-      store.dispatch(updateOnlineUsers({ user, status: "offline" }));
+    this.socket.on("userOffline", (data: { user: User }) => {
+      console.log("User disconnected:", data.user);
+      store.dispatch(updateOnlineUsers({ user: data.user, status: 'offline' }));
     });
 
     // Message events
     this.socket.on("receiveMessage", (message) => {
       store.dispatch(addMessage(message));
-      // Fetch updated conversations to get latest order
       store.dispatch(getConversations());
     });
 
-    // this.socket.on("messageSent", (message) => {
-    //   store.dispatch(addMessage(message));
-    //   // Fetch updated conversations to get latest order
-    //   store.dispatch(getConversations());
-    // });
+    // Call events
+  this.socket.on("receive-call", (data) => {
+    console.log("Received call:", data);
+    const { from, offer, conversationId } = data;
 
-    // Conversation events
-    this.socket.on("joinedConversation", ({ conversation }) => {
-      store.dispatch(addNewConversation(conversation));
+    // Dispatch to Redux
+    store.dispatch(setIncomingCall({
+      from,
+      offer,
+      conversationId
+    }));
+
+    // Show notification
+    this.showCallNotification({
+      from,
+      offer,
+      conversationId,
+      message: `${from.firstName} ${from.lastName} is calling you...`
     });
-
-    this.socket.on("newConversation", (conversation) => {
-      store.dispatch(addNewConversation(conversation));
-    });
-
-    this.socket.on("userJoined", ({ user, conversationId }) => {
-      store.dispatch(getConversations());
-    });
-
-    this.socket.on("userLeft", ({ user, conversationId }) => {
-      store.dispatch(
-        removeUserFromConversation({ conversationId, userId: user.id })
-      );
-    });
-
-  this.socket.on("call-user", ({ from, offer, conversationId }) => {
-    const conversation = store
-      .getState()
-      .chat.conversations.find((c) => c.id === conversationId);
-
-    if (!conversation) return;
-
-    // Show incoming call notification
-    toast(
-      React.createElement(
-        "div",
-        { className: "flex flex-col space-y-2" },
-        React.createElement(
-          "div",
-          { className: "flex items-center space-x-3" },
-          React.createElement("img", {
-            src:
-              from.avatar ||
-              `https://ui-avatars.com/api/?name=${from.firstName}`,
-            alt: from.firstName,
-            className: "w-10 h-10 rounded-full",
-          }),
-          React.createElement(
-            "div",
-            null,
-            React.createElement(
-              "p",
-              { className: "font-semibold" },
-              `${from.firstName} is calling...`
-            ),
-            React.createElement(
-              "p",
-              { className: "text-sm text-gray-500" },
-              "Video Call"
-            )
-          )
-        ),
-        React.createElement(
-          "div",
-          { className: "flex justify-end space-x-2" },
-          React.createElement(
-            "button",
-            {
-              onClick: () => {
-                toast.dismiss();
-                this.socket?.emit("reject-call", {
-                  to: from.id,
-                  conversationId,
-                });
-              },
-              className:
-                "px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600",
-            },
-            "Decline"
-          ),
-          React.createElement(
-            "button",
-            {
-              onClick: () => {
-                toast.dismiss();
-                store.dispatch(setIncomingCall({ from: from.id, offer }));
-                window.location.href = `/call/${conversationId}`;
-              },
-              className:
-                "px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600",
-            },
-            "Answer"
-          )
-        )
-      ),
-      { duration: 30000, position: "top-center" }
-    );
   });
+
+    this.socket.on("call-answered", (data) => {
+      
+      store.dispatch(setCallAnswered(data.answer));
+    });
+
+    this.socket.on("ice-candidate", (data) => {
     
-      // Group management events
-    this.socket.on("usersAdded", ({ conversation, message, addedUsers }: GroupUpdateEvent) => {
+      store.dispatch(addIceCandidate(data.candidate));
+    });
+
+    this.socket.on("call-ended", () => {
+    
+      store.dispatch(endCall());
+      this.cleanupNotification();
+      toast.info("Call ended");
+    });
+
+    this.socket.on("call-rejected", () => {
+    
+      store.dispatch(endCall());
+      this.cleanupNotification();
+      toast.error("Call rejected");
+    });
+
+    // Group management events
+    this.socket.on("usersAdded", ({ conversation, message, addedUsers }) => {
       store.dispatch(updateGroupMembers({ conversation, addedUsers }));
       toast.success(message);
     });
 
-    this.socket.on("conversationAdminGroupUpdated", ({ conversation, message }: GroupUpdateEvent) => {
+    this.socket.on("conversationAdminGroupUpdated", ({ conversation, message }) => {
       store.dispatch(updateConversation(conversation));
       toast.success(message);
     });
 
-    this.socket.on("conversationGroupInfoUpdated", ({ conversation, message }: GroupUpdateEvent) => {
+    this.socket.on("conversationGroupInfoUpdated", ({ conversation, message }) => {
       store.dispatch(updateConversation(conversation));
       toast.success(message);
     });
 
-    this.socket.on("stopTypingByAdminDeleted", ({ conversationId }) => {
-      toast.error("You have been removed from this group");
-      store.dispatch(removeConversation(conversationId));
-    });
-
-    this.socket.on("usersRemovedFromGroup", ({ conversation, message, removedUsers }: GroupUpdateEvent) => {
+    this.socket.on("usersRemovedFromGroup", ({ conversation, message, removedUsers }) => {
       store.dispatch(removeGroupMembers({ conversation, removedUsers }));
       toast.info(message);
     });
@@ -263,88 +196,138 @@ class SocketService {
       store.dispatch(addNewConversation(conversation));
       toast.success(message);
     });
+
     // Typing events
-    this.socket.on("typingInfo", ({ conversationId, user }) => {
+this.socket.on("typingInfo", ({ conversationId, user }) => {
       store.dispatch(setTypingUser({ conversationId, user }));
     });
 
     this.socket.on("stopTypingInfo", ({ conversationId, user }) => {
       store.dispatch(removeTypingUser({ conversationId, userId: user.id }));
     });
-
-    this.socket.on("receive-call", ({ from, offer }) => {
-      store.dispatch(setIncomingCall({ from, offer }));
-    });
-
-    this.socket.on("call-answered", ({ answer }) => {
-      store.dispatch(setCallAnswered(answer));
-    });
-
-    this.socket.on("ice-candidate", ({ candidate }) => {
-      store.dispatch(addIceCandidate(candidate));
-    });
-
-    this.socket.on("call-ended", () => {
-      store.dispatch(endCall());
-    });
-    
-
   }
 
-  public joinConversation(conversationId: string): void {
-    if (this.socket) {
-      this.socket.emit("joinConversation", { conversationId });
+private showCallNotification(data: { 
+    from: any; 
+    offer: RTCSessionDescriptionInit;
+    conversationId?: string; // conversationId có thể không có từ server
+    message: string;
+  }) {
+    console.log("Showing call notification:", data);
+    
+    // Lấy conversationId từ Redux store nếu không có từ server
+    const activeConversationId = store.getState().chat.activeConversation?.id;
+    const conversationId = data.conversationId || activeConversationId;
+
+    if (!conversationId) {
+      console.error("No conversationId available");
+      return;
+    }
+
+    this.createNotificationContainer();
+
+    if (this.notificationRoot) {
+      this.notificationRoot.render(
+        React.createElement(ThemeProvider, null,
+          React.createElement(CallNotification, {
+            caller: data.from,
+            conversationId, // Sử dụng conversationId từ store nếu server không trả về
+            onAccept: () => {
+              store.dispatch(setIncomingCall({
+                from: data.from,
+                offer: data.offer
+              }));
+              window.location.href = `/call/${conversationId}`;
+              this.cleanupNotification();
+            },
+            onReject: () => {
+              if (this.socket) {
+                this.socket.emit('call-rejected', { to: data.from.id });
+                store.dispatch(endCall());
+                this.cleanupNotification();
+              }
+            }
+          })
+        )
+      );
+
+      // Auto cleanup after 30 seconds
+      setTimeout(() => {
+        this.cleanupNotification();
+      }, 30000);
     }
   }
 
-public async sendMessage(payload: Partial<MessagePayload>): Promise<void> {
+ 
+ public callUser(conversationId: string, offer: RTCSessionDescriptionInit): void {
   if (!this.socket) return;
-
-  // Kiểm tra payload
-  if (!payload.conversationId) {
-    console.error('Missing conversationId');
-    return;
-  }
-
-  // Đảm bảo content và files luôn tồn tại
-  const messagePayload = {
-    conversationId: payload.conversationId,
-    content: payload.content || '',
-    files: payload.files || []
-  };
-
-  try {
-    // Sử dụng callback để xử lý phản hồi từ server
-    this.socket.emit("sendMessage", messagePayload, (response: any) => {
-      if (response?.id) {
-        console.log('Message sent successfully:', response);
-      } else {
-        console.error('Failed to send message:', response?.message || 'Unknown error');
-      }
-    });
-
-    // Gửi sự kiện dừng nhập văn bản (stop typing)
-    this.sendStopTyping(payload.conversationId);
-  } catch (error) {
-    console.error('Error sending message:', error);
-  }
+  console.log("Calling user with conversation:", { conversationId, offer });
+  this.socket.emit('call-user', { 
+    conversationId,
+    offer 
+  });
 }
+  public answerCall(userId: string, answer: RTCSessionDescriptionInit): void {
+    if (!this.socket) return;
+   
+    this.socket.emit('answer-call', { 
+      to: userId,
+      answer 
+    });
+  }
 
+  public sendIceCandidate(userId: string, candidate: RTCIceCandidate): void {
+    if (!this.socket) return;
+  
+    this.socket.emit('send-ice-candidate', { 
+      to: userId,
+      candidate 
+    });
+  }
+
+  public endCall(userId: string): void {
+    if (!this.socket) return;
+   
+    this.socket.emit('end-call', { to: userId });
+  }
+
+  // Message methods
+  public async sendMessage(payload: { 
+    conversationId: string; 
+    content: string; 
+    files?: Array<{ url: string; type: 'image' | 'document' }> 
+  }): Promise<void> {
+    if (!this.socket) return;
+
+    try {
+      this.socket.emit("sendMessage", payload, (response: any) => {
+        if (response?.id) {
+console.log('Message sent successfully:', response);
+        } else {
+          console.error('Failed to send message:', response?.message || 'Unknown error');
+        }
+      });
+
+      this.sendStopTyping(payload.conversationId);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  }
+
+  // Typing methods
   public sendTyping(conversationId: string): void {
     if (!this.socket) return;
 
-    // Clear existing timeout
     if (this.typingTimeout[conversationId]) {
       clearTimeout(this.typingTimeout[conversationId]);
     }
 
-    // Send typing event
     this.socket.emit("typing", { conversationId });
 
-    // Set new timeout to stop typing
     this.typingTimeout[conversationId] = setTimeout(() => {
       this.sendStopTyping(conversationId);
-    }, 3000); // Stop typing after 3 seconds of inactivity
+    }, 3000);
   }
 
   public sendStopTyping(conversationId: string): void {
@@ -359,6 +342,7 @@ public async sendMessage(payload: Partial<MessagePayload>): Promise<void> {
   }
 
   public disconnect(): void {
+    this.cleanupNotification();
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
