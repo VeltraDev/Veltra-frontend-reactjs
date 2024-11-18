@@ -32,17 +32,39 @@ export default function VideoCallPage() {
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const callTimerRef = useRef<NodeJS.Timeout>();
 
+    const [isCallInitialized, setIsCallInitialized] = useState(false);
+
+
     const currentUser = useSelector((state: RootState) => state.auth.user?.user);
     const conversation = useSelector((state: RootState) =>
         state.chat.conversations.find(c => c.id === conversationId)
     );
+
     const incomingCall = useSelector((state: RootState) => state.chat.call.incomingCall);
     const iceCandidates = useSelector((state: RootState) => state.chat.call.iceCandidates);
+    const peerConnection = new RTCPeerConnection();
+    // Using peerConnection somewhere
 
     useEffect(() => {
-        if (!conversationId || !conversation || !currentUser) {
-            toast.error('Invalid conversation');
-            navigate('/chat');
+        if (incomingCall) {
+            const handleIncomingCall = async () => {
+                // Logic nhận cuộc gọi
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                socketService.answerCall(incomingCall.conversationId, incomingCall.from.id, answer);
+            };
+
+            handleIncomingCall();
+        }
+    }, [incomingCall]);
+
+
+    useEffect(() => {
+        if (isCallInitialized || !conversationId || !conversation || !currentUser) {
+            // toast.error('Invalid conversation');
+            // navigate('/chat');
             return;
         }
 
@@ -68,18 +90,19 @@ export default function VideoCallPage() {
             }
 
             try {
-                // Request media permissions first
+                // Yêu cầu truy cập camera và mic
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true
                 });
 
                 setLocalStream(stream);
+
                 if (localVideoRef.current) {
                     localVideoRef.current.srcObject = stream;
                 }
 
-                // Create RTCPeerConnection
+                // Tạo RTCPeerConnection
                 const peerConnection = new RTCPeerConnection({
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
@@ -88,63 +111,71 @@ export default function VideoCallPage() {
                     ]
                 });
 
-                // Add local stream
-                stream.getTracks().forEach(track => {
+                // Thêm track từ luồng địa phương
+                stream.getTracks().forEach((track) => {
                     peerConnection.addTrack(track, stream);
                 });
 
-                // Handle incoming stream
+                peerConnectionRef.current = peerConnection;
+
+                // Xử lý ICE candidate
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
+                        if (otherUser) {
+                            socketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
+                        }
+                    }
+                };
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate && peerConnection.iceGatheringState !== 'complete') {
+                        socketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
+                    }
+                };
+
+                // Xử lý remote stream
                 peerConnection.ontrack = (event) => {
-                    // console.log('Received remote track:', event.streams[0]);
                     setRemoteStream(event.streams[0]);
                     if (remoteVideoRef.current) {
                         remoteVideoRef.current.srcObject = event.streams[0];
                     }
                 };
 
-                // Handle ICE candidates
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        // console.log('Sending ICE candidate:', event.candidate);
-                        socketService.sendIceCandidate(otherUser.id, event.candidate);
-                    }
-                };
-
-                peerConnectionRef.current = peerConnection;
-
-                // If this is the caller, create and send offer
+                // Caller tạo offer
                 if (!incomingCall) {
-                    console.log('Creating offer as caller');
                     const offer = await peerConnection.createOffer();
                     await peerConnection.setLocalDescription(offer);
-                    socketService.callUser(otherUser.id, offer); // Gửi user ID thay vì conversation ID
-                }
-                // If this is the callee, set remote description and create answer
-                else {
-                    console.log('Creating answer as callee');
+                    const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
+                    if (otherUser) {
+                        socketService.callUser(conversationId, otherUser.id, offer);
+                    }
+                } else {
+                    // Callee nhận và trả lời offer
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
                     const answer = await peerConnection.createAnswer();
                     await peerConnection.setLocalDescription(answer);
-                    socketService.answerCall(incomingCall.from.id, answer);
+
+                    const conversationId = incomingCall.conversationId; // Lấy ID cuộc trò chuyện từ incomingCall
+                    const fromUserId = incomingCall.from.id; // Người gọi
+
+                    // Truyền đầy đủ tham số
+                    socketService.answerCall(conversationId, fromUserId, answer);
                 }
 
                 setIsConnecting(false);
-
-                // Start call timer
                 callTimerRef.current = setInterval(() => {
-                    setCallDuration(prev => prev + 1);
+                    setCallDuration((prev) => prev + 1);
                 }, 1000);
-
             } catch (error) {
                 console.error('Error initializing call:', error);
-                toast.error('Failed to access camera/microphone');
+                toast.error('Không thể truy cập camera/microphone.');
                 handleEndCall();
             }
         };
 
 
         initializeCall();
-
+        setIsCallInitialized(true);
         return () => {
             cleanup();
         };
@@ -157,13 +188,19 @@ export default function VideoCallPage() {
 
             for (const candidate of iceCandidates) {
                 try {
-                    await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-                    console.log('Added ICE candidate:', candidate);
+                    // Check if signalingState is 'closed' before adding the candidate
+                    if (peerConnectionRef.current.signalingState !== 'closed') {
+                        await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+                        console.log('Added ICE candidate:', candidate);
+                    } else {
+                        console.log('PeerConnection is closed. Cannot add ICE candidate.');
+                    }
                 } catch (error) {
                     console.error('Error adding ICE candidate:', error);
                 }
             }
         };
+
 
         addIceCandidates();
     }, [iceCandidates]);
@@ -181,14 +218,24 @@ export default function VideoCallPage() {
         dispatch(endCall());
     };
 
+
     const handleEndCall = () => {
-        const otherUser = conversation?.users.find(u => u.id !== currentUser?.id);
-        if (otherUser) {
-            socketService.endCall(otherUser.id);
+        if (!conversation || !currentUser) {
+            console.error('Invalid conversation or user context');
+            return;
         }
+
+        const otherUser = conversation.users.find((u) => u.id !== currentUser.id);
+        if (otherUser) {
+            const conversationId = conversation.id; // Lấy ID cuộc trò chuyện
+            const toUserId = otherUser.id; // Lấy ID người dùng bên kia
+            socketService.endCall(conversationId, toUserId); // Gọi endCall với đủ tham số
+        }
+
         cleanup();
         navigate('/chat');
     };
+
 
     const toggleMic = () => {
         if (localStream) {

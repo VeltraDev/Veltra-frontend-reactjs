@@ -117,28 +117,25 @@ this.socket.on("userOnline", (data: { user: User }) => {
     });
 
     // Call events
-  this.socket.on("receive-call", (data) => {
-    console.log("Received call:", data);
-    const { from, offer, conversationId } = data;
+ this.socket.on("receive-call", (data) => {
+  console.log("Received call:", data);
+  const { from, conversationId, offer } = data;
 
-    // Dispatch to Redux
-    store.dispatch(setIncomingCall({
-      from,
-      offer,
-      conversationId
-    }));
+  // Cập nhật Redux để lưu trạng thái cuộc gọi đến
+  store.dispatch(setIncomingCall({ from, conversationId, offer }));
 
-    // Show notification
-    this.showCallNotification({
-      from,
-      offer,
-      conversationId,
-      message: `${from.firstName} ${from.lastName} is calling you...`
-    });
+  // Hiển thị thông báo cuộc gọi
+  this.showCallNotification({
+    from,
+    conversationId,
+    offer,
+    message: `${from.firstName} ${from.lastName} is calling you...`
   });
+});
+
 
     this.socket.on("call-answered", (data) => {
-      
+      console.log('hehe')
       store.dispatch(setCallAnswered(data.answer));
     });
 
@@ -208,88 +205,100 @@ this.socket.on("typingInfo", ({ conversationId, user }) => {
   }
 
 private showCallNotification(data: { 
-    from: any; 
-    offer: RTCSessionDescriptionInit;
-    conversationId?: string; // conversationId có thể không có từ server
-    message: string;
-  }) {
-    console.log("Showing call notification:", data);
-    
-    // Lấy conversationId từ Redux store nếu không có từ server
-    const activeConversationId = store.getState().chat.activeConversation?.id;
-    const conversationId = data.conversationId || activeConversationId;
+  from: any; 
+  conversationId: string; 
+  offer: RTCSessionDescriptionInit;
+  message: string;
+}) {
+  console.log("Showing call notification:", data);
+  
+  this.createNotificationContainer();
 
-    if (!conversationId) {
-      console.error("No conversationId available");
-      return;
-    }
-
-    this.createNotificationContainer();
-
-    if (this.notificationRoot) {
-      this.notificationRoot.render(
-        React.createElement(ThemeProvider, null,
-          React.createElement(CallNotification, {
-            caller: data.from,
-            conversationId, // Sử dụng conversationId từ store nếu server không trả về
-            onAccept: () => {
-              store.dispatch(setIncomingCall({
-                from: data.from,
-                offer: data.offer
-              }));
-              window.location.href = `/call/${conversationId}`;
+  if (this.notificationRoot) {
+    this.notificationRoot.render(
+      React.createElement(ThemeProvider, null,
+        React.createElement(CallNotification, {
+          caller: data.from,
+          conversationId: data.conversationId,
+          onAccept: () => {
+            store.dispatch(setIncomingCall({
+              from: data.from,
+              conversationId: data.conversationId,
+              offer: data.offer
+            }));
+            window.location.href = `/call/${data.conversationId}`;
+            this.cleanupNotification();
+          },
+          onReject: () => {
+            if (this.socket) {
+              this.socket.emit('call-rejected', { conversationId: data.conversationId, to: data.from.id });
+              store.dispatch(endCall());
               this.cleanupNotification();
-            },
-            onReject: () => {
-              if (this.socket) {
-                this.socket.emit('call-rejected', { to: data.from.id });
-                store.dispatch(endCall());
-                this.cleanupNotification();
-              }
             }
-          })
-        )
-      );
+          }
+        })
+      )
+    );
 
-      // Auto cleanup after 30 seconds
-      setTimeout(() => {
-        this.cleanupNotification();
-      }, 30000);
-    }
+    // Tự động tắt thông báo sau 30 giây
+    setTimeout(() => {
+      this.cleanupNotification();
+    }, 30000);
   }
+}
+
 
  
- public callUser(conversationId: string, offer: RTCSessionDescriptionInit): void {
+public callUser(conversationId: string, toUserId: string, offer: RTCSessionDescriptionInit): void {
   if (!this.socket) return;
-  console.log("Calling user with conversation:", { conversationId, offer });
-  this.socket.emit('call-user', { 
+
+  console.log("Calling user with conversation:", { conversationId, toUserId, offer });
+  
+  // Gửi yêu cầu gọi với conversationId và offer
+  this.socket.emit('call-user', {
     conversationId,
-    offer 
+    to: toUserId,
+    offer
   });
 }
-  public answerCall(userId: string, answer: RTCSessionDescriptionInit): void {
-    if (!this.socket) return;
-   
-    this.socket.emit('answer-call', { 
-      to: userId,
-      answer 
-    });
-  }
 
-  public sendIceCandidate(userId: string, candidate: RTCIceCandidate): void {
-    if (!this.socket) return;
+public answerCall(conversationId: string, fromUserId: string, answer: RTCSessionDescriptionInit): void {
+  if (!this.socket) return;
+
+  console.log("Answering call:", { conversationId, fromUserId, answer });
   
-    this.socket.emit('send-ice-candidate', { 
-      to: userId,
-      candidate 
-    });
-  }
+  // Gửi trả lời với conversationId và answer
+  this.socket.emit('answer-call', {
+    conversationId,
+    to: fromUserId,
+    answer
+  });
+}
 
-  public endCall(userId: string): void {
-    if (!this.socket) return;
-   
-    this.socket.emit('end-call', { to: userId });
-  }
+
+  public sendIceCandidate(conversationId: string, toUserId: string, candidate: RTCIceCandidate): void {
+  if (!this.socket) return;
+
+  console.log("Sending ICE candidate:", { conversationId, toUserId, candidate });
+  
+  // Gửi ICE candidate cùng conversationId
+  this.socket.emit('send-ice-candidate', {
+    conversationId,
+    to: toUserId,
+    candidate
+  });
+}
+
+
+public endCall(conversationId: string, toUserId: string): void {
+  if (!this.socket) return;
+
+  console.log("Ending call for conversation:", conversationId);
+  
+  // Gửi yêu cầu kết thúc cuộc gọi với conversationId
+  this.socket.emit('end-call', { conversationId, to: toUserId });
+}
+
 
   // Message methods
   public async sendMessage(payload: { 

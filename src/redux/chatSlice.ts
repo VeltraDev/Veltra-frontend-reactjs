@@ -5,6 +5,7 @@ import {
   conversationService,
   CreateConversationDto,
 } from "../services/api/conversationService";
+import { socketService } from "@/services/socket";
 
 // Types
 
@@ -43,18 +44,17 @@ export interface Conversation {
 }
 interface CallState {
   incomingCall: {
-    from: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      avatar?: string | null;
-    };
+    from: User;
     offer: RTCSessionDescriptionInit;
+    conversationId: string;
   } | null;
   isCallActive: boolean;
   callAnswered: RTCSessionDescriptionInit | null;
   iceCandidates: RTCIceCandidate[];
+  connectionRef: RTCPeerConnection | null; 
 }
+
+
 // Update the ChatState interface
 interface ChatState {
   conversations: Conversation[];
@@ -63,17 +63,10 @@ interface ChatState {
   isLoading: boolean;
   error: string | null;
   typingUsers: Record<string, User[]>;
-  onlineUsers: User[]; // Changed to store full User objects
-  call: {
-    incomingCall: null | {
-      from: User;
-      offer: RTCSessionDescriptionInit;
-    };
-    isCallActive: boolean;
-    callAnswered: RTCSessionDescriptionInit | null;
-    iceCandidates: RTCIceCandidate[];
-  };
+  onlineUsers: User[];
+  call: CallState;
 }
+
 
 const initialState: ChatState = {
   conversations: [],
@@ -87,9 +80,12 @@ const initialState: ChatState = {
     incomingCall: null,
     isCallActive: false,
     callAnswered: null,
-    iceCandidates: []
-  }
+    iceCandidates: [],
+    connectionRef: null, // Initialize connection reference
+  },
 };
+
+
 
 // Helper function to sort conversations by latest message
 const sortConversations = (conversations: Conversation[]) => {
@@ -193,6 +189,28 @@ export const forwardMessage = createAsyncThunk(
   }
 );
 
+// export const initiateCall = createAsyncThunk(
+//   "chat/initiateCall",
+//   async (
+//     {
+//       userId,
+//       conversationId,
+//       offer
+//     }: { userId: string; conversationId: string; offer: RTCSessionDescriptionInit },
+//     { dispatch }
+//   ) => {
+//     // Giả định bạn có hàm service để gửi offer
+//     await socketService.answerCall(userId, offer, conversationId);
+//     dispatch(
+//       setIncomingCall({ from: { id: userId }, offer, conversationId })
+//     );
+//   }
+// );
+
+
+
+
+
 export const recallMessage = createAsyncThunk(
   "chat/recallMessage",
   async (messageId: string) => {
@@ -234,22 +252,54 @@ export const removeUsersFromGroup = createAsyncThunk(
   }
 );
 
+
+
 const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-  setIncomingCall: (state, action: PayloadAction<{
-      from: User;
-      offer: RTCSessionDescriptionInit;
-      conversationId: string;
-    }>) => {
-      state.call.incomingCall = action.payload;
-      state.call.isCallActive = true;
-    },
-  setCallAnswered: (state, action: PayloadAction<RTCSessionDescriptionInit>) => {
-    state.call.callAnswered = action.payload;
-    state.call.isCallActive = true;
-  },
+setConnectionRef: (state, action: PayloadAction<RTCPeerConnection>) => {
+    if (state.call.connectionRef) {
+        state.call.connectionRef.close(); // Đóng kết nối cũ trước khi thiết lập kết nối mới
+    }
+    state.call.connectionRef = action.payload;
+},
+clearConnectionRef: (state) => {
+    if (state.call.connectionRef) {
+        state.call.connectionRef.close(); // Đóng kết nối
+        state.call.connectionRef = null;
+    }
+},
+updateConnectionState: (state, action: PayloadAction<string>) => {
+    if (state.call.connectionRef) {
+        console.log(`Connection state updated to: ${action.payload}`);
+    }
+},
+
+  setIncomingCall: (
+  state,
+  action: PayloadAction<{
+    from: User;
+    offer: RTCSessionDescriptionInit;
+    conversationId: string;
+  }>
+) => {
+  state.call.incomingCall = action.payload;
+  state.call.isCallActive = true;
+},
+
+ setCallAnswered: (state, action: PayloadAction<RTCSessionDescriptionInit>) => {
+  state.call.callAnswered = action.payload;
+  state.call.isCallActive = true;
+  if (state.call.incomingCall) {
+    // Set conversationId cho activeConversation nếu đang có cuộc gọi
+    const conversationId = state.call.incomingCall.conversationId;
+    state.activeConversation = state.conversations.find(
+      (conv) => conv.id === conversationId
+    ) || null;
+  }
+},
+
   addIceCandidate: (state, action: PayloadAction<RTCIceCandidate>) => {
     state.call.iceCandidates.push(action.payload);
   },
@@ -556,6 +606,9 @@ const chatSlice = createSlice({
 });
 
 export const {
+  setConnectionRef,
+  clearConnectionRef,
+  updateConnectionState,
   updateMessagesAndConversations,
   setActiveConversation,
   addMessage,
