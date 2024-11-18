@@ -43,47 +43,49 @@ export default function NewsFeeds() {
     const [totalPosts, setTotalPosts] = useState<number | null>(null); // Lưu tổng số bài viết từ API
 
     const fetchPosts = useCallback(async (page: number) => {
-        try {
-            setLoading(true);
-            setError(null);
+    const scrollY = window.scrollY; // Lưu vị trí cuộn hiện tại
+    try {
+        setLoading(true);
+        setError(null);
 
-            const response = await http.get(`/posts?page=${page}&limit=10&sortBy=createdAt&order=desc`);
+        const response = await http.get(`/posts?page=${page}&limit=10&sortBy=createdAt&order=desc`);
 
-            const { total, results } = response.data; 
-            setTotalPosts(total);
-            const newResults = results.map((post: any) => ({
-                ...post,
-                userReactionDetail: post.reactions?.find(
-                    (reaction: any) => reaction.reactedBy.id === currentUserId
-                ) || null,
-                totalReactions: post.reactions?.length || 0,
-            }));
+        const { total, results } = response.data; 
+        setTotalPosts(total);
 
-            if (newResults.length === 0) {
-                console.log("No more posts to fetch");
-                setIsFetchingMore(false);
-                return;
-            }
+        const newResults = results.map((post: any) => ({
+            ...post,
+            userReactionDetail: post.reactions?.find(
+                (reaction: any) => reaction.reactedBy.id === currentUserId
+            ) || null,
+            totalReactions: post.reactions?.length || 0,
+        }));
 
-            setPosts((prevPosts) => (page === 1 ? newResults : [...prevPosts, ...newResults]));
-            setUserReactions((prevReactions) =>
-                newResults.reduce((acc: any, post: any) => {
-                    if (post.userReactionDetail) {
-                        acc[post.id] = post.userReactionDetail;
-                    }
-                    return acc;
-                }, { ...prevReactions })
-            );
-        } catch (err) {
-            console.error('Fetch Error:', err.response?.data || err.message || err);
-            setError(err.message || 'Failed to fetch posts');
-            toast.error(err.message || 'Failed to fetch posts');
-        } finally {
-            setLoading(false);
+        if (newResults.length === 0) {
             setIsFetchingMore(false);
+            return;
         }
-    }, [currentUserId]);
 
+        setPosts((prevPosts) => (page === 1 ? newResults : prevPosts.concat(newResults)));
+        setUserReactions((prevReactions) =>
+            newResults.reduce((acc: any, post: any) => {
+                if (post.userReactionDetail) {
+                    acc[post.id] = post.userReactionDetail;
+                }
+                return acc;
+            }, { ...prevReactions })
+        );
+
+    } catch (err) {
+        console.error('Fetch Error:', err.response?.data || err.message || err);
+        setError(err.message || 'Failed to fetch posts');
+        toast.error(err.message || 'Failed to fetch posts');
+    } finally {
+        setLoading(false);
+        setIsFetchingMore(false);
+        window.scrollTo(0, scrollY); // Khôi phục vị trí cuộn
+    }
+}, [currentUserId]);
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
@@ -108,12 +110,13 @@ export default function NewsFeeds() {
         console.log('Posts:', posts); 
     }, [posts]);
 
-    const lastPostElementRef = useCallback((node) => {
-        if (loading || isFetchingMore || (totalPosts !== null && posts.length >= totalPosts)) return; // Dừng nếu đã tải hết
+   const lastPostElementRef = useCallback((node) => {
+    if (loading || isFetchingMore || (totalPosts !== null && posts.length >= totalPosts)) return;
 
-        if (observer.current) observer.current.disconnect();
+    if (observer.current) observer.current.disconnect();
 
-        observer.current = new IntersectionObserver((entries) => {
+    observer.current = new IntersectionObserver(
+        (entries) => {
             if (entries[0].isIntersecting) {
                 setIsFetchingMore(true);
                 setCurrentPage((prevPage) => {
@@ -122,13 +125,12 @@ export default function NewsFeeds() {
                     return nextPage;
                 });
             }
-        }, { rootMargin: '500px' });
+        },
+        { rootMargin: '500px' }
+    );
 
-        if (node) observer.current.observe(node);
-    }, [loading, isFetchingMore, posts.length, totalPosts, fetchPosts]);
-
-
-
+    if (node) observer.current.observe(node);
+}, [loading, isFetchingMore, posts.length, totalPosts, fetchPosts]);
 
     const postReaction = async (postId: string, reactionTypeId: string) => {
         try {
@@ -333,6 +335,16 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
             )
         );
     };
+
+    useEffect(() => {
+        const originalScrollRestoration = window.history.scrollRestoration;
+        window.history.scrollRestoration = 'manual';
+
+        return () => {
+            window.history.scrollRestoration = originalScrollRestoration;
+        };
+    }, []);
+
 
     return (
         <div className="space-y-6">
