@@ -40,7 +40,10 @@ export const themes = {
         headerText: 'text-gray-900',
         subText: 'text-gray-600',
         tooltipBg: 'bg-gray-800',
-        tooltipText: 'text-white'
+        tooltipText: 'text-white',
+        border2: 'border-gray-200',
+        textNewsFeeds: 'text-gray-800',
+        iconColorSideBar: 'text-gray-700'
     },
     dark: {
         name: 'Dark',
@@ -70,7 +73,10 @@ export const themes = {
         headerText: 'text-white',
         subText: 'text-gray-400',
         tooltipBg: 'bg-gray-700',
-        tooltipText: 'text-white'
+        tooltipText: 'text-white',
+        border2: 'border-zinc-800',
+        textNewsFeeds: 'text-[#f5f5f5]',
+        iconColorSideBar: 'text-[#f5f5f5]'
     },
     midnightOasis: {
         name: 'Midnight Oasis',
