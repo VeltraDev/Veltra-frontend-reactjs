@@ -72,7 +72,7 @@ export default function MessageActions({
       originalMessageId: message.id,
       targetConversationId
     });
-    console.log('ágasga')
+
     setShowForwardDialog(false);
   };
 
