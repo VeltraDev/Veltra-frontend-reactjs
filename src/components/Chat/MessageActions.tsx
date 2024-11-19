@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { deleteMessage, Message, recallMessage } from '@/redux/chatSlice';
+import { deleteMessage, recallMessage } from '@/redux/chatSlice';
 import { useTheme, themes } from '@/contexts/ThemeContext';
 import { useDispatch } from 'react-redux';
 
@@ -18,6 +18,7 @@ import { toast } from 'react-hot-toast';
 import ForwardMessageDialog from './ForwardMessageDialog';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { useSocket } from '@/contexts/SocketContext';
+import { Message } from '@/types';
 
 interface MessageActionsProps {
   message: Message;
@@ -67,10 +68,11 @@ export default function MessageActions({
   };
 
   const handleForward = (targetConversationId: string) => {
-    // chatSocketService.forwardMessage({
-    //   originalMessageId: message.id,
-    //   targetConversationId
-    // });
+    chatSocketService.forwardMessage({
+      originalMessageId: message.id,
+      targetConversationId
+    });
+    console.log('ágasga')
     setShowForwardDialog(false);
   };
 
