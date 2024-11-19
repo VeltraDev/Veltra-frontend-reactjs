@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { socketService } from "../services/socket";
+import { chatSocketService, callSocketService } from '@/services/socket';
+
 import { RootState } from "../redux/store";
 import { toast } from "react-hot-toast";
 
 interface SocketContextType {
-    socketService: typeof socketService;
+    chatSocketService: typeof chatSocketService;
+    callSocketService: typeof callSocketService;
     isConnected: boolean;
 }
 
@@ -23,7 +25,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         if (isAuthenticated && accessToken) {
             try {
-                socketService.connect();
+                chatSocketService.connect();
                 setIsConnected(true);
             } catch (error) {
                 console.error("Failed to connect to socket:", error);
@@ -31,18 +33,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
                 setIsConnected(false);
             }
         } else {
-            socketService.disconnect();
+            chatSocketService.disconnect();
             setIsConnected(false);
         }
 
         return () => {
-            socketService.disconnect();
+            chatSocketService.disconnect();
             setIsConnected(false);
         };
     }, [isAuthenticated, accessToken]);
 
     return (
-        <SocketContext.Provider value={{ socketService, isConnected }}>
+        <SocketContext.Provider value={{ chatSocketService, callSocketService, isConnected }}>
             {children}
         </SocketContext.Provider>
     );
