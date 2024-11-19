@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
         }
       );
 
-      if (response.data && response.data.statusCode === 201) {
+      if (response && response.statusCode === 201) {
         setResetStatus("Đặt lại mật khẩu thành công. Đang chuyển hướng đến trang đăng nhập...");
         setTimeout(() => {
           navigate('/auth');

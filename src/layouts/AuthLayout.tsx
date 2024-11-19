@@ -39,12 +39,11 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
                             </a>
 
                             <h2 className="mt-6 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
-                                Welcome to WORD WAVES
+                                Welcome to Veltra
                             </h2>
 
                             <p className="mt-4 leading-relaxed text-white">
-                                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eligendi nam dolorum aliquam,
-                                quibusdam aperiam voluptatum.
+                            Veltra mang đến giải pháp kết nối video thời gian thực, tối ưu cho doanh nghiệp và cá nhân.
                             </p>
                         </div>
                     </section>

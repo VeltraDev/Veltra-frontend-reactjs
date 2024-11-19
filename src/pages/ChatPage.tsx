@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { getConversations, getConversationMessages, setActiveConversation } from '@/redux/chatSlice';
+import { getConversations, getConversationMessages, setActiveConversation, addMessage } from '@/redux/chatSlice';
 
 import Sidebar from '@/containers/ChatPage/Sidebar';
 import ChatList from '@/containers/ChatPage/ChatList';
@@ -54,7 +54,7 @@ export default function ChatPage() {
       socketService.socket?.off('typingInfo', handleTyping);
       socketService.socket?.off('stopTypingInfo', handleStopTyping);
     };
-  }, [socketService, activeConversation]);
+  }, [socketService, activeConversation, dispatch]);
 
   const handleConversationSelect = (conversationId: string) => {
     const selectedConversation = conversations.find(convo => convo.id === conversationId);
