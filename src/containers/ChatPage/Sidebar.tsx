@@ -15,7 +15,7 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     logout();
-    navigate('/signin');
+    navigate('/');
   };
 
   const themeOptions = Object.entries(themes).map(([key, value]) => ({

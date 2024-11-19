@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ForwardMessageDialog from './ForwardMessageDialog';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { useSocket } from '@/contexts/SocketContext';
 
 interface MessageActionsProps {
@@ -43,6 +44,7 @@ export default function MessageActions({
   const currentTheme = themes[theme];
   const [showMore, setShowMore] = React.useState(false);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const dispatch = useDispatch();
   const { socketService } = useSocket();
 
@@ -73,14 +75,17 @@ export default function MessageActions({
   };
 
   const actions = [
-    { icon: Smile, label: 'React', onClick: onReact, showAlways: true },
-    { icon: Reply, label: 'Reply', onClick: onReply, showAlways: true },
-    { icon: Forward, label: 'Forward', onClick: () => setShowForwardDialog(true), showAlways: true },
-    { icon: Copy, label: 'Copy', onClick: onCopy, showAlways: true },
-    { icon: Edit2, label: 'Edit', onClick: onEdit, showAlways: false },
-    { icon: Pin, label: 'Pin', onClick: onPin, showAlways: false },
-    { icon: XCircle, label: 'Recall', onClick: handleRecall, showAlways: false },
-    { icon: Trash2, label: 'Delete', onClick: handleDelete, showAlways: false },
+    { icon: Forward, label: 'Forward', onClick: () => setShowForwardDialog(true) },
+    { icon: Smile, label: 'React', onClick: onReact },
+    { icon: Trash2, label: 'Delete', onClick: () => setShowConfirmDelete(true) },
+    { icon: MoreHorizontal, label: 'More', onClick: () => setShowMore(!showMore) },
+  ];
+
+  const moreActions = [
+    { icon: Copy, label: 'Copy', onClick: onCopy },
+    { icon: Edit2, label: 'Edit', onClick: onEdit },
+    { icon: Pin, label: 'Pin', onClick: onPin },
+    { icon: XCircle, label: 'Recall', onClick: handleRecall },
   ];
 
   if (message.isRecalled) {
@@ -91,16 +96,14 @@ export default function MessageActions({
     <>
       <div className={`
         absolute ${isOwner ? 'left-0 -translate-x-full' : 'right-0 translate-x-full'} 
-        top-1/2 -translate-y-1/2 mx-2
+        top-1/2 -translate-y-1/2 mx-2 px-8
         flex items-center space-x-1
         animate-fadeIn
       `}>
         {/* Quick Actions */}
-        {actions
-          .filter(action => action.showAlways || (showMore && isOwner))
-          .map((action, index) => (
+        {actions.map((action, index) => (
+          <div key={index} className="group flex relative">
             <button
-              key={index}
               onClick={action.onClick}
               className={`
                 p-1.5 rounded-xl
@@ -108,28 +111,33 @@ export default function MessageActions({
                 hover:bg-opacity-80 
                 transition-all duration-200
                 group/action
-                tooltip-trigger
               `}
             >
               <action.icon className={`w-4 h-4 ${currentTheme.text} opacity-60 group-hover/action:opacity-100`} />
-              <span className="tooltip">{action.label}</span>
             </button>
-          ))}
+            <span className={`group-hover:opacity-100 transition-opacity ${currentTheme.tooltipBg} px-1 text-sm ${currentTheme.tooltipText} rounded-md absolute left-1/2 -translate-x-1/2 translate-y-full opacity-0  p-1 mx-auto`}>
+              {action.label}
+            </span>
+          </div>
+        ))}
 
-        {/* More Actions Button */}
-        {isOwner && (
-          <button
-            onClick={() => setShowMore(!showMore)}
-            className={`
-              p-1.5 rounded-xl
-              ${currentTheme.input} 
-              hover:bg-opacity-80 
-              transition-all duration-200
-              group/action
-            `}
-          >
-            <MoreHorizontal className={`w-4 h-4 ${currentTheme.text} opacity-60 group-hover/action:opacity-100`} />
-          </button>
+        {/* More Actions */}
+        {showMore && (
+          <div className={`absolute top-0 right-0 mt-8 w-48 ${currentTheme.bg} shadow-lg rounded-lg z-10`}>
+            {moreActions.map((action, index) => (
+              <button
+                key={index}
+                onClick={action.onClick}
+                className={`
+                  w-full flex items-center space-x-2 p-2 rounded-lg
+                  ${currentTheme.hover} transition-all duration-200
+                `}
+              >
+                <action.icon className={`w-4 h-4 ${currentTheme.iconColor}`} />
+                <span className={`text-sm ${currentTheme.text}`}>{action.label}</span>
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -138,6 +146,15 @@ export default function MessageActions({
         isOpen={showForwardDialog}
         onClose={() => setShowForwardDialog(false)}
         onSubmit={handleForward}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete Message"
+        description="Are you sure you want to delete this message? This action cannot be undone."
       />
     </>
   );

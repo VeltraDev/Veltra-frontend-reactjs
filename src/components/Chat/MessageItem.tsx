@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Message } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -26,8 +26,17 @@ export default function MessageItem({
   const { currentTheme } = useTheme();
   const currentUser = useSelector((state: RootState) => state.auth.user || []);
   const isSelf = message.sender?.id === currentUser.user?.id;
-  const [showActions, setShowActions] = React.useState(false);
-  const [expandedImage, setExpandedImage] = React.useState<string | null>(null);
+  const [showActions, setShowActions] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const messageContentRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  useEffect(() => {
+    if (messageContentRef.current) {
+      setIsOverflowing(messageContentRef.current.scrollHeight > 96);
+    }
+  }, [message.content]);
 
   const handleImageClick = (url: string) => {
     setExpandedImage(url);
@@ -71,8 +80,8 @@ export default function MessageItem({
           )}
 
           <div
-          className={`message-content-wrapper relative ${isSelf ? '' : showAvatar ? '' : 'ml-[33px]'
-            }`}
+            className={`message-content-wrapper relative ${isSelf ? '' : showAvatar ? '' : 'ml-[33px]'
+              }`}
             onMouseEnter={() => setShowActions(true)}
             onMouseLeave={() => setShowActions(false)}
           >
@@ -107,11 +116,15 @@ export default function MessageItem({
                   rounded-[18px]
                   ${isSelf
                     ? `${currentTheme.selfMessage} ${currentTheme.messageTextSelf} rounded-[18px]`
-                    : `${currentTheme.otherMessage} rounded-[18px]`
+                    : `${currentTheme.otherMessage} ${currentTheme.text} rounded-[18px]`
                   }
                   transition-all duration-300
                   hover:shadow-sm
+                  max-w-150
+                  ${isExpanded ? 'max-h-none' : ''}
+                  overflow-hidden
                 `}
+                ref={messageContentRef}
               >
                 {/* Text Content */}
                 {message.content && (
@@ -119,7 +132,20 @@ export default function MessageItem({
                     {message.isRecalled ? (
                       <span className="italic opacity-75">Message has been recalled</span>
                     ) : (
-                      message.content
+                      <>
+                        {isOverflowing && !isExpanded
+                          ? `${message.content.slice(0, 500)}...`
+                          : message.content}
+
+                        {isOverflowing && !isExpanded && (
+                          <button
+                            onClick={() => setIsExpanded(true)}
+                            className="text-blue-500 text-sm ml-1"
+                          >
+                            Xem thêm
+                          </button>
+                        )}
+                      </>
                     )}
                   </p>
                 )}
@@ -174,6 +200,16 @@ export default function MessageItem({
                   `}
                 />
               </div>
+
+              {/* Nút Thu gọn */}
+              {isExpanded && (
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="text-blue-500 text-sm mt-1"
+                >
+                  Thu gọn
+                </button>
+              )}
 
               {/* Message Reactions */}
               {message.reactions && message.reactions.length > 0 && (

@@ -104,7 +104,7 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
                 {/* Info */}
                 {conversation && (
                     <div>
-                        <h2 className={`font-semibold ${currentTheme.text}`}>
+                        <h2 className={`font-semibold ${currentTheme.text}  overflow-hidden text-ellipsis whitespace-nowrap max-w-96`}>
                             {conversation.isGroup ? conversation.name : `${otherUser?.firstName ?? 'No First Name'} ${otherUser?.lastName ?? 'No Last Name'}` || "No User"}
                         </h2>
                         <p className={`text-sm ${currentTheme.mutedText}`}>

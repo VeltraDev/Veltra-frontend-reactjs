@@ -64,7 +64,7 @@ export const conversationService = {
   },
 
   leaveGroup: async (id: string) => {
-    const response = await http.post(`/conversations/${id}/leave`);
+    const response = await http.delete(`/conversations/${id}/leave`);
     return response.data;
   },
 

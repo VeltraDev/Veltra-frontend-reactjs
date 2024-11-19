@@ -25,7 +25,9 @@ export default function ChatPage() {
   useEffect(() => {
     // Set the first conversation as active if no conversation is active
     if (conversations?.length > 0 && !activeConversation) {
-      dispatch(setActiveConversation(conversations[0]));
+      const firstConversation = conversations[0];
+      dispatch(setActiveConversation(firstConversation));
+      dispatch(getConversationMessages(firstConversation.id));
     }
   }, [conversations, activeConversation, dispatch]);
 

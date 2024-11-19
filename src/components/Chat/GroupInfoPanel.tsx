@@ -6,6 +6,7 @@ import {
     Share2, Shield, MessageCircle, Check, Users
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { getConversations } from '@/redux/chatSlice';
 import { Conversation, User } from '@/types';
 import { toast } from 'react-hot-toast';
 import { conversationService } from '@/services/api/conversationService';
@@ -13,38 +14,29 @@ import AddGroupMembersModal from './AddGroupMembersModal';
 import { fileService } from '@/services/api/fileService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RootState } from '@/redux/store';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 interface GroupInfoPanelProps {
-
-
     onClose: () => void;
 }
 
-export default function GroupInfoPanel({
-
-
-    onClose
-}: GroupInfoPanelProps) {
+export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
     const dispatch = useDispatch();
     const { currentTheme } = useTheme();
     const [isEditing, setIsEditing] = useState(false);
-    const [newGroupName, setNewGroupName] = useState();
-
+    const [newGroupName, setNewGroupName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showAddMembers, setShowAddMembers] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [isStarred, setIsStarred] = useState(false);
     const [isArchived, setIsArchived] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const currentUser = useSelector((state: RootState) => state.auth.user?.user?.id);
     const conversation = useSelector((state: RootState) => state.chat?.activeConversation || {});
 
-
-
-    // The rest of your state and logic
-
-
-    const isAdmin = conversation?.admin?.id || '' === currentUser.id;
+    const isAdmin = conversation?.admin?.id === currentUser;
 
     const handleUpdateGroupPicture = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -54,8 +46,9 @@ export default function GroupInfoPanel({
         try {
             fileService.validateFile(file);
             const uploadResult = await fileService.upload(file);
+            console.log(uploadResult);
             await conversationService.updateGroupInfo(conversation.id, {
-                picture: uploadResult.url
+                picture: uploadResult.data.url
             });
             toast.success('Group picture updated successfully');
         } catch (error: any) {
@@ -102,14 +95,21 @@ export default function GroupInfoPanel({
     };
 
     const handleRemoveUser = async (userId: string) => {
-        if (!window.confirm('Are you sure you want to remove this user from the group?')) return;
+        setUserToDelete(conversation.users.find(user => user.id === userId) || null);
+        setShowConfirmDelete(true);
+    };
+
+    const confirmRemoveUser = async () => {
+        if (!userToDelete) return;
 
         setIsLoading(true);
         try {
             await conversationService.removeUsers(conversation.id, {
-                userIds: [userId]
+                userIds: [userToDelete.id]
             });
             toast.success('User removed successfully');
+            setShowConfirmDelete(false);
+            setUserToDelete(null);
         } catch (error: any) {
             toast.error(error.message || 'Failed to remove user');
         } finally {
@@ -140,6 +140,7 @@ export default function GroupInfoPanel({
         try {
             await conversationService.leaveGroup(conversation.id);
             toast.success('Left group successfully');
+            dispatch(getConversations());
             onClose();
         } catch (error: any) {
             toast.error(error.message || 'Failed to leave group');
@@ -162,11 +163,13 @@ export default function GroupInfoPanel({
             setIsLoading(false);
         }
     };
+
     useEffect(() => {
         if (conversation?.name) {
             setNewGroupName(conversation.name);
         }
     }, [conversation]);
+
     if (!conversation) {
         return <div>Loading...</div>;
     }
@@ -175,7 +178,7 @@ export default function GroupInfoPanel({
         <>
             <div className={`h-full ${currentTheme.bg} flex flex-col`}>
                 {/* Header */}
-                <div className={`p-4 border-b ${currentTheme.border} flex items-center justify-between`}>
+                <div className={`p-5 border-b ${currentTheme.border} flex items-center justify-between`}>
                     <h3 className={`text-lg font-semibold ${currentTheme.text}`}>Group Info</h3>
                     <button
                         onClick={onClose}
@@ -257,7 +260,10 @@ export default function GroupInfoPanel({
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-between">
-                                    <h4 className={`font-medium ${currentTheme.text}`}>{conversation.name}</h4>
+                                    <h4
+                                        className={`font-medium ${currentTheme.text} max-w-60 overflow-hidden text-ellipsis whitespace-nowrap`}>
+                                        {conversation.name}
+                                    </h4>
                                     {isAdmin && (
                                         <button
                                             onClick={() => setIsEditing(true)}
@@ -423,6 +429,15 @@ export default function GroupInfoPanel({
                 onSubmit={handleAddMembers}
                 conversation={conversation}
                 isLoading={isLoading}
+            />
+
+            {/* Confirm Delete Modal */}
+            <ConfirmDeleteModal
+                isOpen={showConfirmDelete}
+                onClose={() => setShowConfirmDelete(false)}
+                onConfirm={confirmRemoveUser}
+                title="Confirm Delete"
+                description={`Are you sure you want to remove ${userToDelete?.firstName} ${userToDelete?.lastName} from the group?`}
             />
         </>
     );
