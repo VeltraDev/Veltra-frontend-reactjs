@@ -9,21 +9,20 @@ import {
   setTypingUser,
   removeTypingUser,
   addMessage,
-  setCallAnswered,
-  setIncomingCall,
-  endCall,
-  addIceCandidate,
+ 
   updateConversation,
   removeConversation,
   updateGroupMembers,
   removeGroupMembers,
-  User,
+  
 } from "../redux/chatSlice";
 import { toast } from "react-hot-toast";
 import React from "react";
 import { createRoot } from 'react-dom/client';
 import CallNotification from "../components/chat/CallNotification";
 import { ThemeProvider } from "../contexts/ThemeContext";
+import { User } from "@/types/auth";
+import { addIceCandidate, endCall, setCallAnswered, setIncomingCall } from "@/redux/callSlice";
 
 class SocketService {
   public socket: Socket | null = null;
@@ -100,7 +99,7 @@ class SocketService {
       console.log("Received initial online users:", data.users);
       store.dispatch(updateOnlineUsers(data.users));
     });
-this.socket.on("userOnline", (data: { user: User }) => {
+    this.socket.on("userOnline", (data: { user: User }) => {
       console.log("User connected:", data.user);
       store.dispatch(updateOnlineUsers({ user: data.user, status: 'online' }));
     });
@@ -117,21 +116,21 @@ this.socket.on("userOnline", (data: { user: User }) => {
     });
 
     // Call events
- this.socket.on("receive-call", (data) => {
-  console.log("Received call:", data);
-  const { from, conversationId, offer } = data;
+    this.socket.on("receive-call", (data) => {
+    console.log("Received call:", data);
+    const { from, conversationId, offer } = data;
 
-  // Cập nhật Redux để lưu trạng thái cuộc gọi đến
-  store.dispatch(setIncomingCall({ from, conversationId, offer }));
+    // Cập nhật Redux để lưu trạng thái cuộc gọi đến
+    store.dispatch(setIncomingCall({ from, conversationId, offer }));
 
-  // Hiển thị thông báo cuộc gọi
-  this.showCallNotification({
-    from,
-    conversationId,
-    offer,
-    message: `${from.firstName} ${from.lastName} is calling you...`
-  });
-});
+    // Hiển thị thông báo cuộc gọi
+    this.showCallNotification({
+      from,
+      conversationId,
+      offer,
+      message: `${from.firstName} ${from.lastName} is calling you...`
+    });
+      });
 
 
     this.socket.on("call-answered", (data) => {
@@ -195,7 +194,7 @@ this.socket.on("userOnline", (data: { user: User }) => {
     });
 
     // Typing events
-this.socket.on("typingInfo", ({ conversationId, user }) => {
+    this.socket.on("typingInfo", ({ conversationId, user }) => {
       store.dispatch(setTypingUser({ conversationId, user }));
     });
 
@@ -204,7 +203,7 @@ this.socket.on("typingInfo", ({ conversationId, user }) => {
     });
   }
 
-private showCallNotification(data: { 
+    private showCallNotification(data: { 
   from: any; 
   conversationId: string; 
   offer: RTCSessionDescriptionInit;
