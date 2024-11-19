@@ -17,7 +17,7 @@ export default function VideoCallPage() {
     const { conversationId } = useParams<{ conversationId: string }>();
     const dispatch = useDispatch();
     const { currentTheme } = useTheme();
-    const { socketService } = useSocket();
+    const { callSocketService } = useSocket();
 
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -53,7 +53,7 @@ export default function VideoCallPage() {
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
 
-                socketService.answerCall(incomingCall.conversationId, incomingCall.from.id, answer);
+                callSocketService.answerCall(incomingCall.conversationId, incomingCall.from.id, answer);
             };
 
             handleIncomingCall();
@@ -123,13 +123,13 @@ export default function VideoCallPage() {
                     if (event.candidate) {
                         const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
                         if (otherUser) {
-                            socketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
+                            callSocketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
                         }
                     }
                 };
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate && peerConnection.iceGatheringState !== 'complete') {
-                        socketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
+                        callSocketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
                     }
                 };
 
@@ -147,7 +147,7 @@ export default function VideoCallPage() {
                     await peerConnection.setLocalDescription(offer);
                     const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
                     if (otherUser) {
-                        socketService.callUser(conversationId, otherUser.id, offer);
+                        callSocketService.callUser(conversationId, otherUser.id, offer);
                     }
                 } else {
                     // Callee nhận và trả lời offer
@@ -159,7 +159,7 @@ export default function VideoCallPage() {
                     const fromUserId = incomingCall.from.id; // Người gọi
 
                     // Truyền đầy đủ tham số
-                    socketService.answerCall(conversationId, fromUserId, answer);
+                    callSocketService.answerCall(conversationId, fromUserId, answer);
                 }
 
                 setIsConnecting(false);
@@ -229,7 +229,7 @@ export default function VideoCallPage() {
         if (otherUser) {
             const conversationId = conversation.id; // Lấy ID cuộc trò chuyện
             const toUserId = otherUser.id; // Lấy ID người dùng bên kia
-            socketService.endCall(conversationId, toUserId); // Gọi endCall với đủ tham số
+            callSocketService.endCall(conversationId, toUserId); // Gọi endCall với đủ tham số
         }
 
         cleanup();
