@@ -10,7 +10,7 @@ import {
     Maximize2, Minimize2, Settings, Users
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { endCall, setCallAnswered, addIceCandidate } from '@/redux/chatSlice';
+import { endCall, setCallAnswered, addIceCandidate } from '@/redux/callSlice';
 
 export default function VideoCallPage() {
     const navigate = useNavigate();
@@ -40,8 +40,8 @@ export default function VideoCallPage() {
         state.chat.conversations.find(c => c.id === conversationId)
     );
 
-    const incomingCall = useSelector((state: RootState) => state.chat.call.incomingCall);
-    const iceCandidates = useSelector((state: RootState) => state.chat.call.iceCandidates);
+    const incomingCall = useSelector((state: RootState) => state.call.incomingCall);
+    const iceCandidates = useSelector((state: RootState) => state.call.iceCandidates);
     const peerConnection = new RTCPeerConnection();
     // Using peerConnection somewhere
 
