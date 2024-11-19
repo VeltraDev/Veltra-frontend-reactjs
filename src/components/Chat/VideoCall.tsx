@@ -26,7 +26,7 @@ export default function VideoCall({
 }: VideoCallProps) {
     const dispatch = useDispatch();
     const { currentTheme } = useTheme();
-    const { socketService } = useSocket();
+    const { callSocketService } = useSocket();
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isMuted, setIsMuted] = useState(false);
@@ -75,7 +75,7 @@ export default function VideoCall({
                 // Handle ICE candidates
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
-                        socketService.socket?.emit('ice-candidate', {
+                        callSocketService.socket?.emit('ice-candidate', {
                             candidate: event.candidate,
                             to: isIncoming ? callerId : recipientId
                         });
@@ -90,7 +90,7 @@ export default function VideoCall({
                     const answer = await peerConnection.createAnswer();
                     await peerConnection.setLocalDescription(answer);
 
-                    socketService.socket?.emit('call-answered', {
+                    callSocketService.socket?.emit('call-answered', {
                         to: callerId,
                         answer
                     });
@@ -106,7 +106,7 @@ export default function VideoCall({
                     const offer = await peerConnection.createOffer();
                     await peerConnection.setLocalDescription(offer);
 
-                    socketService.socket?.emit('call-user', {
+                    callSocketService.socket?.emit('call-user', {
                         to: recipientId,
                         offer
                     });
@@ -136,7 +136,7 @@ export default function VideoCall({
 
     // Handle socket events
     useEffect(() => {
-        if (!socketService.socket) return;
+        if (!callSocketService.socket) return;
 
         const handleIceCandidate = async ({ candidate }: { candidate: RTCIceCandidate }) => {
             try {
@@ -156,14 +156,14 @@ export default function VideoCall({
             onClose();
         };
 
-        socketService.socket.on('ice-candidate', handleIceCandidate);
-        socketService.socket.on('call-ended', handleCallEnded);
+        callSocketService.socket.on('ice-candidate', handleIceCandidate);
+        callSocketService.socket.on('call-ended', handleCallEnded);
 
         return () => {
-            socketService.socket?.off('ice-candidate', handleIceCandidate);
-            socketService.socket?.off('call-ended', handleCallEnded);
+            callSocketService.socket?.off('ice-candidate', handleIceCandidate);
+            callSocketService.socket?.off('call-ended', handleCallEnded);
         };
-    }, [socketService.socket]);
+    }, [callSocketService.socket]);
 
     // Rest of the component remains the same...
 }

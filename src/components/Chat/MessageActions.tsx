@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Message } from '@/redux/chatSlice';
+import { deleteMessage, Message, recallMessage } from '@/redux/chatSlice';
 import { useTheme, themes } from '@/contexts/ThemeContext';
 import { useDispatch } from 'react-redux';
-import { recallMessage, deleteMessage } from '@/redux/chatSlice';
+
 import {
   Smile,
   Reply,
@@ -44,7 +44,7 @@ export default function MessageActions({
   const [showMore, setShowMore] = React.useState(false);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
   const dispatch = useDispatch();
-  const { socketService } = useSocket();
+  const { chatSocketService } = useSocket();
 
   const handleRecall = async () => {
     try {
@@ -65,10 +65,10 @@ export default function MessageActions({
   };
 
   const handleForward = (targetConversationId: string) => {
-    socketService.forwardMessage({
-      originalMessageId: message.id,
-      targetConversationId
-    });
+    // chatSocketService.forwardMessage({
+    //   originalMessageId: message.id,
+    //   targetConversationId
+    // });
     setShowForwardDialog(false);
   };
 

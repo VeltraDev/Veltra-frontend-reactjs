@@ -12,7 +12,7 @@ import { RootState } from '@/redux/store';
 
 export default function MessageInput() {
     const { currentTheme } = useTheme();
-    const { socketService } = useSocket();
+    const { chatSocketService } = useSocket();
     const [message, setMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -55,7 +55,7 @@ export default function MessageInput() {
             };
 
             // Send message
-            await socketService.sendMessage(messagePayload);
+            await chatSocketService.sendMessage(messagePayload);
 
             // Reset state
             setMessage('');
@@ -99,7 +99,7 @@ export default function MessageInput() {
 
     const handleTyping = () => {
         if (conversationId) {
-            socketService.sendTyping(conversationId);
+            chatSocketService.sendTyping(conversationId);
         }
     };
 
