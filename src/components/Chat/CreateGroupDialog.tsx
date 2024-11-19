@@ -104,7 +104,7 @@ export default function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialog
         try {
           setIsUploading(true);
           const uploadResult = await fileService.upload(groupPicture);
-          pictureUrl = uploadResult.url;
+          pictureUrl = uploadResult.data.url;
         } catch (error) {
           console.error('Upload error:', error);
           toast.error('Failed to upload image');

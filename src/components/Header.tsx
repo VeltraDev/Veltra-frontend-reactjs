@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 import AppLogo from './common/AppLogo';
-
+import { Link } from 'react-router-dom';
 
 export default function Header() {
-    const [state, setState] = useState(false)
-    const [isScrolled, setIsScrolled] = useState(false)
+    const [state, setState] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
-    // Replace  paths with your paths
+    // Replace paths with your paths
     const navigation = [
         { title: "Trang chủ", path: "" },
         { title: "Giới thiệu", path: "" },
         { title: "Liên hệ", path: "" },
         { title: "Blog", path: "" }
-    ]
+    ];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -33,9 +33,7 @@ export default function Header() {
         <nav id="header-nav" className={`w-full md:text-sm z-50 transition-all duration-300 fixed top-0 left-0 ${isScrolled ? 'bg-black bg-opacity-70' : 'bg-transparent'}`}>
             <div className="items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8">
                 <div className="flex items-center justify-between py-3 md:py-5 md:block">
-                    <div className='py-1'>     <AppLogo /></div>
-               
-                
+                    <div className='py-1'><AppLogo /></div>
                     <div className="md:hidden">
                         <button className="text-white hover:text-yellow-300"
                             onClick={() => setState(!state)}
@@ -70,19 +68,19 @@ export default function Header() {
                         <span className='hidden w-px h-6 bg-gray-300 md:block'></span>
                         <div className='space-y-3 items-center gap-x-6 md:flex md:space-y-0'>
                             <li>
-                                <a href="" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
+                                <Link to="/auth?tab=signin" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
                                     Đăng nhập
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a href="" className="block py-3 px-4 font-medium text-center  text-white bg-primary hover:bg-primary active:bg-primary active:shadow-none rounded-lg shadow md:inline">
+                                <Link to="/auth?tab=signup" className="block py-3 px-4 font-medium text-center  text-white bg-primary hover:bg-primary active:bg-primary active:shadow-none rounded-lg shadow md:inline">
                                     Đăng ký
-                                </a>
+                                </Link>
                             </li>
                         </div>
                     </ul>
                 </div>
             </div>
         </nav>
-    )
+    );
 }

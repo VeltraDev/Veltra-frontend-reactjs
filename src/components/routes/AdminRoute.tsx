@@ -10,7 +10,7 @@ export default function AdminRoute() {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/signin" state={{ from: location }} replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (user?.role?.name !== 'ADMIN') {

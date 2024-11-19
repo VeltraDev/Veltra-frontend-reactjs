@@ -66,7 +66,7 @@ export default function ChatList({
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) return ''; // Kiểm tra nếu date không hợp lệ
     try {
-      return formatDistanceToNow(date, { addSuffix: true });
+      return formatDistanceToNow(date, { addSuffix: false });
     } catch (error) {
       console.error("Error formatting message time:", error);
       return '';
@@ -216,7 +216,7 @@ export default function ChatList({
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         <AnimatePresence>
           {sortedAndFilteredConversations.map((conversation) => {
             if (!conversation) return null;
@@ -280,12 +280,15 @@ export default function ChatList({
                 {/* Chat Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
-                    <h3 className={`font-semibold truncate ${currentTheme.text}`}>
+                    <h3 className={`font-semibold truncate max-w-40 ${currentTheme.text}`}>
                       {name}
                     </h3>
-                    {conversation.latestMessage?.createdAt
+                    <h4 className={`text-right text-sm ${currentTheme.text} truncate w-30`}>
+                      {conversation.latestMessage?.createdAt
                       ? formatMessageTime(conversation.latestMessage.createdAt)
-                      : 'No recent messages'}
+                        : 'No messages'}
+                    </h4>
+                    
                   </div>
                   <p className={`text-sm truncate ${typingText ? 'text-blue-500 font-medium' : currentTheme.mutedText}`}>
                     {typingText || (conversation.latestMessage?.sender?.id === currentUser?.id ? 'You: ' : '')}
