@@ -51,6 +51,16 @@ export default function VerifyEmailPage() {
         verifyEmail();
     }, [location.search]);
 
+    useEffect(() => {
+        if (verificationStatus === 'success' || verificationStatus === 'alreadyVerified') {
+            const timer = setTimeout(() => {
+                navigate('/auth?tab=signin');
+            }, 5000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [verificationStatus, navigate]);
+
     const renderContent = () => {
         switch (verificationStatus) {
             case 'loading':
@@ -60,12 +70,7 @@ export default function VerifyEmailPage() {
                     <>
                         <h2 className="text-2xl font-bold mb-4 text-white">Xác Nhận Email Thành Công!</h2>
                         <p className="mb-4 text-white">Email của bạn đã được xác nhận. Bạn có thể đăng nhập vào tài khoản của mình ngay bây giờ.</p>
-                        <Button onClick={() => navigate('/sign-in')}>Đăng nhập</Button>
-                        {token && (
-                            <Button onClick={() => navigate(`/reset-password?token=${token}`)} className="mt-4 mx-8 text-white">
-                                Đặt lại mật khẩu
-                            </Button>
-                        )}
+                        <Button onClick={() => navigate('/auth?tab=signin')}>Đăng nhập</Button>
                     </>
                 );
             case 'alreadyVerified':
@@ -74,11 +79,6 @@ export default function VerifyEmailPage() {
                         <h2 className="text-2xl font-bold mb-4 text-white">Email Đã Được Xác Nhận</h2>
                         <p className="mb-4 text-white">Email của bạn đã được xác nhận trước đó. Bạn có thể đăng nhập vào tài khoản của mình.</p>
                         <Button onClick={() => navigate('/auth?tab=signin')}>Đăng nhập</Button>
-                        {token && (
-                            <Button onClick={() => navigate(`/reset-password?token=${token}`)} className="mt-4 mx-8 text-white">
-                                Đặt lại mật khẩu
-                            </Button>
-                        )}
                     </>
                 );
             case 'error':
@@ -87,11 +87,6 @@ export default function VerifyEmailPage() {
                         <h2 className="text-2xl font-bold mb-4 text-white">Xác Nhận Email Thất Bại</h2>
                         <p className="mb-4 text-white">Chúng tôi không thể xác nhận địa chỉ email của bạn. Có thể liên kết xác nhận đã hết hạn hoặc không hợp lệ.</p>
                         <Button onClick={() => navigate('/auth?tab=signup')}>Quay lại Đăng ký</Button>
-                        {token && (
-                            <Button onClick={() => navigate(`/reset-password?token=${token}`)} className="mt-4 mx-8 text-white">
-                                Đặt lại mật khẩu
-                            </Button>
-                        )}
                     </>
                 );
         }

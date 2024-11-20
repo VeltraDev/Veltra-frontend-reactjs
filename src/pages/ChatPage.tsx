@@ -65,7 +65,7 @@ export default function ChatPage() {
       setShowChatList(false); // Close mobile chat list after selection
     }
   };
-
+  
   return (
     <div className="flex bg-black font-sans text-white h-screen overflow-hidden">
       {/* Overlay for mobile when sidebar/chat list is open */}

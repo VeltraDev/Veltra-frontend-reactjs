@@ -1,24 +1,23 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Conversation } from '@/redux/chatSlice';
-import { Search, Plus, Settings, Filter, Users, MessageCircle } from 'lucide-react';
+import { Search, Plus, Filter, Users, MessageCircle } from 'lucide-react';
 import { useTheme, themes } from '@/contexts/ThemeContext';
 import GroupActions from '@/components/chat/GroupActions';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import UserStatus from '@/components/chat/UserStatus';
 import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getConversations } from '@/redux/chatSlice';
 
 interface ChatListProps {
-  conversations: Conversation[];
   activeConversationId: string | undefined;
   onSelectConversation: (id: string) => void;
   isVisible?: boolean;
 }
 
 export default function ChatList({
-  conversations = [],
   activeConversationId,
   onSelectConversation,
   isVisible = true,
@@ -31,9 +30,15 @@ export default function ChatList({
 
   const { theme } = useTheme();
   const currentTheme = themes[theme];
+  const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user?.user);
+  const conversations = useSelector((state: RootState) => state.chat.conversations);
   const typingUsers = useSelector((state: RootState) => state.chat.typingUsers);
   const onlineUsers = useSelector((state: RootState) => state.chat.onlineUsers);
+
+  useEffect(() => {
+    dispatch(getConversations());
+  }, [dispatch]);
 
   const getConversationInfo = (conversation: Conversation) => {
     if (!conversation) return { name: '', otherUser: null };
@@ -55,12 +60,6 @@ export default function ChatList({
     };
   };
 
-
-
-
-
-
-
   const formatMessageTime = (timestamp: string | undefined) => {
     if (!timestamp) return ''; // Kiểm tra nếu timestamp bị undefined
     const date = new Date(timestamp);
@@ -72,7 +71,6 @@ export default function ChatList({
       return '';
     }
   };
-
 
   // Check if a conversation has any online users
   const isConversationOnline = (conversation: Conversation) => {
@@ -216,7 +214,7 @@ export default function ChatList({
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto scrollbar">
         <AnimatePresence>
           {sortedAndFilteredConversations.map((conversation) => {
             if (!conversation) return null;
@@ -235,19 +233,19 @@ export default function ChatList({
                 exit={{ opacity: 0, x: -20 }}
                 onClick={() => onSelectConversation(conversation.id)}
                 className={`
-        relative p-4 flex items-center space-x-4 cursor-pointer
-        ${isActive ? currentTheme.activeItem : currentTheme.buttonHover}
-        border-b ${currentTheme.border}
-        transition-colors duration-200
-      `}
+                  relative p-4 flex items-center space-x-4 cursor-pointer
+                  ${isActive ? currentTheme.activeItem : currentTheme.buttonHover}
+                  border-b ${currentTheme.border}
+                  transition-colors duration-200
+                `}
               >
                 {/* Avatar */}
                 <div className="relative">
                   <div className={`
-          relative w-12 h-12 rounded-full overflow-hidden
-          ${isActive ? 'ring-2 ring-blue-500' : ''}
-          transition-all duration-200
-        `}>
+                    relative w-12 h-12 rounded-full overflow-hidden
+                    ${isActive ? 'ring-2 ring-blue-500' : ''}
+                    transition-all duration-200
+                  `}>
                     <img
                       src={picture || `https://ui-avatars.com/api/?name=${name}`}
                       alt={name}
@@ -257,19 +255,19 @@ export default function ChatList({
 
                   {!conversation.isGroup && (
                     <div className={`
-            absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
-            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
-            border-2 border-white dark:border-gray-900
-            transition-all duration-200
-          `} />
+                      absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+                      ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+                      border-2 border-white dark:border-gray-900
+                      transition-all duration-200
+                    `} />
                   )}
 
                   {conversation.isGroup && (
                     <div className={`
-            absolute -bottom-1 -right-1 bg-blue-500 rounded-full px-1.5 py-0.5
-            border-2 border-white dark:border-gray-900
-            transition-all duration-200
-          `}>
+                      absolute -bottom-1 -right-1 bg-blue-500 rounded-full px-1.5 py-0.5
+                      border-2 border-white dark:border-gray-900
+                      transition-all duration-200
+                    `}>
                       <span className="text-xs text-white font-medium">
                         {onlineMembersCount}
                       </span>
@@ -285,10 +283,9 @@ export default function ChatList({
                     </h3>
                     <h4 className={`text-right text-sm ${currentTheme.text} truncate w-30`}>
                       {conversation.latestMessage?.createdAt
-                      ? formatMessageTime(conversation.latestMessage.createdAt)
+                        ? formatMessageTime(conversation.latestMessage.createdAt)
                         : 'No messages'}
                     </h4>
-                    
                   </div>
                   <p className={`text-sm truncate ${typingText ? 'text-blue-500 font-medium' : currentTheme.mutedText}`}>
                     {typingText || (conversation.latestMessage?.sender?.id === currentUser?.id ? 'You: ' : '')}
@@ -298,7 +295,6 @@ export default function ChatList({
               </motion.div>
             );
           })}
-
         </AnimatePresence>
       </div>
 

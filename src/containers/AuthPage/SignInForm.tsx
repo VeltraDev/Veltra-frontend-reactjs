@@ -30,7 +30,7 @@ export function SignInForm() {
     const { login, isLoading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const from = (location.state as any)?.from?.pathname || '/newfeed';
+    const from = (location.state as any)?.from?.pathname || '/chat';
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),

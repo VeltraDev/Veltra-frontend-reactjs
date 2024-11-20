@@ -42,7 +42,7 @@ export default function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialog
 
       conv.users.forEach(user => {
 
-        if (user && user.id !== currentUser.user.id && !userMap.has(user.id)) {
+        if (user && user.id !== currentUser.user?.id && !userMap.has(user.id)) {
           userMap.set(user.id, user);
         }
       });
