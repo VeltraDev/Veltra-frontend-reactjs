@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { Message } from '@/types';
 import MessageItem from './MessageItem';
 import { useSelector } from 'react-redux';
@@ -8,6 +8,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface MessageListProps {
   messages: Message[];
   conversationId: string;
+  typingUser?: { id: string; conversationId: string } | null;
+  onForward?: (message: Message) => void;
 }
 
 export default function MessageList({ messages, conversationId }: MessageListProps) {

@@ -1,7 +1,6 @@
 import { User } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-
 interface CallState {
   incomingCall: {
     from: User;
@@ -10,7 +9,6 @@ interface CallState {
   } | null;
   isCallActive: boolean;
   callAnswered: RTCSessionDescriptionInit | null;
-  iceCandidates: RTCIceCandidate[];
   connectionRef: RTCPeerConnection | null;
 }
 
@@ -18,7 +16,6 @@ const initialState: CallState = {
   incomingCall: null,
   isCallActive: false,
   callAnswered: null,
-  iceCandidates: [],
   connectionRef: null,
 };
 
@@ -58,17 +55,10 @@ const callSlice = createSlice({
       state.callAnswered = action.payload;
       state.isCallActive = true;
     },
-    addIceCandidate: (state, action: PayloadAction<RTCIceCandidate>) => {
-      state.iceCandidates.push(action.payload);
-    },
-    clearIceCandidates: (state) => {
-      state.iceCandidates = [];
-    },
     endCall: (state) => {
       state.incomingCall = null;
       state.isCallActive = false;
       state.callAnswered = null;
-      state.iceCandidates = [];
     },
   },
 });
@@ -79,8 +69,6 @@ export const {
   updateConnectionState,
   setIncomingCall,
   setCallAnswered,
-  addIceCandidate,
-  clearIceCandidates,
   endCall,
 } = callSlice.actions;
 

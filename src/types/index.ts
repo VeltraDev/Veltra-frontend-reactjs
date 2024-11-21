@@ -32,6 +32,7 @@ export interface Message {
     users: string[];
   }>;
   replies?: Message[];
+  isRecalled?: boolean;
 }
 
 export interface Conversation {

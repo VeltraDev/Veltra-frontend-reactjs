@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme, ThemeType, themes } from '@/contexts/ThemeContext';
 import { Home, MessageCircle, Users, Search, Settings, LogOut, Palette, Plus } from 'lucide-react';
-import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
+import CreateGroupDialog from '@/components/Chat/CreateGroupDialog';
 
 export default function Sidebar() {
   const navigate = useNavigate();

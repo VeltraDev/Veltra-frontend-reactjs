@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 
 import {
   Smile,
-  Reply,
   Forward,
   Edit2,
   Trash2,
@@ -19,6 +18,7 @@ import ForwardMessageDialog from './ForwardMessageDialog';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { useSocket } from '@/contexts/SocketContext';
 import { Message } from '@/types';
+import { AppDispatch } from '@/redux/store';
 
 interface MessageActionsProps {
   message: Message;
@@ -46,8 +46,9 @@ export default function MessageActions({
   const [showMore, setShowMore] = React.useState(false);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const dispatch = useDispatch();
-  const { chatSocketService } = useSocket();
+
+  const dispatch = useDispatch<AppDispatch>()
+  const { socketService } = useSocket();
 
   const handleRecall = async () => {
     try {
@@ -60,7 +61,7 @@ export default function MessageActions({
 
   const handleDelete = async () => {
     try {
-      await dispatch(deleteMessage(message.id)).unwrap();
+      await dispatch(deleteMessage(message.id)).unwrap()
       toast.success('Message deleted');
     } catch (error) {
       toast.error('Failed to delete message');
@@ -68,7 +69,7 @@ export default function MessageActions({
   };
 
   const handleForward = (targetConversationId: string) => {
-    chatSocketService.forwardMessage({
+    socketService.forwardMessage({
       originalMessageId: message.id,
       targetConversationId
     });

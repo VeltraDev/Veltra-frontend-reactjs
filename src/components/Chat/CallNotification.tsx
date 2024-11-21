@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Phone, PhoneOff } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -17,7 +16,6 @@ interface CallNotificationProps {
 
 export default function CallNotification({
     caller,
-    conversationId,
     onAccept,
     onReject
 }: CallNotificationProps) {

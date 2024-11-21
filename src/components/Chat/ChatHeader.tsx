@@ -1,19 +1,26 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
-    Menu, Phone, Video, Search, Info,
+    Phone, Video, Search, Info,
     MoreVertical, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import UserStatus from './UserStatus';
+import { Conversation } from '@/types';
 
 interface ChatHeaderProps {
-    onToggleGroupInfo: () => void;
+    conversation: Conversation;
     onToggleChatList?: () => void;
-}
+    onToggleGroupInfo: () => void;
+    onToggleThread: () => void;
+    isMuted: boolean;
+    isStarred: boolean;
+    isArchived: boolean;
+    onToggleMute: () => void;
+    onToggleStar: () => void;
+    onToggleArchive: () => void;
+}  
 
 export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: ChatHeaderProps) {
     const { currentTheme } = useTheme();
@@ -46,26 +53,15 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
         }
     };
 
-
-
-
     // Tìm người dùng khác nếu không phải nhóm
     const otherUser = conversation?.isGroup === false && currentUser
         ? conversation.users?.find((u: any) => u.id !== currentUser.id)
         : null;
 
-
-
-
     // Kiểm tra trạng thái online của otherUser
     const isOnline = otherUser
         ? onlineUsers.some((user: any) => user.id === otherUser.id)
         : false;
-
-
-
-
-
 
     return (
         <div className={`p-4 border-b ${currentTheme.border} flex items-center justify-between bg-opacity-90 backdrop-blur-sm`}>
@@ -91,11 +87,11 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
                         />
                         {!conversation.isGroup && (
                             <div className={`
-            absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
-            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
-            border-2 border-white dark:border-gray-900
-            transition-all duration-200
-          `} />
+                                absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+                                ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+                                border-2 border-white dark:border-gray-900
+                                transition-all duration-200
+                            `} />
                         )}
 
                     </div>

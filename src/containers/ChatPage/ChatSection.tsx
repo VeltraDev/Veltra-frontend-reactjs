@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useSocket } from '@/contexts/SocketContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useConversation } from '@/hooks/useConversation';
-import MessageList from '@/components/chat/MessageList';
-import MessageInput from '@/components/chat/MessageInput';
-import GroupInfoPanel from '@/components/chat/GroupInfoPanel';
-import ThreadPanel from '@/components/chat/ThreadPanel';
+import MessageList from '@/components/Chat/MessageList';
+import MessageInput from '@/components/Chat/MessageInput';
+import GroupInfoPanel from '@/components/Chat/GroupInfoPanel';
+import ThreadPanel from '@/components/Chat/ThreadPanel';
 import ForwardMessageDialog from '@/components/chat/ForwardMessageDialog';
 import { toast } from 'react-hot-toast';
-import {
-  Phone, Video, Search, UserPlus, MoreVertical,
-  MessageSquare, Star, Archive, Bell, BellOff, Info,
-  Share2, Shield, ArrowLeft, Users
-} from 'lucide-react';
-import ChatHeader from '@/components/chat/ChatHeader';
+import { Shield, Users } from 'lucide-react';
+import ChatHeader from '@/components/Chat/ChatHeader';
+import { Conversation, Message } from '@/types';
+import { socketService } from '@/services/socket';
 
 interface ChatSectionProps {
   conversationId?: string;
@@ -76,7 +73,7 @@ export default function ChatSection({
       <div className={`flex-1 flex flex-col h-screen ${currentTheme.bg} relative`}>
         {/* Chat Header */}
         <ChatHeader
-          conversation={conversation}
+          conversation={conversation as Conversation}
           onToggleChatList={onToggleChatList}
           onToggleGroupInfo={() => setShowGroupInfo(true)}
           onToggleThread={() => setShowThreadPanel(true)}
@@ -92,7 +89,7 @@ export default function ChatSection({
         <MessageList
           messages={messages}
           typingUser={typingUser}
-          onForward={(message) => {
+          onForward={(message : Message) => {
             setMessageToForward(message);
             setShowForwardDialog(true);
           }}
@@ -152,7 +149,10 @@ export default function ChatSection({
         }}
         onSubmit={(targetConversationId) => {
           if (messageToForward) {
-            socketService.forwardMessage(messageToForward.id, targetConversationId);
+            socketService.forwardMessage({
+              originalMessageId: messageToForward.id,
+              targetConversationId,
+            });            
             toast.success('Message forwarded successfully');
             setShowForwardDialog(false);
             setMessageToForward(null);

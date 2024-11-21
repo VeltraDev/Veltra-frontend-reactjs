@@ -51,6 +51,18 @@ export const getConversations = createAsyncThunk(
   }
 );
 
+export const getConversationById = createAsyncThunk(
+  "chat/getConversationById",
+  async (conversationId: string, { rejectWithValue }) => {
+    try {
+      const response = await conversationService.getById(conversationId);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Failed to fetch conversation");
+    }
+  }
+);
+
 export const updateGroupInfo = createAsyncThunk(
   "chat/updateGroupInfo",
   async ({ id, data }: { id: string; data: { name?: string; picture?: string } }) => {
@@ -281,6 +293,22 @@ const chatSlice = createSlice({
     builder
       .addCase(createConversation.pending, (state) => {
         state.isLoading = true;
+      })
+      .addCase(getConversationById.fulfilled, (state, action) => {
+        const conversation = action.payload;
+        if (conversation) {
+          const existingIndex = state.conversations.findIndex((c) => c.id === conversation.id);
+          if (existingIndex === -1) {
+            state.conversations.push(conversation);
+          } else {
+            state.conversations[existingIndex] = conversation;
+          }
+        }
+        state.isLoading = false;
+      })
+      .addCase(getConversationById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       })
       .addCase(createConversation.fulfilled, (state, action) => {
         state.isLoading = false;

@@ -3,11 +3,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { Conversation } from '@/redux/chatSlice';
 import { Search, Plus, Settings, Filter, Users, MessageCircle } from 'lucide-react';
 import { useTheme, themes } from '@/contexts/ThemeContext';
-import GroupActions from '@/components/chat/GroupActions';
+import GroupActions from '@/components/Chat/GroupActions';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import UserStatus from '@/components/chat/UserStatus';
-import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
+import UserStatus from '@/components/Chat/UserStatus';
+import CreateGroupDialog from '@/components/Chat/CreateGroupDialog';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ChatListProps {
