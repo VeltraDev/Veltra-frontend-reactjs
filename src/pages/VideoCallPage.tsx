@@ -41,6 +41,7 @@ export default function VideoCallPage() {
 
   const dispatch = useDispatch<AppDispatch>();
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+  const callAnswered = useSelector((state: RootState) => state.call.callAnswered);
 
   const currentUser = useSelector((state: RootState) => state.auth.user?.user);
   const conversation = useSelector((state: RootState) =>
@@ -52,10 +53,10 @@ export default function VideoCallPage() {
 
   useEffect(() => {
     if (socketService) {
-      socketService.setupListeners((path: string) => navigate(path));
+        socketService.setNavigateCallback((path: string) => navigate(path));
     }
-  }, [socketService, navigate]);
-
+}, [socketService, navigate]);
+  
   useEffect(() => {
     const fetchConversation = async () => {
       if (!conversation && conversationId) {
@@ -195,14 +196,17 @@ export default function VideoCallPage() {
       }
     };
 
-    if (incomingCall || !isCallee) {
+    if (incomingCall && callAnswered && isCallee) {
+      initializeCall();
+    } else if (!isCallee) {
       initializeCall();
     }
 
     return () => {
       cleanup();
     };
-  }, [conversationId, conversation, incomingCall]);
+
+  }, [conversationId, conversation, incomingCall, callAnswered]);
 
   const cleanup = () => {
     console.log("cleanup called");

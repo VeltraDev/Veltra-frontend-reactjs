@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { toast } from "react-hot-toast";
 import { socketService } from "@/services/socket";
+import { useNavigate } from "react-router-dom";
 
 interface SocketContextType {
     socketService: typeof socketService;
@@ -18,13 +19,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     const isAuthenticated = useSelector(
         (state: RootState) => state.auth.isAuthenticated
     );
+    const navigate = useNavigate();
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
         if (isAuthenticated && accessToken) {
             try {
-                socketService.connect();
+                socketService.connect((path) => navigate(path));
                 setIsConnected(true);
             } catch (error) {
                 console.error("Failed to connect to socket:", error);

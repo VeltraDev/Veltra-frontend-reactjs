@@ -35,9 +35,15 @@ class SocketService {
   private notificationRoot: ReturnType<typeof createRoot> | null = null;
   private notificationContainer: HTMLDivElement | null = null;
   public onIceCandidateCallback: ((candidate: RTCIceCandidate) => void) | null = null;
+  private navigateCallback?: (path: string) => void;
 
-  public connect(): void {
-    if (this.socket?.connected) return;
+  public connect(navigateCallback?: (path: string) => void): void {
+    if (this.socket?.connected) {
+        if (navigateCallback) {
+            this.setNavigateCallback(navigateCallback);
+        }
+        return;
+    }
 
     const token = store.getState().auth.accessToken;
     if (!token) {
@@ -59,11 +65,23 @@ class SocketService {
       reconnectionDelay: 1000,
     });
 
-    this.setupListeners();
+    this.setupListeners(navigateCallback);
+  }
+
+  public setNavigateCallback(navigateCallback: (path: string) => void): void {
+    this.navigateCallback = navigateCallback;
   }
 
   public setupListeners(navigateCallback?: (path: string) => void): void {
     if (!this.socket) return;
+
+    if (navigateCallback) {
+      this.navigateCallback = navigateCallback;
+    }
+
+    if (this.socket.hasListeners("receive-call")) {
+      return;
+    }
 
     this.socket.on("connect", () => {
       console.log("Connected to socket server");
@@ -165,9 +183,8 @@ class SocketService {
           offer,
           message: `${from.firstName} ${from.lastName} is calling you...`,
         },
-        navigateCallback || (() => {})
       );
-    });
+    });  
 
     this.socket.on("call-answered", (data) => {
       store.dispatch(setCallAnswered(data.answer));
@@ -292,14 +309,14 @@ class SocketService {
       conversationId: string;
       offer: RTCSessionDescriptionInit;
       message: string;
-    },
-    navigateCallback: (path: string) => void
+    }
   ) {
     console.log("Showing call notification:", data);
 
     this.createNotificationContainer();
 
     if (this.notificationRoot) {
+
       this.notificationRoot.render(
         React.createElement(
           ThemeProvider,
@@ -315,7 +332,11 @@ class SocketService {
                   offer: data.offer,
                 })
               );
-              navigateCallback(`/call/${data.conversationId}`);
+              if (this.navigateCallback) {
+                this.navigateCallback(`/call/${data.conversationId}`);
+              } else {
+                console.error("navigateCallback is not defined");
+              }
               this.cleanupNotification();
             },
             onReject: () => {
