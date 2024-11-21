@@ -6,7 +6,7 @@ import {
   Share2, Shield, MessageCircle, Check, Users
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getConversations } from '@/redux/chatSlice';
+import { getConversations, setActiveConversation, getConversationMessages } from '@/redux/chatSlice';
 import { Conversation, User } from '@/types';
 import { toast } from 'react-hot-toast';
 import { conversationService } from '@/services/api/conversationService';
@@ -154,6 +154,14 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
       toast.success('Left group successfully');
       dispatch(getConversations());
       onClose();
+
+      // Logic to set the first conversation as active if no conversation is active
+      const conversations = await dispatch(getConversations()).unwrap();
+      if (conversations?.length > 0) {
+        const firstConversation = conversations[0];
+        dispatch(setActiveConversation(firstConversation));
+        dispatch(getConversationMessages(firstConversation.id));
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to leave group');
     } finally {
