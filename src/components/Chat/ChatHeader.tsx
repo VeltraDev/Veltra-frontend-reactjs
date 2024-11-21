@@ -132,6 +132,7 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
                         <button
                             className={`p-2 rounded-xl ${currentTheme.buttonHover}`}
                             onClick={handleVideoCall}
+                            
                         >
                             <Video className={`w-5 h-5 ${currentTheme.iconColor}`} />
                         </button>
