@@ -19,9 +19,9 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
     isSliding,
 }) => {
     return (
-        <div className="relative group h-[478px] overflow-hidden">
+        <div className="relative group overflow-hidden">
             <div
-                className={`relative h-[478px] flex transition-transform duration-500 ease-in-out rounded-md ${
+                className={`relative flex transition-transform duration-300 ease-in-out rounded-md ${
                     isSliding ? 'transform translate-x-[-100%]' : ''
                 }`}
                 style={{
@@ -33,7 +33,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
                         key={index}
                         src={attachment.url}
                         alt={`Attachment ${index + 1}`}
-                        className="w-full h-full object-cover rounded-sm"
+                        className="h-[585px] min-w-[470px] object-cover rounded-md border border-zinc-800"
                     />
                 ))}
             </div>

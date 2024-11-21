@@ -31,7 +31,7 @@ import DropdownNavbarComponent from "@/containers/User/NavUser";
 import UserSettings from "@/containers/User/UserSettings";
 import ChatPage from "@/pages/ChatPage";
 import VideoCallPage from "@/pages/VideoCallPage";
-import NewsFeedsPage from "@/pages/NewsfeedsPage";
+import NewsFeedsPage from "@/pages/NewsFeedsPage";
 
 interface Route {
     path: string;
@@ -119,6 +119,8 @@ const publicRoutes: Route[] = [
         path: "/newsfeeds",
         component: NewsFeedsPage,
     },
+
+
 
 
 

@@ -43,7 +43,8 @@ export const themes = {
         tooltipText: 'text-white',
         border2: 'border-gray-200',
         textNewsFeeds: 'text-gray-800',
-        iconColorSideBar: 'text-gray-700'
+        iconColorSideBar: 'text-gray-700',
+        textComment: 'text-[#737373]'
     },
     dark: {
         name: 'Dark',
@@ -76,7 +77,8 @@ export const themes = {
         tooltipText: 'text-white',
         border2: 'border-zinc-800',
         textNewsFeeds: 'text-[#f5f5f5]',
-        iconColorSideBar: 'text-[#f5f5f5]'
+        iconColorSideBar: 'text-[#f5f5f5]',
+        textComment: 'text-[#a8a8a8]'
     },
     midnightOasis: {
         name: 'Midnight Oasis',

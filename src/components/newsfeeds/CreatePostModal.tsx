@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { Image, AlignLeft, Smile, Calendar, Camera, MapPin } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import { http } from '@/api/http'; 
+import { http } from '@/api/http';
 import defaultAvatar from '@/images/user/defaultAvatar.png';
 interface CreatePostModalProps {
     isOpen: boolean;
@@ -107,26 +107,42 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
     };
 
     const handleSubmit = async () => {
+        if (!caption.trim() && selectedFiles.length === 0) {
+            toast.error('Please enter some content or select at least one image.');
+            return;
+        }
+
         try {
             const attachments = [];
+
             for (const file of selectedFiles) {
                 const url = await uploadImage(file);
                 attachments.push({ url, type: 'image' });
             }
 
-            const postData = { content: caption, attachments };
+            const postData = {
+                content: caption.trim(), 
+                attachments,
+            };
+
+            console.log('Post data:', postData); 
+
             await http.post('/posts', postData);
 
             toast.success('Post created successfully!');
-            handleReset();
-            onClose();
-
-            window.location.reload();
+            handleReset(); 
+            onClose(); 
+            window.location.reload(); 
         } catch (error) {
-            toast.error('Failed to create post. Please try again.');
+            if (error.response) {
+                toast.error(`Failed to create post: ${error.response.data.message}`);
+            } else {
+                toast.error('Failed to create post. Please try again.');
+            }
             console.error('handleSubmit: Error creating post', error);
         }
     };
+
 
 
     const handleCaptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -154,6 +170,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
 
     if (!isOpen) return null;
 
+
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div
@@ -164,7 +181,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                     scrollbarColor: '#888 #f4f4f4',
                     borderRadius: '12px',
                 }}
-                className={`relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
+                className={` overflow-y-auto scrollbar-custom relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
             >
                 <div className={`flex items-center justify-between p-4 border-b ${currentTheme.border2}`}>
                     <button onClick={handleClose}>
@@ -183,7 +200,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                         className="w-10 h-10 rounded-full object-cover"
                     />
                     <textarea
-                        value={caption}
+                        value={caption} 
                         onChange={handleCaptionChange}
                         placeholder="What's on your mind?"
                         className={`flex-grow w-full resize-none ${currentTheme.bg} ${currentTheme.text} focus:outline-none`}
@@ -192,6 +209,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                             overflow: 'hidden',
                         }}
                     />
+
                 </div>
 
                 <div className={`flex-1 flex items-center justify-center p-4 ${currentTheme.bg}`}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   MessageCircle,
   Send,
@@ -6,8 +6,11 @@ import {
   Heart,
 } from 'lucide-react';
 import ReactionBar from './ReactionBar';
+import CommentsModal from './CommentsModal';// Import PostComments
 
 const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentUserId, showReactionBar, setShowReactionBar }) => {
+  const [showComments, setShowComments] = useState(false); // State to toggle comments
+
   return (
     <div className="py-2">
       {/* Reaction Info - Top Reactions Display */}
@@ -32,7 +35,7 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
                 return (
                   <div className="flex items-center">
                     {topReactions.map((type, index) => (
-                      <span key={index} className="">
+                      <span key={index}>
                         {type === 'like' && (
                           <img src='/emoji/like.png' alt="emoji like" className='w-[17.5px] h-[17.5px]' />
                         )}
@@ -106,7 +109,11 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
             )}
           </div>
 
-          <button className="rounded-full transition-transform">
+          {/* Toggle comments modal */}
+          <button
+            className="rounded-full transition-transform"
+            onClick={() => setShowComments(true)}
+          >
             <MessageCircle className={`w-6 h-6 hover:text-gray-400 ${currentTheme.iconColor}`} />
           </button>
 
@@ -119,6 +126,15 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
           <Bookmark className={`w-6 h-6 hover:text-gray-400 ${currentTheme.iconColor}`} />
         </button>
       </div>
+
+      {/* Render PostComments modal */}
+      {showComments && (
+        <CommentsModal
+          postId={post.id}
+          onClose={() => setShowComments(false)}
+          currentUserId={currentUserId}
+        />
+      )}
     </div>
   );
 };

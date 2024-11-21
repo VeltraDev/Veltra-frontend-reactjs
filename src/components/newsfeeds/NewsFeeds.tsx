@@ -24,68 +24,81 @@ export default function NewsFeeds() {
     const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
     const [comments, setComments] = useState<{ [key: string]: string }>({});
     const [showOptions, setShowOptions] = useState<string | null>(null);
-    const [showComments, setShowComments] = useState<string | null>(null);
-    const [showShare, setShowShare] = useState<string | null>(null);
     const [currentImageIndexes, setCurrentImageIndexes] = useState<{
         [key: string]: number;
     }>({});
 
     const [showReactionBar, setShowReactionBar] = useState<string | null>(null);
-    const [reactions, setReactions] = useState<{ [key: string]: string }>({}); // Lưu loại reaction của từng post
-    const [userReactions, setUserReactions] = useState<{ [key: string]: any }>({}); // Lưu chi tiết reaction của người dùng
-
+     const [reactions, setReactions] = useState<{ [key: string]: string }>({}); 
+    const [userReactions, setUserReactions] = useState<{ [key: string]: any }>({}); 
+    const [reactionTypes, setReactionTypes] = useState<{ [key: string]: string }>({}); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
     const observer = useRef<IntersectionObserver | null>(null);
-    const [totalPosts, setTotalPosts] = useState<number | null>(null); // Lưu tổng số bài viết từ API
+    const [totalPosts, setTotalPosts] = useState<number | null>(null); 
+
+        const fetchReactionTypes = useCallback(async () => {
+        try {
+            const response = await http.get('/reaction-types');
+            const fetchedReactionTypes = response.data.results.reduce((acc: any, reaction: any) => {
+                acc[reaction.type] = reaction.id;
+                return acc;
+            }, {});
+            setReactionTypes(fetchedReactionTypes);
+        } catch (error) {
+            console.error('Failed to fetch reaction types', error);
+            toast.error('Failed to fetch reaction types');
+        }
+    }, []);
+
 
     const fetchPosts = useCallback(async (page: number) => {
-    const scrollY = window.scrollY; // Lưu vị trí cuộn hiện tại
-    try {
-        setLoading(true);
-        setError(null);
+        const scrollY = window.scrollY;
+        try {
+            setLoading(true);
+            setError(null);
 
-        const response = await http.get(`/posts?page=${page}&limit=10&sortBy=createdAt&order=desc`);
+            const response = await http.get(`/posts?page=${page}&limit=10&sortBy=createdAt&order=desc`);
 
-        const { total, results } = response.data; 
-        setTotalPosts(total);
+            const { total, results } = response.data; 
+            setTotalPosts(total);
 
-        const newResults = results.map((post: any) => ({
-            ...post,
-            userReactionDetail: post.reactions?.find(
-                (reaction: any) => reaction.reactedBy.id === currentUserId
-            ) || null,
-            totalReactions: post.reactions?.length || 0,
-        }));
+            const newResults = results.map((post: any) => ({
+                ...post,
+                userReactionDetail: post.reactions?.find(
+                    (reaction: any) => reaction.reactedBy.id === currentUserId
+                ) || null,
+                totalReactions: post.reactions?.length || 0,
+            }));
 
-        if (newResults.length === 0) {
+            if (newResults.length === 0) {
+                setIsFetchingMore(false);
+                return;
+            }
+
+            setPosts((prevPosts) => (page === 1 ? newResults : prevPosts.concat(newResults)));
+            setUserReactions((prevReactions) =>
+                newResults.reduce((acc: any, post: any) => {
+                    if (post.userReactionDetail) {
+                        acc[post.id] = post.userReactionDetail;
+                    }
+                    return acc;
+                }, { ...prevReactions })
+            );
+
+        } catch (err) {
+            console.error('Fetch Error:', err.response?.data || err.message || err);
+            setError(err.message || 'Failed to fetch posts');
+            toast.error(err.message || 'Failed to fetch posts');
+        } finally {
+            setLoading(false);
             setIsFetchingMore(false);
-            return;
+            window.scrollTo(0, scrollY); // Khôi phục vị trí cuộn
         }
-
-        setPosts((prevPosts) => (page === 1 ? newResults : prevPosts.concat(newResults)));
-        setUserReactions((prevReactions) =>
-            newResults.reduce((acc: any, post: any) => {
-                if (post.userReactionDetail) {
-                    acc[post.id] = post.userReactionDetail;
-                }
-                return acc;
-            }, { ...prevReactions })
-        );
-
-    } catch (err) {
-        console.error('Fetch Error:', err.response?.data || err.message || err);
-        setError(err.message || 'Failed to fetch posts');
-        toast.error(err.message || 'Failed to fetch posts');
-    } finally {
-        setLoading(false);
-        setIsFetchingMore(false);
-        window.scrollTo(0, scrollY); // Khôi phục vị trí cuộn
-    }
-}, [currentUserId]);
+    }, [currentUserId]);
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
@@ -98,7 +111,14 @@ export default function NewsFeeds() {
             }
         };
         fetchCurrentUser();
-    }, []);
+        fetchReactionTypes();
+    }, [fetchReactionTypes]);
+
+    useEffect(() => {
+        if (currentUserId) {
+            fetchPosts(1);
+        }
+    }, [currentUserId, fetchPosts]);
 
     useEffect(() => {
         if (currentUserId) {
@@ -175,13 +195,20 @@ export default function NewsFeeds() {
         }
     };
 
+    
     const handleReact = async (postId: string, reactionType: string) => {
+        const reactionTypeId = reactionTypes[reactionType];
+
+        if (!reactionTypeId) {
+            toast.error('Invalid reaction type');
+            return;
+        }
+
         if (
             userReactions[postId] &&
             userReactions[postId].reactedBy.id === currentUserId &&
             userReactions[postId].reactionType.type === reactionType
         ) {
-
             await removeReaction(postId);
 
             setUserReactions((prev) => {
@@ -204,33 +231,14 @@ export default function NewsFeeds() {
                 )
             );
         } else {
-            const reactionTypeIdMap: { [key: string]: string } = {
-                like: 'dd8ad4b3-5ebe-4b50-b01e-8688e8a1f84d',
-                love: 'fd9c6de1-24ce-4dcc-8975-ea26efe09e60',
-                haha: '56f763de-2f66-420a-bd28-81cadfe0319f',
-                wow: '9f03dd40-6033-4174-b55e-5d464185b325',
-                sad: '9b18d3e6-88c5-4f86-bc26-dc12fdf92b9f',
-                angry: '29867226-d2f8-4081-8b28-fa3991aaf30b',
-            };
-
-            const reactionTypeId = reactionTypeIdMap[reactionType];
-
-            if (!reactionTypeId) {
-                toast.error('Invalid reaction type');
-                return;
-            }
-
             if (userReactions[postId]) {
                 await removeReaction(postId);
             }
 
             const reactionData = await postReaction(postId, reactionTypeId);
 
-            console.log('Full Reaction Data:', reactionData); 
-
             if (reactionData && reactionData.reactionType && reactionData.reactionType.type) {
                 const selectedReaction = reactionData.reactionType.type;
-                console.log('Selected Reaction:', selectedReaction); 
 
                 setUserReactions((prev) => ({
                     ...prev,
@@ -284,13 +292,6 @@ export default function NewsFeeds() {
             }
             return newSaved;
         });
-    };
-
-    const handleAddComment = (postId: string) => {
-        const comment = comments[postId]?.trim();
-        if (!comment) return;
-        toast.success('Comment added successfully!');
-        setComments((prev) => ({ ...prev, [postId]: '' }));
     };
 
     const handleEmojiSelect = (postId: string, emoji: string) => {
@@ -377,7 +378,7 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
                     <article
                         key={post.id}
                         id={`post-${post.id}`}
-                        className={`${currentTheme.bg} max-w-[470px] border-b ${currentTheme.border2} mx-auto overflow-hidden relative animate-fadeInScale`}
+                        className={`${currentTheme.bg} border-b ${currentTheme.border2} mx-auto overflow-hidden relative animate-fadeInScale`}
                         ref={index === posts.length - 1 ? lastPostElementRef : null}
                     >
                         <div className="py-4 flex items-center justify-between">
@@ -406,7 +407,9 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
                             </button>
                         </div>
                         <div className="py-2 text-[14px]">
-                            <p className={`${currentTheme.textNewsFeeds} ${!post.expanded ? 'line-clamp-2 text-[14px]' : ''}`}>
+                            <p 
+                            style={{ whiteSpace: 'pre-wrap' }}
+                            className={`${currentTheme.textNewsFeeds} ${!post.expanded ? 'line-clamp-3 text-[14px]' : ''}`}>
                                 {post.content}
                             </p>
                             {post.content.length > 100 && (
