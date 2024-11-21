@@ -25,6 +25,10 @@ import RoleDB from "@/pages/DashBoard/RolePage";
 import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
 import UsersDB from "@/pages/DashBoard/UsersDB";
 
+import Permission from "@/containers/DashBoardPage/Permissions/Main";
+import AddPermission from "@/containers/DashBoardPage/Permissions/AddPermission";
+import UpdatePermission from "@/containers/DashBoardPage/Permissions/UpdatePermission";
+
 
 import ChangePassword from "@/containers/User/ChangePassword";
 import DropdownNavbarComponent from "@/containers/User/NavUser";
@@ -101,22 +105,22 @@ const publicRoutes: Route[] = [
         component: RoleDB,
         layout: DBLayout,
     },
-    // {
+    {
 
-    //     path: "/dashboard/permission",
-    //     component: Permission,
-    //     layout: DBLayout,
-    // },
-    // {
-    //     path: "/dashboard/permission/addpermission",
-    //     component: AddPermission,
-    //     layout: DBLayout,
-    // },
-    // {
-    //     path: "/dashboard/permission/updatepermission/:id",
-    //     component: UpdatePermission,
-    //     layout: DBLayout,
-    // },
+        path: "/dashboard/permission",
+        component: Permission,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/permission/addpermission",
+        component: AddPermission,
+        layout: DBLayout,
+    },
+    {
+        path: "/dashboard/permission/updatepermission/:id",
+        component: UpdatePermission,
+        layout: DBLayout,
+    },
     {
         path: "/dashboard/role/add",
         component: AddRole,

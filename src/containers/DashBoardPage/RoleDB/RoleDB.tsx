@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Edit, Trash, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Modal from 'react-modal';
-import { ToastContainer, toast } from 'react-toastify'
 import "react-toastify/dist/ReactToastify.min.css"
-import { injectStyle } from "react-toastify/dist/inject-style";
 import { RoleForm } from '../RoleDB/RoleForm';
 import ConfirmDeleteRoleModal from '../RoleDB/ConfirmDeleteRoleModal';
 import { Dropdown, Menu, Checkbox, Button, Input } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import { http } from '@/api/http';
-
+import { FaPlus } from "react-icons/fa";
+import { MdOutlineSettings } from "react-icons/md";
+import Toast from '../Permissions/Toast';
+import { LuPencil } from "react-icons/lu";
+import { AiOutlineDelete } from "react-icons/ai";
 interface Role {
     id: string;
     name: string;
@@ -33,7 +35,8 @@ export default function RolePage() {
     const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
     const [visibleFields, setVisibleFields] = useState<string[]>(['id', 'name', 'description', 'createdAt']);
     const navigate = useNavigate();
-
+    const [message, setMessage] = useState('');
+    const [status, setStatus] = useState('');
     useEffect(() => {
         fetchRoles(currentPage);
     }, [currentPage]);
@@ -41,10 +44,12 @@ export default function RolePage() {
     const fetchRoles = async (page: number) => {
         try {
             const response = await http.get(`/roles?page=${page}&limit=10&sortBy=createdAt&order=ASC`);
-            setRoles(response.data.data.results);
-            setTotalPages(Math.ceil(response.data.data.total / 10));
+            setRoles(response.data.results);
+            setTotalPages(Math.ceil(response.data.total / 10));
         } catch (error) {
             console.error('Lỗi khi lấy dữ liệu từ api:', error);
+            setMessage('Lỗi tải dữ liệu');
+            setStatus('danger');
         }
     };
 
@@ -61,7 +66,10 @@ export default function RolePage() {
             setCurrentPage(page);
         }
     };
-
+    const handleCloseToast = () => {
+    setMessage('');
+    setStatus('');
+  };
     const openEditModal = (role: Role) => {
         setRoleToEdit(role);
         setModalIsOpen(true);
@@ -86,21 +94,19 @@ export default function RolePage() {
         if (roleToEdit) {
             try {
                 await http.patch(`/roles/${roleToEdit.id}`, values);
-                console.log("Role updated successfully:", values);
-                toast.success("Role updated successfully!");
+                setMessage('Role updated successfully!');
+                setStatus('success');
                 setTimeout(() => {
                     fetchRoles(currentPage);
                 }, 500);
                 setRoles(roles.map(role => role.id === roleToEdit.id ? { ...role, ...values } : role));
                 closeEditModal();
-
-                // Remove unselected permissions, if any
                 if (removedPermissions.length > 0) {
                     await handleDeletePermissions(roleToEdit.id, removedPermissions);
                 }
             } catch (error) {
-                toast.error("Error updating role!");
-                console.error("Error updating role:", error);
+                setMessage('Error updating role!'); 
+                setStatus('danger');
             }
         }
     };
@@ -109,14 +115,14 @@ export default function RolePage() {
         if (roleToDelete) {
             try {
                 await http.delete(`/roles/${roleToDelete}`);
-                console.log("Role deleted successfully:", roleToDelete);
-                toast.success("Role deleted successfully!");
+                setMessage('Xóa yêu cầu thành công');
+                setStatus('success');
                 setRoles(roles.filter(role => role.id !== roleToDelete));
                 closeDeleteRoleModal();
                 fetchRoles(currentPage);
             } catch (error) {
-                toast.error("Error deleting role!");
-                console.error("Error deleting role:", error);
+                setMessage('Xóa yêu cầu thất bại');
+                setStatus('danger');
             }
         }
     };
@@ -168,19 +174,39 @@ export default function RolePage() {
 
     const getRoleClassNames = (roleName: string) => {
         if (roleName === 'ADMIN') {
-            return 'bg-red-50 text-red-700';
+            return 'font-semibold text-red-500';
         } else if (roleName === 'USER') {
-            return 'bg-green-50 text-green-700';
+            return 'font-semibold text-green-500';
         } else {
-            return 'bg-blue-50 text-blue-700';
+            return 'font-semibold text-blue-700';
         }
+    };
+    useEffect(() => {
+        setFilteredRoles(
+            roles.filter((role) =>
+                role.name.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+        );
+    }, [roles, searchTerm]);
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value.trim());
     };
 
     return (
         <>
-            <ToastContainer />
+            <Toast handleCloseToast={handleCloseToast} message={message} status={status} />
             <injectStyle />
-            <div className="container mx-auto p-4 bg-gray-50">
+            <div className="flex justify-between items-center mb-6 ">
+                <input
+                    type="text"
+                    className="p-2 border border-gray-300 rounded w-[42.5rem] relative left-[65px] uppercase"
+                    placeholder="Tìm kiếm Roles"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                />
+            </div>
+            <div className="container mx-auto p-4">
                 <Modal
                     isOpen={modalIsOpen}
                     onRequestClose={closeEditModal}
@@ -220,27 +246,19 @@ export default function RolePage() {
                 />
 
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold mb-2">Role</h1>
-                    <div className="text-sm text-gray-500">
-                        Dashboard &gt; Role List
-                    </div>
+                    <h1 className="text-2xl font-bold mb-2">Danh sách Role</h1>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
-                    <Input.Search
-                        placeholder="Search by role name"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: 300, fontSize: '1rem' }}
-                    />
                     <div className="flex items-center space-x-4">
-                        <Dropdown overlay={menu} trigger={['click']}>
+                        <Dropdown overlay={menu} trigger={['click']} className='border-white flex absolute right-[15%] hover:text-black hover:border-white !border-transparent !bg-transparent !text-black'>
                             <Button size="middle">
-                                Select Fields <DownOutlined />
+                                <MdOutlineSettings className='w-8 h-8 hover:bg-gray-300 rounded-md hover:text-black hover:border-white'/><DownOutlined className='text-white border-white'/>
                             </Button>
                         </Dropdown>
-                        <button onClick={() => navigate('/dashboard/role/add')} className="px-4 py-2 bg-blue-600 text-white rounded-md text-base">
-                            Add Role
+                        <button onClick={() => navigate('/dashboard/role/add')} className="px-4 py-2 text-green-600 hover:text-green-900 bg-green-200 rounded-md text-base flex w-[140px] absolute right-[53px]">
+                            Thêm mới
+                        <FaPlus className="ml-3 h-5 w-5" />
                         </button>
                     </div>
                 </div>
@@ -251,9 +269,9 @@ export default function RolePage() {
                             <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 {visibleFields.includes('id') && <th className="px-6 py-3">ID</th>}
                                 {visibleFields.includes('name') && <th className="px-6 py-3">Name</th>}
-                                {visibleFields.includes('description') && <th className="px-6 py-3">Description</th>}
-                                {visibleFields.includes('createdAt') && <th className="px-6 py-3">Created At</th>}
-                                <th className="px-6 py-3">Action</th>
+                                {visibleFields.includes('description') && <th className="px-6 py-3">Describle</th>}
+                                {visibleFields.includes('createdAt') && <th className="px-6 py-3">Create at</th>}
+                                <th className="px-6 py-3">Tool</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -274,11 +292,11 @@ export default function RolePage() {
                                     )}
                                     {visibleFields.includes('createdAt') && <td className="px-6 py-4 whitespace-nowrap">{new Date(role.createdAt).toLocaleDateString()}</td>}
                                     <td className="px-6 py-4 whitespace-nowrap relative">
-                                        <button className="text-blue-600 hover:text-blue-900 mr-2" onClick={() => openEditModal(role)}>
-                                            <Edit className="h-5 w-5" />
+                                        <button className="text-orange-600 hover:text-orange-900 p-2 rounded-lg bg-orange-200 inline-block cursor-pointer mx-1" onClick={() => openEditModal(role)}>
+                                            <LuPencil className="h-5 w-5" />
                                         </button>
-                                        <button className="text-red-600 hover:text-red-900" onClick={() => openDeleteRoleModal(role.id)}>
-                                            <Trash className="h-5 w-5" />
+                                        <button className="text-red-600 hover:text-red-900 p-2 rounded-lg bg-red-200 inline-block cursor-pointer mx-1" onClick={() => openDeleteRoleModal(role.id)}>
+                                            <AiOutlineDelete className="h-5 w-5" />
                                         </button>
                                     </td>
                                 </tr>
@@ -287,31 +305,31 @@ export default function RolePage() {
                     </table>
                 </div>
 
-                <div className="flex items-center justify-between mt-4">
-                    <p className="text-sm text-gray-500">Showing {currentPage} of {totalPages} pages</p>
+                <div className="flex items-center justify-center mt-4">
+                    <p className="text-sm text-gray-500"></p>
                     <div className="flex space-x-2">
                         <button
-                            className="px-3 py-1 border rounded-md text-sm"
+                            className="px-3 py-1 border text-sm w-[40px] h-[40px]"
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
-                            <ChevronLeft className="h-5 w-5" />
+                            &laquo;
                         </button>
                         {[...Array(totalPages)].map((_, index) => (
                             <button
                                 key={index + 1}
-                                className={`px-3 py-1 rounded-md text-sm ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}`}
+                                className={`w-[40px] h-[40px] px-3 py-1 text-sm ${currentPage === index + 1 ? 'bg-gray-500 text-white' : 'bg-white text-gray-700 border'}`}
                                 onClick={() => handlePageChange(index + 1)}
                             >
                                 {index + 1}
                             </button>
                         ))}
                         <button
-                            className="px-3 py-1 border rounded-md text-sm"
+                            className="px-3 py-1 border text-sm w-[40px] h-[40px]"
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
                         >
-                            <ChevronRight className="h-5 w-5" />
+                             &raquo;
                         </button>
                     </div>
                 </div>

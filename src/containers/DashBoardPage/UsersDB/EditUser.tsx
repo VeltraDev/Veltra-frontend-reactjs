@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { http } from '@/api/http';
 import AvatarEditor from 'react-avatar-editor';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+//import { ToastContainer, toast } from 'react-toastify';
+//import 'react-toastify/dist/ReactToastify.css';
 import { handleCropSave, uploadImage } from './uploadImageUtils';
 import userImage from '../../images/user/User-avatar.svg';
-
+import Toast from '../Permissions/Toast';
+import { Link } from 'react-router-dom';
+import { IoArrowBackOutline } from "react-icons/io5";
 const EditUser = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -18,7 +20,8 @@ const EditUser = () => {
   const [userIsVerified, setUserIsVerified] = useState(false);
   const [userRoleId, setUserRoleId] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState('');
   const [previewAvatar, setPreviewAvatar] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isCropperOpen, setIsCropperOpen] = useState(false);
@@ -29,7 +32,7 @@ const EditUser = () => {
     const fetchUser = async () => {
       try {
         const response = await http.get(`/users/${userId}`);
-        const user = response.data.data || {};
+        const user = response.data || {};
 
         setUserFirstName(user.firstName || '');
         setUserLastName(user.lastName || '');
@@ -67,7 +70,10 @@ const EditUser = () => {
       }
     };
   }, [userAvatar]);
-
+  const handleCloseToast = () => {
+    setMessage('');
+    setStatus('');
+  };
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -124,6 +130,9 @@ const EditUser = () => {
 
   return (
     <>
+      <Link className="mb-8 bg-[#f5f5f5] shadow hover:bg-slate-600 rounded-lg w-12 h-12 flex" to="/dashboard/users">
+        <IoArrowBackOutline className="h-12 w-12" />
+      </Link>
       {/* Cropper Modal */}
       {isCropperOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -167,7 +176,8 @@ const EditUser = () => {
       )}
 
       {/* Toast Container */}
-      <ToastContainer />
+      <Toast handleCloseToast={handleCloseToast} message={message} status={status} />
+      
 
       {/* Main Content */}
       <div className="max-w-[1165px]">
@@ -222,13 +232,8 @@ const EditUser = () => {
                   onClick={handleSave}
                 >
                   <div className="focus: cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M7.99985 10.6667C8.73624 10.6667 9.3332 10.0697 9.3332 9.33334C9.3332 8.59696 8.73624 8 7.99985 8C7.26346 8 6.6665 8.59696 6.6665 9.33334C6.6665 10.0697 7.26346 10.6667 7.99985 10.6667Z" fill="white" />
-                      <path d="M15.024 2.748L13.252 0.976C13.0747 0.801469 12.8783 0.647406 12.6667 0.516656V2C12.6644 3.84003 11.1733 5.33113 9.33331 5.33334H6.66666C4.82662 5.33113 3.33553 3.84003 3.33334 2V0C1.49331 0.00221875 0.00221875 1.49331 0 3.33334V12.6667C0.00221875 14.5067 1.49331 15.9978 3.33334 16H12.6667C14.5067 15.9978 15.9978 14.5067 16 12.6667V5.10469C16.0025 4.22028 15.651 3.37166 15.024 2.748ZM8 12C6.52725 12 5.33334 10.8061 5.33334 9.33334C5.33334 7.86059 6.52725 6.66669 8 6.66669C9.47275 6.66669 10.6667 7.86059 10.6667 9.33334C10.6667 10.8061 9.47275 12 8 12Z" fill="white" />
-                      <path d="M6.6665 3.99997H9.33315C10.4377 3.99997 11.3332 3.10453 11.3332 1.99997V0.0426562C11.1882 0.0190312 11.0419 0.00478125 10.8952 0H4.6665V2C4.6665 3.10453 5.56194 3.99997 6.6665 3.99997Z" fill="white" />
-                    </svg>
                   </div>
-                  <button className="text-white">Lưu thông tin</button>
+                  <button className="text-white">Lưu</button>
                 </div>
               </div>
             </div>
