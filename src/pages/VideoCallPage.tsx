@@ -1,421 +1,316 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+
+import { chatSocketService } from '@/services/chatsocket';
+import { toast } from 'react-toastify';
 import { RootState } from '@/redux/store';
-import { useSocket } from '@/contexts/SocketContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { motion } from 'framer-motion';
-import {
-    Mic, MicOff, Video, VideoOff, PhoneOff,
-    Maximize2, Minimize2, Settings, Users
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { endCall, setCallAnswered, addIceCandidate } from '@/redux/callSlice';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-export default function VideoCallPage() {
-    const navigate = useNavigate();
-    const { conversationId } = useParams<{ conversationId: string }>();
-    const dispatch = useDispatch();
-    const { currentTheme } = useTheme();
-    const { callSocketService } = useSocket();
+interface VideoCallPageProps {
+    conversationId: string;
+    calleeId: string;
+    onEndCall: () => void;
+}
 
-    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const [isMuted, setIsMuted] = useState(false);
-    const [isVideoOff, setIsVideoOff] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isConnecting, setIsConnecting] = useState(true);
-    const [callDuration, setCallDuration] = useState(0);
+const VideoCallPage: React.FC<VideoCallPageProps> = ({ onEndCall }) => {
 
-    const localVideoRef = useRef<HTMLVideoElement>(null);
-    const remoteVideoRef = useRef<HTMLVideoElement>(null);
-    const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-    const callTimerRef = useRef<NodeJS.Timeout>();
+    const [stream, setStream] = useState<MediaStream | null>(null);
+    const [receivingCall, setReceivingCall] = useState(false);
+    const [callerId, setCallerId] = useState('');
+    const [callerOffer, setCallerOffer] = useState<RTCSessionDescriptionInit | null>(null);
+    const [callAccepted, setCallAccepted] = useState(false);
+    const [iceCandidateQueue, setIceCandidateQueue] = useState<RTCIceCandidate[]>([]);
+    const [isMicOn, setIsMicOn] = useState(true);
+    const [isCameraOn, setIsCameraOn] = useState(true);
+    const [isCalling, setIsCalling] = useState(false);
 
-    const [isCallInitialized, setIsCallInitialized] = useState(false);
-
-
+    const myVideoRef = useRef<HTMLVideoElement>(null);
+    const userVideoRef = useRef<HTMLVideoElement>(null);
+    const connectionRef = useRef<RTCPeerConnection | null>(null);
+    const endCallRef = useRef<() => void>();
+    const navigate = useNavigate()
+    const conversationId = useSelector((state: RootState)=> state.chat.activeConversation?.id)
     const currentUser = useSelector((state: RootState) => state.auth.user?.user);
     const conversation = useSelector((state: RootState) =>
         state.chat.conversations.find(c => c.id === conversationId)
     );
 
-    const incomingCall = useSelector((state: RootState) => state.call.incomingCall);
-    const iceCandidates = useSelector((state: RootState) => state.call.iceCandidates);
-    const peerConnection = new RTCPeerConnection();
-    // Using peerConnection somewhere
-
-    useEffect(() => {
-        if (incomingCall) {
-            const handleIncomingCall = async () => {
-                // Logic nhận cuộc gọi
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-
-                callSocketService.answerCall(incomingCall.conversationId, incomingCall.from.id, answer);
-            };
-
-            handleIncomingCall();
-        }
-    }, [incomingCall]);
-
-
-    useEffect(() => {
-        if (isCallInitialized || !conversationId || !conversation || !currentUser) {
-            // toast.error('Invalid conversation');
-            // navigate('/chat');
-            return;
+    // Ensure conversation is defined before accessing its properties
+    const calleeId = conversation ? conversation.users.find(u => u.id !== currentUser.id)?.id : null;
+    const endCall = useCallback(() => {
+        if (connectionRef.current) {
+            connectionRef.current.close();
+            connectionRef.current = null;
         }
 
-        // Get the other user from conversation
-        const otherUser = conversation.users.find(u => u.id !== currentUser.id);
-        if (!otherUser) {
-            toast.error('Cannot find user to call');
-            navigate('/chat');
-            return;
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
         }
 
-        const initializeCall = async () => {
-            if (!conversation || !currentUser) {
-                toast.error('Invalid conversation');
-                return;
-            }
+        setCallAccepted(false);
+        setReceivingCall(false);
+        setCallerId('');
+        setCallerOffer(null);
+        setIsMicOn(true);
+        setIsCameraOn(true);
+        setIsCalling(false);
 
-            // Get the other user from conversation
-            const otherUser = conversation.users.find(u => u.id !== currentUser.id);
-            if (!otherUser) {
-                toast.error('Cannot find user to call');
-                return;
-            }
+        chatSocketService.socket?.emit('end-call', {
+            to: callerId || calleeId,
+            conversationId
+        });
 
-            try {
-                // Yêu cầu truy cập camera và mic
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
+        if (onEndCall) onEndCall();
 
-                setLocalStream(stream);
-
-                if (localVideoRef.current) {
-                    localVideoRef.current.srcObject = stream;
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then((currentStream) => {
+                setStream(currentStream);
+                if (myVideoRef.current) {
+                    myVideoRef.current.srcObject = currentStream;
                 }
+            })
+            .catch((err) => console.error('Error restarting media devices:', err));
+    }, [callerId, calleeId, conversationId, onEndCall, stream]);
 
-                // Tạo RTCPeerConnection
-                const peerConnection = new RTCPeerConnection({
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' }
-                    ]
-                });
+    useEffect(() => {
+        endCallRef.current = endCall;
+    }, [endCall]);
 
-                // Thêm track từ luồng địa phương
-                stream.getTracks().forEach((track) => {
-                    peerConnection.addTrack(track, stream);
-                });
+    useEffect(() => {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then((currentStream) => {
+                setStream(currentStream);
+                if (myVideoRef.current) {
+                    myVideoRef.current.srcObject = currentStream;
+                }
+            });
 
-                peerConnectionRef.current = peerConnection;
+        const socket = chatSocketService.socket;
+        if (!socket) return;
 
-                // Xử lý ICE candidate
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
-                        if (otherUser) {
-                            callSocketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
-                        }
-                    }
-                };
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate && peerConnection.iceGatheringState !== 'complete') {
-                        callSocketService.sendIceCandidate(conversationId, otherUser.id, event.candidate);
-                    }
-                };
+        socket.on('receive-call', (data: { from: string; offer: RTCSessionDescriptionInit; conversationId: string }) => {
+            console.log(`dang co cuoc goi den, ${data.from}`)
+            if (data.conversationId === conversationId) {
+                setReceivingCall(true);
+                setCallerId(data.from);
+                setCallerOffer(data.offer);
+            }
+        });
 
-                // Xử lý remote stream
-                peerConnection.ontrack = (event) => {
-                    setRemoteStream(event.streams[0]);
-                    if (remoteVideoRef.current) {
-                        remoteVideoRef.current.srcObject = event.streams[0];
-                    }
-                };
+        socket.on('call-answered', (data: { answer: RTCSessionDescriptionInit; conversationId: string }) => {
+            if (data.conversationId === conversationId && connectionRef.current) {
+                connectionRef.current.setRemoteDescription(new RTCSessionDescription(data.answer))
+                    .catch((err) => console.error('Error setting remote description:', err));
+                setCallAccepted(true);
+                setIsCalling(false);
+            }
+        });
 
-                // Caller tạo offer
-                if (!incomingCall) {
-                    const offer = await peerConnection.createOffer();
-                    await peerConnection.setLocalDescription(offer);
-                    const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
-                    if (otherUser) {
-                        callSocketService.callUser(conversationId, otherUser.id, offer);
-                    }
+        socket.on('ice-candidate', (data: { candidate: RTCIceCandidateInit; conversationId: string }) => {
+            if (data.conversationId === conversationId) {
+                if (connectionRef.current) {
+                    connectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate))
+                        .catch((err) => console.error('Error adding received ice candidate:', err));
                 } else {
-                    // Callee nhận và trả lời offer
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
-                    const answer = await peerConnection.createAnswer();
-                    await peerConnection.setLocalDescription(answer);
-
-                    const conversationId = incomingCall.conversationId; // Lấy ID cuộc trò chuyện từ incomingCall
-                    const fromUserId = incomingCall.from.id; // Người gọi
-
-                    // Truyền đầy đủ tham số
-                    callSocketService.answerCall(conversationId, fromUserId, answer);
+                    setIceCandidateQueue(prev => [...prev, new RTCIceCandidate(data.candidate)]);
                 }
-
-                setIsConnecting(false);
-                callTimerRef.current = setInterval(() => {
-                    setCallDuration((prev) => prev + 1);
-                }, 1000);
-            } catch (error) {
-                console.error('Error initializing call:', error);
-                toast.error('Không thể truy cập camera/microphone.');
-                handleEndCall();
             }
-        };
+        });
 
+        socket.on('end-call', (data: { conversationId: string }) => {
+            if (data.conversationId === conversationId && endCallRef.current) {
+                endCallRef.current();
+            }
+        });
 
-        initializeCall();
-        setIsCallInitialized(true);
         return () => {
-            cleanup();
+            socket.off('receive-call');
+            socket.off('call-answered');
+            socket.off('ice-candidate');
+            socket.off('end-call');
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
         };
-    }, [conversationId, conversation, incomingCall]);
+    }, [conversationId]);
 
-    // Handle incoming ICE candidates
-    useEffect(() => {
-        const addIceCandidates = async () => {
-            if (!peerConnectionRef.current) return;
-
-            for (const candidate of iceCandidates) {
-                try {
-                    // Check if signalingState is 'closed' before adding the candidate
-                    if (peerConnectionRef.current.signalingState !== 'closed') {
-                        await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-                        console.log('Added ICE candidate:', candidate);
-                    } else {
-                        console.log('PeerConnection is closed. Cannot add ICE candidate.');
-                    }
-                } catch (error) {
-                    console.error('Error adding ICE candidate:', error);
-                }
+    const createPeerConnection = (toId: string, isCaller: boolean) => {
+        const peer = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        });
+        peer.onicecandidate = (event) => {
+            if (event.candidate) {
+                chatSocketService.socket?.emit('send-ice-candidate', {
+                    to: toId,
+                    candidate: event.candidate,
+                    conversationId
+                });
             }
         };
 
+        peer.ontrack = (event) => {
+            if (userVideoRef.current) {
+                userVideoRef.current.srcObject = event.streams[0];
+            }
+        };
 
-        addIceCandidates();
-    }, [iceCandidates]);
+        if (stream) {
+            stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        }
 
-    const cleanup = () => {
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-        }
-        if (peerConnectionRef.current) {
-            peerConnectionRef.current.close();
-        }
-        if (callTimerRef.current) {
-            clearInterval(callTimerRef.current);
-        }
-        dispatch(endCall());
+        if (isCaller) connectionRef.current = peer;
+
+        return peer;
     };
 
+    const callUser = async () => {
+        if (!calleeId) return console.log('no');
 
-    const handleEndCall = () => {
-        if (!conversation || !currentUser) {
-            console.error('Invalid conversation or user context');
-            return;
+        setIsCalling(true);
+        const peer = createPeerConnection(calleeId, true);
+        console.log('2132')
+        try {
+            const offer = await peer.createOffer();
+            await peer.setLocalDescription(offer);
+
+            chatSocketService.socket?.emit('call-user', {
+                to: calleeId,
+                offer,
+                conversationId
+            });
+
+            connectionRef.current = peer;
+        } catch (err) {
+            console.error('Error creating offer:', err);
+            setIsCalling(false);
         }
-
-        const otherUser = conversation.users.find((u) => u.id !== currentUser.id);
-        if (otherUser) {
-            const conversationId = conversation.id; // Lấy ID cuộc trò chuyện
-            const toUserId = otherUser.id; // Lấy ID người dùng bên kia
-            callSocketService.endCall(conversationId, toUserId); // Gọi endCall với đủ tham số
-        }
-
-        cleanup();
-        navigate('/chat');
     };
 
+    const answerCall = async () => {
+        setCallAccepted(true);
+        setIsCalling(false);
+
+        const peer = createPeerConnection(callerId, false);
+
+        try {
+            if (callerOffer) {
+                await peer.setRemoteDescription(new RTCSessionDescription(callerOffer));
+                const answer = await peer.createAnswer();
+                await peer.setLocalDescription(answer);
+
+                chatSocketService.socket?.emit('answer-call', {
+                    to: callerId,
+                    answer,
+                    conversationId
+                });
+
+                connectionRef.current = peer;
+
+                iceCandidateQueue.forEach(candidate => {
+                    connectionRef.current?.addIceCandidate(candidate)
+                        .catch((err) => console.error('Error adding ice candidate from queue:', err));
+                });
+                setIceCandidateQueue([]);
+            }
+        } catch (err) {
+            console.error('Error answering call:', err);
+            setIsCalling(false);
+        }
+    };
 
     const toggleMic = () => {
-        if (localStream) {
-            const audioTrack = localStream.getAudioTracks()[0];
-            audioTrack.enabled = !audioTrack.enabled;
-            setIsMuted(!audioTrack.enabled);
+        if (stream) {
+            stream.getAudioTracks().forEach(track => {
+                track.enabled = !track.enabled;
+                setIsMicOn(track.enabled);
+            });
         }
     };
 
-    const toggleVideo = () => {
-        if (localStream) {
-            const videoTrack = localStream.getVideoTracks()[0];
-            videoTrack.enabled = !videoTrack.enabled;
-            setIsVideoOff(!videoTrack.enabled);
+    const toggleCamera = () => {
+        if (stream) {
+            stream.getVideoTracks().forEach(track => {
+                track.enabled = !track.enabled;
+                setIsCameraOn(track.enabled);
+            });
         }
-    };
-
-    const toggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-            setIsFullscreen(true);
-        } else {
-            document.exitFullscreen();
-            setIsFullscreen(false);
-        }
-    };
-
-    const formatDuration = (seconds: number) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
     return (
-        <div className={`h-screen ${currentTheme.bg} flex flex-col`}>
-            {/* Call Info Bar */}
-            <div className={`
-        p-4 flex items-center justify-between
-        bg-gradient-to-b from-black/50 to-transparent
-        absolute top-0 left-0 right-0 z-10
-      `}>
-                <div className="flex items-center space-x-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
-                        <img
-                            src={conversation?.picture || `https://ui-avatars.com/api/?name=${conversation?.name}`}
-                            alt={conversation?.name}
-                            className="w-10 h-10 rounded-full ring-2 ring-white/50"
-                        />
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 ring-2 ring-white" />
+                        <video ref={myVideoRef} autoPlay playsInline muted className="w-full rounded-lg" />
+                        <p className="text-center mt-2">Bạn</p>
                     </div>
-                    <div>
-                        <h3 className="text-white font-semibold">
-                            {conversation?.name}
-                        </h3>
-                        <p className="text-white/80 text-sm">
-                            {isConnecting ? 'Connecting...' : formatDuration(callDuration)}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={toggleFullscreen}
-                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
-                    >
-                        {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-                    </motion.button>
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
-                    >
-                        <Settings className="w-5 h-5" />
-                    </motion.button>
-                </div>
-            </div>
-
-            {/* Video Grid */}
-            <div className="flex-1 grid grid-cols-2 gap-4 p-4">
-                {/* Local Video */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative rounded-2xl overflow-hidden shadow-lg"
-                >
-                    <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className={`
-              w-full h-full object-cover
-              ${isVideoOff ? 'hidden' : ''}
-            `}
-                    />
-                    {isVideoOff && (
-                        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                                    <Users className="w-10 h-10 text-gray-400" />
-                                </div>
-                                <p className="text-gray-400">Camera is off</p>
-                            </div>
+                    {callAccepted && (
+                        <div className="relative">
+                            <video ref={userVideoRef} autoPlay playsInline className="w-full rounded-lg" />
+                            <p className="text-center mt-2">Đối tác</p>
                         </div>
                     )}
-                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
-                        You
-                    </div>
-                </motion.div>
-
-                {/* Remote Video */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative rounded-2xl overflow-hidden shadow-lg"
-                >
-                    <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-white text-sm">
-                        {conversation?.users.find(u => u.id !== currentUser?.id)?.firstName || 'Remote User'}
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Controls */}
-            <div className={`
-        p-6 flex items-center justify-center space-x-4
-        bg-gradient-to-t from-black/50 to-transparent
-      `}>
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={toggleMic}
-                    className={`
-            p-4 rounded-full text-white
-            ${isMuted ? 'bg-red-500' : 'bg-white/10 hover:bg-white/20'}
-            transition-colors
-          `}
-                >
-                    {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-                </motion.button>
-
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleEndCall}
-                    className="p-4 rounded-full bg-red-500 text-white hover:bg-red-600"
-                >
-                    <PhoneOff className="w-6 h-6" />
-                </motion.button>
-
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={toggleVideo}
-                    className={`
-            p-4 rounded-full text-white
-            ${isVideoOff ? 'bg-red-500' : 'bg-white/10 hover:bg-white/20'}
-            transition-colors
-          `}
-                >
-                    {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Video className="w-6 h-6" />}
-                </motion.button>
-            </div>
-
-            {/* Loading Overlay */}
-            {isConnecting && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                    <div className="text-center text-white">
-                        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                        <p className="text-lg font-medium">Connecting...</p>
-                    </div>
                 </div>
-            )}
+
+                <div className="flex justify-center gap-4 mt-6">
+                    {!callAccepted && !receivingCall && (
+                        <button
+                            onClick={callUser}
+                            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            disabled={isCalling}
+                        >
+                            <i className="fas fa-phone mr-2"></i>
+                            {isCalling ? 'Đang gọi...' : 'Gọi'}
+                        </button>
+                    )}
+
+                    {receivingCall && !callAccepted && (
+                        <button
+                            onClick={answerCall}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        >
+                            <i className="fas fa-phone-alt mr-2"></i>
+                            Trả lời
+                        </button>
+                    )}
+
+                    {callAccepted && (
+                        <>
+                            <button
+                                onClick={toggleMic}
+                                className={`px-4 py-2 rounded-lg ${isMicOn ? 'bg-blue-500 hover:bg-blue-600' : 'bg-red-500 hover:bg-red-600'
+                                    } text-white`}
+                            >
+                                <i className={`fas ${isMicOn ? 'fa-microphone' : 'fa-microphone-slash'} mr-2`}></i>
+                                {isMicOn ? 'Tắt Mic' : 'Bật Mic'}
+                            </button>
+
+                            <button
+                                onClick={toggleCamera}
+                                className={`px-4 py-2 rounded-lg ${isCameraOn ? 'bg-blue-500 hover:bg-blue-600' : 'bg-red-500 hover:bg-red-600'
+                                    } text-white`}
+                            >
+                                <i className={`fas ${isCameraOn ? 'fa-video' : 'fa-video-slash'} mr-2`}></i>
+                                {isCameraOn ? 'Tắt Camera' : 'Bật Camera'}
+                            </button>
+                        </>
+                    )}
+
+                    <button
+                        onClick={endCall}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    >
+                        <i className="fas fa-phone-slash mr-2"></i>
+                        Kết thúc
+                    </button>
+                </div>
+            </div>
         </div>
     );
-}
+};
+
+export default VideoCallPage;
