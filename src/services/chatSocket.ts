@@ -142,6 +142,28 @@ class ChatSocketService {
     this.socket.on("stopTypingInfo", ({ conversationId, user }) => {
       store.dispatch(removeTypingUser({ conversationId, userId: user.id }));
     });
+
+        // Video call events
+    this.socket.on("receive-call", (data) => {
+      console.log("Receiving call from:", data.from);
+      this.socket?.emit("receive-call-ack", { 
+        to: data.from,
+        conversationId: data.conversationId 
+      });
+    });
+
+    this.socket.on("call-answered", (data) => {
+      console.log("Call answered:", data);
+    });
+
+    this.socket.on("ice-candidate", (data) => {
+      console.log("Received ICE candidate");
+    });
+
+    this.socket.on("end-call", (data) => {
+      console.log("Call ended:", data);
+    });
+
   }
 
   public async sendMessage(payload: { 
