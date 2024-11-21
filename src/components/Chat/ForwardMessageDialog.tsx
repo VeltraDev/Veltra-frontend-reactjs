@@ -13,15 +13,15 @@ interface ForwardMessageDialogProps {
 export default function ForwardMessageDialog({
     isOpen,
     onClose,
-    onSubmit
+    onSubmit,
 }: ForwardMessageDialogProps) {
     const { theme } = useTheme();
     const currentTheme = themes[theme];
     const [searchTerm, setSearchTerm] = useState('');
     const conversations = useSelector((state: RootState) => state.chat.conversations);
-    const currentUser = useSelector((state: RootState) => state.auth.user);
+    const currentUser = useSelector((state: RootState) => state.auth.user?.user);
 
-    const filteredConversations = conversations.filter(conversation =>
+    const filteredConversations = conversations.filter((conversation) =>
         conversation.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -62,27 +62,46 @@ export default function ForwardMessageDialog({
                                 <p className={currentTheme.mutedText}>No conversations found</p>
                             </div>
                         ) : (
-                            filteredConversations.map(conversation => (
-                                <button
-                                    key={conversation.id}
-                                    onClick={() => onSubmit(conversation.id)}
-                                    className={`w-full p-4 flex items-center space-x-4 ${currentTheme.buttonHover} transition-colors`}
-                                >
-                                    <img
-                                        src={conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`}
-                                        alt={conversation.name}
-                                        className="w-12 h-12 rounded-full object-cover"
-                                    />
-                                    <div className="flex-1 text-left">
-                                        <h3 className={`font-semibold truncate ${currentTheme.headerText}`}>
-                                            {conversation.name}
-                                        </h3>
-                                        <p className={`text-sm truncate ${currentTheme.mutedText}`}>
-                                            {conversation.users.length} members
-                                        </p>
-                                    </div>
-                                </button>
-                            ))
+                            filteredConversations.map((conversation) => {
+                                const otherUser =
+                                    !conversation.isGroup &&
+                                    conversation.users.find((user) => user.id !== currentUser?.id);
+
+                                return (
+                                    <button
+                                        key={conversation.id}
+                                        onClick={() => onSubmit(conversation.id)}
+                                        className={`w-full p-4 flex items-center space-x-4 ${currentTheme.buttonHover} transition-colors`}
+                                    >
+                                        <img
+                                            src={
+                                                conversation.isGroup
+                                                    ? conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`
+                                                    : otherUser?.picture || `https://ui-avatars.com/api/?name=${otherUser?.firstName}+${otherUser?.lastName}`
+                                            }
+                                            alt={
+                                                conversation.isGroup
+                                                    ? conversation.name
+                                                    : `${otherUser?.firstName} ${otherUser?.lastName}`
+                                            }
+                                            className="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <div className="flex-1 text-left">
+                                            <h3 className={`font-semibold truncate ${currentTheme.headerText}`}>
+                                                {conversation.isGroup
+                                                    ? conversation.name
+                                                    : `${otherUser?.firstName ?? 'No First Name'} ${otherUser?.lastName ?? 'No Last Name'
+                                                    }` || 'No User'}
+                                            </h3>
+                                            <p className={`text-sm truncate ${currentTheme.mutedText}`}>
+                                                {conversation.isGroup
+                                                    ? `${conversation.users.length} members`
+                                                    : otherUser?.email ?? 'No Email'}
+                                            </p>
+                                        </div>
+                                    </button>
+                                );
+                            })
                         )}
                     </div>
                 </div>
