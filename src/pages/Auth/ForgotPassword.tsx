@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import http from "@/utils/http";
+import { http } from '@/api/http';
 
 const formSchema = z.object({
   email: z.string().email({

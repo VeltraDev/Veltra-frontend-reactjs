@@ -1,94 +1,312 @@
-import React from 'react';
-import { Edit2Icon, EditIcon, SearchIcon } from 'lucide-react';
-import { Conversation } from '../../mockData/chatData';
-
+import React, { useState, useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { Conversation } from '@/redux/chatSlice';
+import { Search, Plus, Settings, Filter, Users, MessageCircle } from 'lucide-react';
+import { useTheme, themes } from '@/contexts/ThemeContext';
+import GroupActions from '@/components/chat/GroupActions';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import UserStatus from '@/components/chat/UserStatus';
+import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ChatListProps {
   conversations: Conversation[];
   activeConversationId: string | undefined;
-  onSelectConversation: (conversationId: string) => void;
+  onSelectConversation: (id: string) => void;
+  isVisible?: boolean;
 }
 
-export default function ChatList({ conversations, activeConversationId, onSelectConversation }: ChatListProps) {
+export default function ChatList({
+  conversations = [],
+  activeConversationId,
+  onSelectConversation,
+  isVisible = true,
+}: ChatListProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'groups' | 'direct'>('all');
+  const [showGroupActions, setShowGroupActions] = useState<string | null>(null);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+
+  const { theme } = useTheme();
+  const currentTheme = themes[theme];
+  const currentUser = useSelector((state: RootState) => state.auth.user?.user);
+  const typingUsers = useSelector((state: RootState) => state.chat.typingUsers);
+  const onlineUsers = useSelector((state: RootState) => state.chat.onlineUsers);
+
+  const getConversationInfo = (conversation: Conversation) => {
+    if (!conversation) return { name: '', otherUser: null };
+
+    if (conversation.isGroup) {
+      return {
+        name: conversation.name || '',
+        picture: conversation.picture || '',
+        otherUser: null
+      };
+    }
+
+    // Đối với cuộc trò chuyện 1-1, lấy thông tin của người còn lại
+    const otherUser = conversation.users?.find(user => user.id !== currentUser?.id);
+    return {
+      name: otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : '',
+      picture: otherUser?.avatar || '',
+      otherUser
+    };
+  };
+
+
+
+
+
+
+
+  const formatMessageTime = (timestamp: string | undefined) => {
+    if (!timestamp) return ''; // Kiểm tra nếu timestamp bị undefined
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return ''; // Kiểm tra nếu date không hợp lệ
+    try {
+      return formatDistanceToNow(date, { addSuffix: false });
+    } catch (error) {
+      console.error("Error formatting message time:", error);
+      return '';
+    }
+  };
+
+
+  // Check if a conversation has any online users
+  const isConversationOnline = (conversation: Conversation) => {
+    if (!conversation) return false;
+
+    // For direct chats, check if the other user is online
+    if (!conversation.isGroup) {
+      const otherUser = conversation.users.find(u => u.id !== currentUser?.id);
+      return otherUser ? onlineUsers.some(u => u.id === otherUser.id) : false;
+    }
+
+    // For group chats, check if any member (except current user) is online
+    return conversation.users.some(user =>
+      user.id !== currentUser?.id && onlineUsers.some(u => u.id === user.id)
+    );
+  };
+
+  // Get online members count for group chats
+  const getOnlineMembersCount = (conversation: Conversation) => {
+    if (!conversation.isGroup) return 0;
+    return conversation.users.filter(user =>
+      user.id !== currentUser?.id && onlineUsers.some(u => u.id === user.id)
+    ).length;
+  };
+
+  const sortedAndFilteredConversations = useMemo(() => {
+    return (conversations || [])
+      .filter(conversation => {
+        if (!conversation) return false;
+
+        const { name } = getConversationInfo(conversation);
+        const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = activeFilter === 'all' ||
+          (activeFilter === 'groups' && conversation.isGroup) ||
+          (activeFilter === 'direct' && !conversation.isGroup);
+
+        return matchesSearch && matchesFilter;
+      })
+      .sort((a, b) => {
+        const timeA = a?.latestMessage?.createdAt ? new Date(a.latestMessage.createdAt).getTime() : 0;
+        const timeB = b?.latestMessage?.createdAt ? new Date(b.latestMessage.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+  }, [conversations, searchTerm, activeFilter, currentUser?.id]);
+
+  const getTypingText = (conversationId: string) => {
+    const typingUsersInConvo = typingUsers[conversationId] || [];
+    const otherTypingUsers = typingUsersInConvo.filter(user => user.id !== currentUser?.id);
+
+    if (!otherTypingUsers.length) return null;
+    if (otherTypingUsers.length === 1) return `${otherTypingUsers[0].firstName} is typing...`;
+    return `${otherTypingUsers.length} people are typing...`;
+  };
+
   return (
-    <div className="flex max-w-[397px] flex-col justify-between border-e border-gray-800 bg-black h-screen overflow-hidden">
-      <div className="flex flex-col h-full ">
-        <div className="text-xl font-bold h-[75px] flex items-center justify-between pt-9 px-6 pb-3-">young.clement<span><Edit2Icon className='size-5' /></span></div>
-
-        <div className="mt-[22px] flex-grow overflow-y-auto scrollbar-custom">
-          <div className="relative px-6 ">
-            <label htmlFor="Search" className="sr-only font-medium"> Search </label>
-
-            <input
-              type="text"
-              id="Search"
-              placeholder="Tìm kiếm"
-              className="w-full rounded-md  bg-[#363636] text-white py-2 pl-4 pe-10 shadow-sm lg:text-base font-light sm:text-sm"
-            />
-
-            <span className="absolute inset-y-0 end-6 grid w-10 place-content-center pr-2 ">
-              <button type="button" className="text-white hover:text-white">
-                <span className="sr-only">Search</span>
-
-                <SearchIcon className='size-5 ' />
-              </button>
-            </span>
+    <div className={`
+      w-full md:w-96 h-screen ${currentTheme.bg} flex flex-col border-r ${currentTheme.border}
+      fixed md:relative
+      ${isVisible ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      transition-transform duration-300 ease-in-out
+      z-20 md:z-auto
+    `}>
+      {/* Header */}
+      <div className={`p-4 md:p-6 border-b ${currentTheme.border} space-y-4`}>
+        <div className="flex items-center justify-between">
+          <h1 className={`text-xl md:text-2xl font-bold ${currentTheme.headerText}`}>
+            Messages
+          </h1>
+          <div className="flex items-center space-x-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowCreateGroup(true)}
+              className={`p-2 ${currentTheme.buttonHover} rounded-xl transition-colors`}
+            >
+              <Plus className={currentTheme.iconColor} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-2 ${currentTheme.buttonHover} rounded-xl transition-colors`}
+            >
+              <Filter className={currentTheme.iconColor} />
+            </motion.button>
           </div>
-          <div className="mt-6 px-6">
-            <p className='font-semibold mb-3'>Nhóm</p>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="flex items-center space-x-3 p-2 rounded-lg bg-secondary hover:bg-gray-700 transition-colors duration-200">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">G</span>
-                  </div>
-                  <span className="text-white">General</span>
-                </a>
-              </li>
-              <li>
-                <a href="#" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-se transition-colors duration-200">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">P</span>
-                  </div>
-                  <span className="text-white">Project A</span>
-                </a>
-              </li>
-              <li>
-                <a href="#" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-se transition-colors duration-200">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">T</span>
-                  </div>
-                  <span className="text-white">Team Chat</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-          <p className='font-semibold mt-[22px] px-6'>Tin nhắn</p>
-          <ul className="overflow-y-auto ">
-            {conversations.map((conversation) => (
-              <li key={conversation.id}>
-                <div
-                  className={`flex items-center space-x-3 py-2 px-6 cursor-pointer ${activeConversationId === conversation.id
-                      ? 'bg-secondary'
-                      : 'hover:bg-[#0a0a0a] transition-colors duration-200'
-                    }`}
-                  onClick={() => onSelectConversation(conversation.id)}
-                >
-                  <img src={conversation.user.avatar} className='size-14 rounded-full object-cover' alt={`${conversation.user.name}'s avatar`} />
-                  <div className='flex flex-col overflow-hidden'>
-                    <p className='text-[0.9rem] font-medium text-white truncate'>{conversation.user.name}</p>
-                    <p className='text-xs text-[#a8a8a8] w-[397px] truncate' >
-                      {conversation.messages[conversation.messages.length - 1]?.sender === 'self'
-                        ? `Bạn: ${conversation.messages[conversation.messages.length - 1]?.content}`
-                        : conversation.messages[conversation.messages.length - 1]?.content}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
         </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${currentTheme.iconColor}`} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search conversations..."
+            className={`
+              w-full pl-10 pr-4 py-2 rounded-xl
+              ${currentTheme.input} ${currentTheme.text}
+              focus:outline-none focus:ring-2 focus:ring-blue-500/50
+              transition-all duration-200
+            `}
+          />
+        </div>
+
+        {/* Filters */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex space-x-2"
+            >
+              {[
+                { id: 'all', label: 'All', icon: MessageCircle },
+                { id: 'groups', label: 'Groups', icon: Users },
+                { id: 'direct', label: 'Direct', icon: MessageCircle }
+              ].map((filter) => (
+                <motion.button
+                  key={filter.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveFilter(filter.id as 'all' | 'groups' | 'direct')}
+                  className={`
+                    flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm
+                    transition-all duration-200
+                    ${activeFilter === filter.id
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : `${currentTheme.buttonHover} ${currentTheme.text}`
+                    }
+                  `}
+                >
+                  <filter.icon className="w-4 h-4" />
+                  <span>{filter.label}</span>
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Conversations List */}
+      <div className="flex-1 overflow-hidden">
+        <AnimatePresence>
+          {sortedAndFilteredConversations.map((conversation) => {
+            if (!conversation) return null;
+
+            const { name, picture, otherUser } = getConversationInfo(conversation);
+            const isActive = conversation.id === activeConversationId;
+            const typingText = getTypingText(conversation.id);
+            const isOnline = isConversationOnline(conversation);
+            const onlineMembersCount = getOnlineMembersCount(conversation);
+
+            return (
+              <motion.div
+                key={conversation.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                onClick={() => onSelectConversation(conversation.id)}
+                className={`
+        relative p-4 flex items-center space-x-4 cursor-pointer
+        ${isActive ? currentTheme.activeItem : currentTheme.buttonHover}
+        border-b ${currentTheme.border}
+        transition-colors duration-200
+      `}
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  <div className={`
+          relative w-12 h-12 rounded-full overflow-hidden
+          ${isActive ? 'ring-2 ring-blue-500' : ''}
+          transition-all duration-200
+        `}>
+                    <img
+                      src={picture || `https://ui-avatars.com/api/?name=${name}`}
+                      alt={name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {!conversation.isGroup && (
+                    <div className={`
+            absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+            border-2 border-white dark:border-gray-900
+            transition-all duration-200
+          `} />
+                  )}
+
+                  {conversation.isGroup && (
+                    <div className={`
+            absolute -bottom-1 -right-1 bg-blue-500 rounded-full px-1.5 py-0.5
+            border-2 border-white dark:border-gray-900
+            transition-all duration-200
+          `}>
+                      <span className="text-xs text-white font-medium">
+                        {onlineMembersCount}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Chat Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-baseline">
+                    <h3 className={`font-semibold truncate max-w-40 ${currentTheme.text}`}>
+                      {name}
+                    </h3>
+                    <h4 className={`text-right text-sm ${currentTheme.text} truncate w-30`}>
+                      {conversation.latestMessage?.createdAt
+                      ? formatMessageTime(conversation.latestMessage.createdAt)
+                        : 'No messages'}
+                    </h4>
+                    
+                  </div>
+                  <p className={`text-sm truncate ${typingText ? 'text-blue-500 font-medium' : currentTheme.mutedText}`}>
+                    {typingText || (conversation.latestMessage?.sender?.id === currentUser?.id ? 'You: ' : '')}
+                    {conversation.latestMessage?.content || 'No messages yet'}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+
+        </AnimatePresence>
+      </div>
+
+      {/* Create Group Dialog */}
+      <CreateGroupDialog
+        isOpen={showCreateGroup}
+        onClose={() => setShowCreateGroup(false)}
+      />
     </div>
   );
 }

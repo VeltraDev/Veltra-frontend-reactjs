@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -12,69 +14,43 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import http from "@/utils/http";
-import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
-    username: z.string().email({
-        message: "Vui lòng nhập địa chỉ username hợp lệ.",
+    username: z.string().min(3, {
+        message: 'Username must be at least 3 characters.',
     }),
     password: z.string().min(6, {
-        message: "Mật khẩu phải chứa ít nhất 6 ký tự.",
+        message: 'Password must be at least 6 characters.',
     }),
 });
 
-export default function SignInPage() {
-    const [loginStatus, setLoginStatus] = useState<string | null>(null);
-    const navigate = useNavigate();
+type FormData = z.infer<typeof formSchema>;
 
-    const form = useForm<z.infer<typeof formSchema>>({
+export function SignInForm() {
+    const { login, isLoading } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = (location.state as any)?.from?.pathname || '/newfeed';
+
+    const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            username: "thuyy566@gmail.com",
-            password: "30122004@Kien",
+            username: '',
+            password: '',
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    const onSubmit = async (values: FormData) => {
         try {
-            const response = await http.post(
-                "/auth/login",
-                {
-                    username: values.username,
-                    password: values.password,
-                },
-                {
-                    headers: { "Content-Type": "application/json" },
-                    withCredentials: true,
-                }
-            );
-
-            if (response.data && response.data.data.access_token) {
-               
-                localStorage.setItem("accessToken", response.data.data.access_token);
-                localStorage.setItem("user", JSON.stringify(response.data.data.user));
-
-                const userRole = response.data.data.user.role.name;
-                setLoginStatus("Đăng nhập thành công!");
-
-                if (userRole === "ADMIN") {
-                    navigate("/dashboard"); 
-                } else {
-                    navigate("/"); 
-                }
-            } else {
-                const message =
-                    response.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.";
-                setLoginStatus(message);
-            }
+            await login({
+                username: values.username,
+                password: values.password,
+            });
+            navigate(from, { replace: true });
         } catch (error: any) {
-            const message =
-                error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.";
-            setLoginStatus(message);
+            console.error(error.message || 'An error occurred. Please try again.');
         }
-    }
-
+    };
 
     return (
         <Form {...form}>
@@ -84,13 +60,13 @@ export default function SignInPage() {
                     name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel className="text-white">Username</FormLabel>
                             <FormControl>
-                                <Input
-                                    className="text-white"
+                                <Input className="text-blue-500"
                                     type="text"
-                                    placeholder="nguyenvan@example.com"
+                                    placeholder="Enter your username"
                                     {...field}
+                                    disabled={isLoading}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -103,13 +79,13 @@ export default function SignInPage() {
                     name="password"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Mật khẩu</FormLabel>
+                            <FormLabel className="text-white">Password</FormLabel>
                             <FormControl>
-                                <Input
-                                    className="text-white"
+                                <Input className="text-blue-500"
                                     type="password"
                                     placeholder="********"
                                     {...field}
+                                    disabled={isLoading}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -117,47 +93,23 @@ export default function SignInPage() {
                     )}
                 />
 
-                <div className="text-sm text-gray-500">
-                    Bằng cách tạo tài khoản, bạn đồng ý với{" "}
-                    <a href="#" className="text-gray-700 underline">
-                        điều khoản và điều kiện
-                    </a>{" "}
-                    và{" "}
-                    <a href="#" className="text-gray-700 underline">
-                        chính sách bảo mật
-                    </a>{" "}
-                    của chúng tôi.
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <Button type="submit" className="text-white">
-                        Đăng nhập
-                    </Button>
-
-                    {loginStatus && (
-                        <p
-                            className={`text-center ${loginStatus.includes("thành công")
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }`}
-                        >
-                            {loginStatus}
-                        </p>
+                <Button
+                    type="submit"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <div className="flex items-center">
+                            <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
+                            Signing in...
+                        </div>
+                    ) : (
+                        'Sign in'
                     )}
+                </Button>
 
-                    <p className="text-sm text-gray-500">
-                        Bạn đã có tài khoản?{" "}
-                        <a href="#" className="text-gray-700 underline">
-                            Đăng nhập
-                        </a>
-                        .
-                    </p>
-                </div>
-
-                <p className="text-sm text-gray-500 text-center">
-                    <a href="/forgot-password" className="text-gray-700 underline">
-                        Quên mật khẩu?
-                    </a>
+                <p className="text-sm text-gray-500 ">
+                    <Link to="/forgot-password" className="text-gray-700 underline hover:text-white"> Quên mật khẩu?</Link>
                 </p>
             </form>
         </Form>

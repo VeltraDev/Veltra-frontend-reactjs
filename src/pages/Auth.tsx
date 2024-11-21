@@ -1,9 +1,21 @@
-import { useState } from "react";
-import SignInForm from "../containers/AuthPage/SignInForm";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import SignUpForm from "../containers/AuthPage/SignUpForm";
+import { SignInForm } from "@/containers/AuthPage/SignInForm";
 
-export default function     AuthPage() {
+export default function AuthPage() {
+    const location = useLocation();
     const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const tab = queryParams.get('tab');
+        if (tab === 'signup') {
+            setActiveTab('signup');
+        } else {
+            setActiveTab('signin');
+        }
+    }, [location.search]);
 
     return (
         <section className="relative flex size-full max-h-full items-center justify-center bg-[url('https://4kwallpapers.com/images/wallpapers/dark-background-abstract-background-network-3d-background-3840x2160-8324.png')] bg-cover px-2 py-6 md:px-12 lg:justify-end lg:p-14 lg:pt-28">
@@ -48,7 +60,3 @@ export default function     AuthPage() {
         </section>
     );
 }
-
-
-
-

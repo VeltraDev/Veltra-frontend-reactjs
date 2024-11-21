@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import http from "@/utils/http";
+import { http } from '@/api/http';
 
 // Schema validation
 const formSchema = z.object({

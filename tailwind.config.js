@@ -28,17 +28,13 @@ module.exports = {
 		extend: {
 			colors: {
 				black: '#000',
-				white: '#f5f5f5',
+				white: '#fff',
 				bgPrimary: '#F7F8F9',
-				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
-				},
+				secondary: '#262626',
 				textSecondary: '#878A8D',
-				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
-				},
+				primary: '#FB8E0B ',
+				accent: '#34495E',
+				
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
@@ -80,7 +76,9 @@ module.exports = {
 				bodydark1: '#DEE4EE',
 				bodydark2: '#8A99AF',
 				primary: '#3C50E0',
-				secondary: '#80CAEE',
+
+				secondary: '#262626',
+
 				stroke: '#E2E8F0',
 				gray: {
 					...colors.gray,

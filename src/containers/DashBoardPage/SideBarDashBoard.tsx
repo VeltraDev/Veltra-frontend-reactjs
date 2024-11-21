@@ -4,6 +4,7 @@ import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo.svg';
 import AppLogo from '@/components/common/AppLogo';
 import { App } from 'antd';
+import {ApiOutlined} from '@ant-design/icons';
 
 interface SidebarProps {
     sidebarOpen: boolean;
@@ -65,7 +66,7 @@ const SideBarDashBoard = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         >
             {/* <!-- SIDEBAR HEADER --> */}
             <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
-                <NavLink to="/">
+                <NavLink to="/dashboard">
                  <AppLogo/>
                 </NavLink>
 
@@ -176,13 +177,13 @@ const SideBarDashBoard = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                                 <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                                                     <li>
                                                         <NavLink
-                                                            to="/"
+                                                            to="/dashboard"
                                                             className={({ isActive }) =>
                                                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
                                                                 (isActive && '!text-white')
                                                             }
                                                         >
-                                                            eCommerce
+                                                            Main Screen
                                                         </NavLink>
                                                     </li>
                                                 </ul>
@@ -197,7 +198,7 @@ const SideBarDashBoard = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             {/* <!-- Menu Item Calendar --> */}
                             <li>
                                 <NavLink
-                                    to="/calendar"
+                                    to="/dashboard/role"
                                     className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('calendar') &&
                                         'bg-graydark dark:bg-meta-4'
                                         }`}
@@ -215,15 +216,15 @@ const SideBarDashBoard = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                             fill=""
                                         />
                                     </svg>
-                                    Calendar
+                                    Role
                                 </NavLink>
                             </li>
                             {/* <!-- Menu Item Calendar --> */}
 
-                            {/* <!-- Menu Item Profile --> */}
+                            {/* <!-- Menu Item Users --> */}
                             <li>
                                 <NavLink
-                                    to="/profile"
+                                    to="/dashboard/users"
                                     className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('profile') && 'bg-graydark dark:bg-meta-4'
                                         }`}
                                 >
@@ -244,10 +245,24 @@ const SideBarDashBoard = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                             fill=""
                                         />
                                     </svg>
-                                    Profile
+                                    Users
                                 </NavLink>
                             </li>
-                            {/* <!-- Menu Item Profile --> */}
+                            {/* <!-- Menu Item Users --> */}
+
+
+                            {/* <!-- Menu Item Permission --> */}
+                             <li>
+                                <NavLink
+                                    to="/dashboard/permission"
+                                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('profile') && 'bg-graydark dark:bg-meta-4'
+                                        }`}
+                                >
+                                    <ApiOutlined />
+                                    Permission
+                                </NavLink>
+                            </li>                 
+                            {/* <!-- Menu Item Permission --> */}
 
                             {/* <!-- Menu Item Forms --> */}
                             <SidebarLinkGroup
