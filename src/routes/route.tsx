@@ -117,6 +117,10 @@ const protectedRoutes: Route[] = [
         component: ChangePassword,
         requiresAuth: true,
     },
+    {
+        path: "/newsfeeds",
+        component: NewsFeedsPage,
+    },
     // Thêm các route bảo vệ khác
 ];
 
@@ -141,10 +145,7 @@ const adminRoutes: Route[] = [
         component: RoleDB,
         layout: DBLayout,
     },
-    {
-        path: "/newsfeeds",
-        component: NewsFeedsPage,
-    },
+
 
 
 

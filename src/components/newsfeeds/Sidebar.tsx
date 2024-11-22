@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Home,
   MessageCircle,
@@ -102,12 +102,12 @@ const Sidebar = () => {
             <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Reels</span>
           </button>
 
-          <button
+          <Link to="/chat"
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
           >
             <MessageCircle className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
             <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Messages</span>
-          </button>
+          </Link>
 
           <button
             onClick={() => setShowNotifications(!showNotifications)}

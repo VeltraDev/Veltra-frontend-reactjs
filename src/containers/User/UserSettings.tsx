@@ -150,7 +150,7 @@ const UserSettings = () => {
           <div className="flex gap-4">
             <div
               className="flex py-2 px-4 bg-gray-100 rounded-[50px] justify-center items-center gap-2 border border-[#858D9D] focus: cursor-pointer"
-              onClick={() => navigate('/nav-home')}
+              onClick={() => navigate('/newsfeeds')}
             >
               <div className=''>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
