@@ -29,6 +29,10 @@ export const conversationService = {
     const response = await http.get("/conversations");
     return response.data;
   },
+  getConversationsWithTotal: async (page: number) => {
+    const response = await http.get(`/conversations?page=${page}`);
+    return response.data; // Trả về cả `results` và `total`
+  },
 
   create: async (data: CreateConversationDto) => {
     const response = await http.post("/conversations", data);

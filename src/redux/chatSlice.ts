@@ -13,6 +13,7 @@ interface ChatState {
   error: string | null;
   typingUsers: Record<string, User[]>;
   onlineUsers: User[];
+  total: number; // Thêm total
 }
 
 const initialState: ChatState = {
@@ -23,6 +24,7 @@ const initialState: ChatState = {
   error: null,
   typingUsers: {},
   onlineUsers: [],
+  total: 0, // Khởi tạo
 };
 
 const sortConversations = (conversations: Conversation[]) => {
@@ -50,6 +52,18 @@ export const getConversations = createAsyncThunk(
     return response.results;
   }
 );
+
+export const getConversationsWithTotal = createAsyncThunk(
+  "chat/getConversationsWithTotal",
+  async ({ page }: { page: number }) => {
+    const response = await conversationService.getConversationsWithTotal(page);
+    return {
+      results: response.results, // Danh sách conversations
+      total: response.total,    // Tổng số conversations
+    };
+  }
+);
+
 
 export const updateGroupInfo = createAsyncThunk(
   "chat/updateGroupInfo",
@@ -339,6 +353,27 @@ const chatSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(getConversations.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || "Failed to fetch conversations";
+      })
+      .addCase(getConversationsWithTotal.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getConversationsWithTotal.fulfilled, (state, action) => {
+        if (action.meta.arg.page === 1) {
+          state.conversations = action.payload.results; // Reset khi page là 1
+        } else {
+          // Tránh trùng lặp conversation
+          const seen = new Set(state.conversations.map((c) => c.id));
+          const newConversations = action.payload.results.filter(
+            (c) => !seen.has(c.id)
+          );
+          state.conversations = [...state.conversations, ...newConversations];
+        }
+        state.total = action.payload.total; // Cập nhật tổng số
+        state.isLoading = false;
+      })
+      .addCase(getConversationsWithTotal.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "Failed to fetch conversations";
       })
