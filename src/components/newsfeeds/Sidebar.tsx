@@ -67,13 +67,15 @@ const Sidebar = () => {
       className={`w-[245px] h-full p-4 fixed text-white border-r ${currentTheme.border2} flex flex-col justify-between ${currentTheme.bg}`}
     >
       <div>
-        <div className={`text-2xl font-bold py-6 px-2 cursor-pointer ${currentTheme.text}`}>
+        <div className={`text-2xl font-bold py-6 px-2 cursor-pointer ${currentTheme.text}`}
+        onClick={() => navigate("/")}>
           Veltra
         </div>
 
         <nav className="flex items-start flex-col space-y-4 mt-4 text-white">
           <button
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
+            onClick={() => navigate("/")}
           >
             <Home
               className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`}

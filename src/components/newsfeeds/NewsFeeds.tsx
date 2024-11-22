@@ -10,12 +10,12 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import ReactionInfo from './ReactionInfo';
 import ReactionBar from './ReactionBar';
 import ImageSlider from './ImageSlider';
+import OptionsModal from './OptionsModal';
+import defaultAvatar from '@/images/user/defaultAvatar.png'
 
 export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
     const { currentTheme } = useTheme();
     const [posts, setPosts] = useState<any[]>([]);
-    const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
-    const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
     const [comments, setComments] = useState<{ [key: string]: string }>({});
     const [showOptions, setShowOptions] = useState<string | null>(null);
     const [currentImageIndexes, setCurrentImageIndexes] = useState<{ [key: string]: number }>({});
@@ -72,7 +72,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                 return {
                     ...post,
                     userReactionDetail: userReactionDetail || null,
-                    totalReactions: post.reactions?.length || 0, // Đếm tổng số lượng cảm xúc
+                    totalReactions: post.reactions?.length || 0, 
                 };
             });
 
@@ -287,6 +287,14 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
         };
     }, []);
 
+    const handleMoreOptions = (postId: string) => {
+    setShowOptions(postId); 
+  };
+
+  const handleCloseModal = () => {
+    setShowOptions(null); 
+  };
+
     return (
         <div className="space-y-6">
             {loading && (
@@ -323,8 +331,11 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                     >
                         <div className="py-4 flex items-center justify-between">
                             <div className="flex items-center space-x-3">
+
+
                                 {/* <img
-                                    src={post.author.avatar || 'https://avatar.iran.liara.run/public'}
+                                    src={post.author.avatar || defaultAvatar}
+
                                     alt={post.author.firstName}
                                     className="w-[32px] h-[32px] rounded-full"
                                 />
@@ -338,7 +349,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                                 </div> */}
                             </div>
                             <button
-                                onClick={() => setShowOptions(post.id)}
+                                onClick={() => handleMoreOptions(post.id)}
                                 className={`p-2 rounded-full ${currentTheme.buttonHover} transition-transform hover:scale-110`}
                             >
                                 <MoreHorizontal className={`w-5 h-5 ${currentTheme.iconColor}`} />
@@ -382,6 +393,18 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                         {showReactionBar === post.id && (
                             <ReactionBar onReact={(type) => handleReact(post.id, type)} />
                         )}
+
+                        <OptionsModal
+                            isVisible={!!showOptions}
+                            onClose={handleCloseModal}
+                            postId={showOptions as string}
+                            onPostDelete={(postId) => {
+                                setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId)); 
+                            }}
+                            onPostEdit={(postId) => { 
+                             console.log(`Editing post with ID: ${postId}`);
+                            }}
+                            />
                     </article>
                 ))}
         </div>

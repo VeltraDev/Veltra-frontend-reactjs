@@ -23,6 +23,8 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [avatar, setAvatar] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         const fetchUserAvatar = async () => {
@@ -113,6 +115,8 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
             return;
         }
 
+        setLoading(true); // Set loading to true when submission starts
+
         try {
             const attachments = [];
 
@@ -122,29 +126,27 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
             }
 
             const postData = {
-                content: caption.trim(), 
+                content: caption.trim(),
                 attachments,
             };
-
-            console.log('Post data:', postData); 
 
             await http.post('/posts', postData);
 
             toast.success('Post created successfully!');
-            handleReset(); 
-            
-            onClose(); 
-             if (onPostCreated) {
-                console.log("onPostCreated called!");
+            handleReset();
+            onClose();
+            if (onPostCreated) {
                 onPostCreated();
-            } 
-        } catch (error) {
+            }
+        } catch (error: any) {
             if (error.response) {
                 toast.error(`Failed to create post: ${error.response.data.message}`);
             } else {
                 toast.error('Failed to create post. Please try again.');
             }
             console.error('handleSubmit: Error creating post', error);
+        } finally {
+            setLoading(false); 
         }
     };
 
@@ -175,6 +177,11 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            {loading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+                    </div>
+                )}
             <div
                 style={{
                     maxHeight: '90vh',
@@ -185,6 +192,8 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                 }}
                 className={` relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
             >
+                
+
                 <div className={`flex items-center justify-between p-4 border-b ${currentTheme.border2}`}>
                     <button onClick={handleClose}>
                         <X className={currentTheme.iconColor} />
@@ -234,7 +243,7 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                                             <img
                                                 src={url}
                                                 alt={`Preview ${currentImageIndex + index + 1}`}
-                                                className="w-full h-full object-cover rounded-lg"
+                                                className="w-full h-full object-cover rounded-[12px]"
                                             />
                                             <button
                                                 onClick={() => handleRemoveImage(currentImageIndex + index)}
