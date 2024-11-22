@@ -41,7 +41,6 @@ const Sidebar = () => {
         if (userId) {
           const userResponse = await http.get(`/users/${userId}`);
           const userData = userResponse.data.avatar;
-          // If userData is null, use defaultAvatar
           setAvatar(userData || defaultAvatar);
         }
       } catch (error) {
@@ -65,7 +64,7 @@ const Sidebar = () => {
       className={`w-[245px] h-full p-4 fixed text-white border-r ${currentTheme.border2} flex flex-col justify-between ${currentTheme.bg}`}
     >
       <div>
-        <div className={`text-2xl font-bold py-6 px-2 ${currentTheme.text}`}>
+        <div className={`text-2xl font-bold py-6 px-2 cursor-pointer ${currentTheme.text}`}>
           Veltra
         </div>
 
@@ -76,21 +75,21 @@ const Sidebar = () => {
             <Home
               className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`}
             />
-            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Trang chủ</span>
+            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Home</span>
           </button>
 
           <button
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-10`}
           >
             <Search className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
-            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Tìm kiếm</span>
+            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Search</span>
           </button>
 
           <button
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
           >
             <Compass className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
-            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Khám phá</span>
+            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Explore</span>
           </button>
 
           <button
@@ -104,7 +103,7 @@ const Sidebar = () => {
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
           >
             <MessageCircle className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
-            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Tin nhắn</span>
+            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Messages</span>
           </button>
 
           <button
@@ -112,25 +111,26 @@ const Sidebar = () => {
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
           >
             <Heart className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
-            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Thông báo</span>
+            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Notifications</span>
           </button>
 
           <button
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
           >
             <PlusSquare className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
-            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Tạo</span>
+            <span className={`${currentTheme.textNewsFeeds} text-[15px] `}>Create</span>
           </button>
 
           <button
             className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
+            onClick={() => navigate("/settings")}
           >
             <img
               src={avatar || defaultAvatar}
               alt="Profile"
               className={`w-[25px] h-[25px] hover:scale-110 duration-300 rounded-full relative `}
             />
-            <span className={currentTheme.textNewsFeeds}>Trang cá nhân</span>
+            <span className={currentTheme.textNewsFeeds}>Profile</span>
           </button>
         </nav>
       </div>
@@ -141,7 +141,7 @@ const Sidebar = () => {
           className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
         >
           <Menu className={`w-6 h-6 hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`} />
-          <span className={currentTheme.textNewsFeeds}>Xem thêm</span>
+          <span className={currentTheme.textNewsFeeds}>More</span>
         </button>
 
         {isDropdownOpen && (

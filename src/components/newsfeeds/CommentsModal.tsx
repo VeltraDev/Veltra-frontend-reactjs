@@ -6,6 +6,7 @@ import { http } from "@/api/http";
 import defaultAvatar from "@/images/user/defaultAvatar.png";
 import ImageSlider from "./ImageSlider";
 import CommentReactionBar from "./CommentReactionBar";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Author {
   id: string;
@@ -65,6 +66,8 @@ export default function CommentsModal({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({});
   const [expandedContent, setExpandedContent] = useState<{ [key: string]: boolean }>({});
+  const [avatar, setAvatar] = useState(defaultAvatar);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchPostAndComments = async () => {
@@ -96,6 +99,33 @@ export default function CommentsModal({
     fetchPostAndComments();
     fetchReactionTypes();
   }, [postId]);
+
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      console.log('Fetching user avatar...');
+      try {
+        const accountResponse = await http.get('/auth/account');
+        console.log('Account response:', accountResponse);
+        const userId = accountResponse.data.user.id;
+
+        if (userId) {
+          const userResponse = await http.get(`/users/${userId}`);
+          const userData = userResponse.data.avatar;
+          setAvatar(userData);
+        }
+      } catch (error) {
+        console.error('Error fetching user avatar:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchUserAvatar();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const handleReactToComment = async (commentId: string, reactionType: string) => {
     const reactionTypeData = reactionTypes.find((reaction) => reaction.type === reactionType);
@@ -130,10 +160,10 @@ export default function CommentsModal({
           );
         } else {
           // Nếu người dùng chọn cảm xúc khác, cập nhật cảm xúc
-          await http.delete(`/comments/${commentId}/reactions`); 
+          await http.delete(`/comments/${commentId}/reactions`);
           const response = await http.post(`/comments/${commentId}/reactions`, {
             reactionTypeId: reactionTypeData.id,
-          }); 
+          });
           setComments((prevComments) =>
             updateComments(prevComments, commentId, (comment) => ({
               ...comment,
@@ -180,11 +210,29 @@ export default function CommentsModal({
     try {
       const payload = { content: newComment, parentId: replyParentId };
       const response = await http.post(`/posts/${postId}/comments`, payload);
+      const newCommentData = response.data;
 
-      console.log("New comment added:", response.data);
+      setComments((prevComments) => {
+        if (!replyParentId) {
+          // Nếu comment không có parentId, thêm vào đầu danh sách
+          return [newCommentData, ...prevComments];
+        }
 
-      const updatedCommentsResponse = await http.get(`/posts/${postId}/comments`);
-      setComments(updatedCommentsResponse.data || []);
+        // Nếu comment là phản hồi, tìm và thêm vào danh sách phản hồi của comment cha
+        return updateComments(prevComments, replyParentId, (parentComment) => ({
+          ...parentComment,
+          children: parentComment.children
+            ? [...parentComment.children, newCommentData]
+            : [newCommentData],
+        }));
+      });
+
+      if (replyParentId) {
+        setExpandedComments((prev) => ({
+          ...prev,
+          [replyParentId]: true, 
+        }));
+      }
 
       setNewComment("");
       setReplyParentId(null);
@@ -193,6 +241,7 @@ export default function CommentsModal({
       console.error("Error posting comment:", error);
     }
   };
+
 
 
   function reactionColorClass(type: string): string {
@@ -216,13 +265,13 @@ export default function CommentsModal({
   const toggleShowAllReplies = (commentId: string) => {
     setExpandedComments((prev) => ({
       ...prev,
-      [commentId]: !prev[commentId], 
+      [commentId]: !prev[commentId],
     }));
   };
 
   const renderComments = (comments: Comment[]) =>
     comments.map((comment) => {
-      const isExpanded = expandedComments[comment.id] || false; 
+      const isExpanded = expandedComments[comment.id] || false;
       const hasChildren = comment.children && comment.children.length > 0;
       const isContentExpanded = expandedContent[comment.id] || false;
 
@@ -262,9 +311,9 @@ export default function CommentsModal({
                     )}
                   </div>
                 </div>
-                <div className="flex space-x-4 mb-2">
+                <div className="flex space-x-4 mb-2 ml-3">
                   <p
-                    className={`${currentTheme.textComment} hover:underline text-xs mt-2 mb-1`}
+                    className={`${currentTheme.textComment} hover:underline text-xs mt-[4px] mb-1`}
                   >
                     {formatDistance(new Date(comment.createdAt), new Date()).replace("about ", "")}
                   </p>
@@ -328,7 +377,7 @@ export default function CommentsModal({
           </div>
 
           {hasChildren && (
-            <div className="pl-7 text-gray-100 border-l border-gray-700 ml-3">
+            <div className="pl-7 text-gray-100 ml-3">
               {isExpanded ? renderComments(comment.children) : null}
 
               <button
@@ -450,7 +499,7 @@ export default function CommentsModal({
         </div>
         <div className="flex items-start space-x-3 p-4 bg-gray-800 rounded-lg">
           <img
-            src={defaultAvatar}
+            src={avatar || defaultAvatar}
             alt="User Avatar"
             className="w-10 h-10 rounded-full"
           />
@@ -463,7 +512,7 @@ export default function CommentsModal({
                 replyParentId ? `Replying to ${replyingToAuthorName}...` : "Write a comment..."
               }
               rows={1}
-              className="py-3 w-full bg-gray-700 text-gray-200 p-3 rounded-xl outline-none resize-none overflow-auto focus:ring-2 focus:ring-blue-500 max-h-[150px] scrollbar-custom"
+              className="py-3 w-full bg-gray-700 text-gray-200 p-3 rounded-xl outline-none resize-none overflow-auto focus:ring-2 focus:ring-gray-400 max-h-[150px] scrollbar-custom"
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
@@ -476,19 +525,9 @@ export default function CommentsModal({
             onClick={handlePostComment}
             className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 14L21 3m0 0v7m0-7h-7M3 10v11a1 1 0 001 1h11"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
+              <path d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z" 
+                stroke="#f5f5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
         </div>

@@ -12,10 +12,10 @@ export default function     AuthPage() {
                 <div className="mx-auto w-full max-w-md sm:px-4 md:w-96 md:max-w-sm md:px-0">
                     <h1 className="font-semibold text-3xl text-white tracking-tighter">
                         Trò chuyện, gọi video và học nhóm dễ dàng, <br />
-                        <span className="text-gray-300">VelTra</span>
+                        <span className="text-gray-300">Veltra</span>
                     </h1>
                     <p className="mt-4 font-medium text-base text-gray-400">
-                        VelTra - nền tảng miễn phí cho tin nhắn, gọi video và học nhóm. Kết nối và học tập hiệu quả cùng VelTra.
+                        Veltra - nền tảng miễn phí cho tin nhắn, gọi video và học nhóm. Kết nối và học tập hiệu quả cùng Veltra.
                     </p>
 
                     <div className="mt-8">

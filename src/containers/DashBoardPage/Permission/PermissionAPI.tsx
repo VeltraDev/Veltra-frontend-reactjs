@@ -32,8 +32,8 @@ export default function RolePage() {
           Authorization: `Bearer ${token}`
         }
       });
-      setRoles(response.data.data.results);
-      setTotalPages(Math.ceil(response.data.data.total / 10));
+      setRoles(response.data.results);
+      setTotalPages(Math.ceil(response.data.total / 10));
     } catch (error) {
       console.error('Lỗi khi lấy dữ liệu từ api:', error);
     }

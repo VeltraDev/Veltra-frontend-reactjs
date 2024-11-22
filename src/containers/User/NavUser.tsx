@@ -48,11 +48,11 @@ const DropdownNavbarComponent: React.FC = () => {
     const fetchUser = async () => {
       try {
         const accountResponse = await http.get('/auth/account');
-        const userId = accountResponse.data.data.user.id;
+        const userId = accountresponse.data.user.id;
 
         if (userId) {
           const userResponse = await http.get(`/users/${userId}`);
-          const user = userResponse.data.data || {};
+          const user = userresponse.data || {};
           setAvatar(user.avatar || null);
           console.log(user);
         }

@@ -4,10 +4,6 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { formatDistanceToNow } from 'date-fns';
-import EmojiPicker from '../chat/EmojiPicker';
-import PostOptionsModal from '../newsfeed/PostOptionsModal';
-import PostComments from '../newsfeed/PostComments';
-import ShareModal from '../newsfeed/ShareModal';
 import { toast } from 'react-hot-toast';
 import { http } from '@/api/http';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -15,32 +11,26 @@ import ReactionInfo from './ReactionInfo';
 import ReactionBar from './ReactionBar';
 import ImageSlider from './ImageSlider';
 
-export default function NewsFeeds() {
-
+export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
     const { currentTheme } = useTheme();
     const [posts, setPosts] = useState<any[]>([]);
-    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
     const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
     const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
     const [comments, setComments] = useState<{ [key: string]: string }>({});
     const [showOptions, setShowOptions] = useState<string | null>(null);
-    const [currentImageIndexes, setCurrentImageIndexes] = useState<{
-        [key: string]: number;
-    }>({});
-
+    const [currentImageIndexes, setCurrentImageIndexes] = useState<{ [key: string]: number }>({});
     const [showReactionBar, setShowReactionBar] = useState<string | null>(null);
-     const [reactions, setReactions] = useState<{ [key: string]: string }>({}); 
-    const [userReactions, setUserReactions] = useState<{ [key: string]: any }>({}); 
-    const [reactionTypes, setReactionTypes] = useState<{ [key: string]: string }>({}); 
+    const [userReactions, setUserReactions] = useState<{ [key: string]: any }>({});
+    const [reactionTypes, setReactionTypes] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-    const [isFetchingMore, setIsFetchingMore] = useState(false);
     const observer = useRef<IntersectionObserver | null>(null);
-    const [totalPosts, setTotalPosts] = useState<number | null>(null); 
+    const [totalPosts, setTotalPosts] = useState<number | null>(null);
 
-        const fetchReactionTypes = useCallback(async () => {
+    const fetchReactionTypes = useCallback(async () => {
         try {
             const response = await http.get('/reaction-types');
             const fetchedReactionTypes = response.data.results.reduce((acc: any, reaction: any) => {
@@ -55,48 +45,45 @@ export default function NewsFeeds() {
     }, []);
 
 
+
     const fetchPosts = useCallback(async (page: number) => {
-        const scrollY = window.scrollY;
         try {
-            setLoading(true);
+            setLoading(page === 1);
+            setLoadingMore(page > 1);
             setError(null);
 
             const response = await http.get(`/posts?page=${page}&limit=10&sortBy=createdAt&order=desc`);
+            const { total, results } = response.data;
 
-            const { total, results } = response.data; 
             setTotalPosts(total);
 
-            const newResults = results.map((post: any) => ({
-                ...post,
-                userReactionDetail: post.reactions?.find(
+            const newPosts = results.map((post: any) => {
+                const userReactionDetail = post.reactions?.find(
                     (reaction: any) => reaction.reactedBy.id === currentUserId
-                ) || null,
-                totalReactions: post.reactions?.length || 0,
-            }));
+                );
 
-            if (newResults.length === 0) {
-                setIsFetchingMore(false);
-                return;
-            }
+                if (userReactionDetail) {
+                    setUserReactions((prev) => ({
+                        ...prev,
+                        [post.id]: userReactionDetail,
+                    }));
+                }
 
-            setPosts((prevPosts) => (page === 1 ? newResults : prevPosts.concat(newResults)));
-            setUserReactions((prevReactions) =>
-                newResults.reduce((acc: any, post: any) => {
-                    if (post.userReactionDetail) {
-                        acc[post.id] = post.userReactionDetail;
-                    }
-                    return acc;
-                }, { ...prevReactions })
-            );
+                return {
+                    ...post,
+                    userReactionDetail: userReactionDetail || null,
+                    totalReactions: post.reactions?.length || 0, // Đếm tổng số lượng cảm xúc
+                };
+            });
 
+            setPosts((prevPosts) => (page === 1 ? newPosts : [...prevPosts, ...newPosts]));
         } catch (err) {
             console.error('Fetch Error:', err.response?.data || err.message || err);
             setError(err.message || 'Failed to fetch posts');
             toast.error(err.message || 'Failed to fetch posts');
         } finally {
             setLoading(false);
-            setIsFetchingMore(false);
-            window.scrollTo(0, scrollY); // Khôi phục vị trí cuộn
+            setLoadingMore(false);
         }
     }, [currentUserId]);
 
@@ -118,55 +105,36 @@ export default function NewsFeeds() {
         if (currentUserId) {
             fetchPosts(1);
         }
-    }, [currentUserId, fetchPosts]);
+    }, [currentUserId, refreshPosts, fetchPosts]);
 
-    useEffect(() => {
-        if (currentUserId) {
-            fetchPosts(1);
-        }
-    }, [currentUserId, fetchPosts]);
+    const lastPostElementRef = useCallback(
+        (node) => {
+            if (loadingMore || (totalPosts !== null && posts.length >= totalPosts)) return;
 
-    useEffect(() => {
-        console.log('Posts:', posts); 
-    }, [posts]);
+            if (observer.current) observer.current.disconnect();
 
-   const lastPostElementRef = useCallback((node) => {
-    if (loading || isFetchingMore || (totalPosts !== null && posts.length >= totalPosts)) return;
+            observer.current = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting) {
+                        setCurrentPage((prevPage) => {
+                            const nextPage = prevPage + 1;
+                            fetchPosts(nextPage);
+                            return nextPage;
+                        });
+                    }
+                },
+                { rootMargin: '500px' }
+            );
 
-    if (observer.current) observer.current.disconnect();
-
-    observer.current = new IntersectionObserver(
-        (entries) => {
-            if (entries[0].isIntersecting) {
-                setIsFetchingMore(true);
-                setCurrentPage((prevPage) => {
-                    const nextPage = prevPage + 1;
-                    fetchPosts(nextPage);
-                    return nextPage;
-                });
-            }
+            if (node) observer.current.observe(node);
         },
-        { rootMargin: '500px' }
+        [loadingMore, posts.length, totalPosts, fetchPosts]
     );
-
-    if (node) observer.current.observe(node);
-}, [loading, isFetchingMore, posts.length, totalPosts, fetchPosts]);
 
     const postReaction = async (postId: string, reactionTypeId: string) => {
         try {
-            const response = await http.post(`/posts/${postId}/reactions`, {
-                reactionTypeId,
-            });
-
-            if (!response || !response.data) {
-                console.error('API response is empty or undefined');
-                toast.error('No data received from API');
-                return null;
-            }
-
-            console.log('Reaction API Response:', response.data); 
-
-            return response.data; 
+            const response = await http.post(`/posts/${postId}/reactions`, { reactionTypeId });
+            return response.data;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || error.message || 'Error reacting to post';
             console.error('API Error:', error);
@@ -178,14 +146,6 @@ export default function NewsFeeds() {
     const removeReaction = async (postId: string) => {
         try {
             const response = await http.delete(`/posts/${postId}/reactions`);
-
-            if (!response || !response.data) {
-                console.error('API response is empty or undefined');
-                return null;
-            }
-
-            console.log('Remove Reaction API Response:', response.data); 
-
             return response.data;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || error.message || 'Error removing reaction from post';
@@ -195,7 +155,6 @@ export default function NewsFeeds() {
         }
     };
 
-    
     const handleReact = async (postId: string, reactionType: string) => {
         const reactionTypeId = reactionTypes[reactionType];
 
@@ -210,13 +169,11 @@ export default function NewsFeeds() {
             userReactions[postId].reactionType.type === reactionType
         ) {
             await removeReaction(postId);
-
             setUserReactions((prev) => {
                 const updatedReactions = { ...prev };
                 delete updatedReactions[postId];
                 return updatedReactions;
             });
-
             setPosts((prevPosts) =>
                 prevPosts.map((post) =>
                     post.id === postId
@@ -243,7 +200,7 @@ export default function NewsFeeds() {
                 setUserReactions((prev) => ({
                     ...prev,
                     [postId]: {
-                        reactedBy: { id: currentUserId, firstName: 'Bạn' }, 
+                        reactedBy: { id: currentUserId, firstName: 'Bạn' },
                         reactionType: { type: selectedReaction },
                     },
                 }));
@@ -253,7 +210,9 @@ export default function NewsFeeds() {
                         post.id === postId
                             ? {
                                 ...post,
-                                reactions: post.reactions.some((reaction: string) => reaction.reactedBy.id === currentUserId)
+                                reactions: post.reactions.some(
+                                    (reaction: string) => reaction.reactedBy.id === currentUserId
+                                )
                                     ? post.reactions.map((reaction: any) =>
                                         reaction.reactedBy.id === currentUserId
                                             ? { ...reaction, reactionType: { type: selectedReaction } }
@@ -266,63 +225,45 @@ export default function NewsFeeds() {
                                             reactionType: { type: selectedReaction },
                                         },
                                     ],
-                                totalReactions: post.reactions.some((reaction: any) => reaction.reactedBy.id === currentUserId) ? post.reactions.length : post.reactions.length + 1,
+                                totalReactions: post.reactions.some(
+                                    (reaction: any) => reaction.reactedBy.id === currentUserId
+                                )
+                                    ? post.reactions.length
+                                    : post.reactions.length + 1,
                             }
                             : post
                     )
                 );
 
-                setShowReactionBar(null); 
+                setShowReactionBar(null);
             } else {
-                console.error('Invalid reaction data structure:', reactionData); 
+                console.error('Invalid reaction data structure:', reactionData);
                 toast.error('Invalid reaction data from server');
             }
         }
     };
 
-    const handleSavePost = (postId: string) => {
-        setSavedPosts((prev) => {
-            const newSaved = new Set(prev);
-            if (newSaved.has(postId)) {
-                newSaved.delete(postId);
-                toast.success('Post removed from collection');
-            } else {
-                newSaved.add(postId);
-                toast.success('Post saved to collection!');
+    const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
+        setCurrentImageIndexes((prev) => {
+            const currentIndex = prev[postId] || 0;
+            const attachments = posts.find((post) => post.id === postId)?.attachments;
+
+            if (!attachments || !Array.isArray(attachments)) {
+                console.error('Attachments not found or invalid for postId:', postId);
+                return prev;
             }
-            return newSaved;
+
+            const newIndex =
+                direction === 'next'
+                    ? Math.min(currentIndex + 1, attachments.length - 1)
+                    : Math.max(currentIndex - 1, 0);
+
+            return {
+                ...prev,
+                [postId]: newIndex,
+            };
         });
     };
-
-    const handleEmojiSelect = (postId: string, emoji: string) => {
-        setComments((prev) => ({
-            ...prev,
-            [postId]: (prev[postId] || '') + emoji,
-        }));
-        setShowEmojiPicker(null);
-    };
-
-const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
-    setCurrentImageIndexes((prev) => {
-        const currentIndex = prev[postId] || 0;
-        const attachments = posts.find((post) => post.id === postId)?.attachments;
-
-        if (!attachments || !Array.isArray(attachments)) {
-            console.error('Attachments not found or invalid for postId:', postId);
-            return prev;
-        }
-
-        const newIndex =
-            direction === 'next'
-                ? Math.min(currentIndex + 1, attachments.length - 1)
-                : Math.max(currentIndex - 1, 0);
-
-        return {
-            ...prev,
-            [postId]: newIndex,
-        };
-    });
-};
 
     const handleExpandContent = (postId: string) => {
         setPosts((prevPosts) =>
@@ -346,13 +287,12 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
         };
     }, []);
 
-
     return (
         <div className="space-y-6">
-            {isFetchingMore && (
+            {loading && (
                 <div className="space-y-4">
-                    {[...Array(2)].map((_, index) => (
-                        <div key={index} className="flex flex-col content-between">
+                    {[...Array(3)].map((_, index) => (
+                        <div key={index} className="flex flex-col content-between space-y-3 mt-3">
                             <div className="flex items-center space-x-4">
                                 <div className="w-[44px] h-[44px] rounded-full bg-gray-600 animate-pulse"></div>
                                 <div className="space-y-2">
@@ -360,20 +300,20 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
                                     <div className="w-24 h-3 bg-gray-600 rounded-md animate-pulse"></div>
                                 </div>
                             </div>
+                            <div className="w-full h-10 bg-gray-600 rounded-md animate-pulse"></div>
                             <div className="flex space-x-4 mt-10">
                                 <div className="w-4 h-4 bg-gray-600 rounded-full animate-pulse"></div>
                                 <div className="w-4 h-4 bg-gray-600 rounded-full animate-pulse"></div>
                                 <div className="w-4 h-4 bg-gray-600 rounded-full animate-pulse"></div>
                             </div>
-                            
                         </div>
                     ))}
                 </div>
             )}
 
             {error && <p className="text-red-500">{error}</p>}
+
             {!loading &&
-                !error &&
                 posts.map((post, index) => (
                     <article
                         key={post.id}
@@ -393,9 +333,7 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
                                         {`${post.author.firstName} ${post.author.lastName}`}
                                     </h3>
                                     <p className={`text-xs ${currentTheme.mutedText}`}>
-                                        {formatDistanceToNow(new Date(post.createdAt), {
-                                            addSuffix: true,
-                                        })}
+                                        {formatDistanceToNow(new Date(post.createdAt), new Date()).replace("about ", "")}
                                     </p>
                                 </div>
                             </div>
@@ -407,12 +345,12 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
                             </button>
                         </div>
                         <div className="py-2 text-[14px]">
-                            <p 
-                            style={{ whiteSpace: 'pre-wrap' }}
-                            className={`${currentTheme.textNewsFeeds} ${!post.expanded ? 'line-clamp-3 text-[14px]' : ''}`}>
+                            <p
+                                style={{ whiteSpace: 'pre-wrap' }}
+                                className={`${currentTheme.textNewsFeeds} ${!post.expanded ? 'line-clamp-3 text-[14px]' : ''}`}>
                                 {post.content}
                             </p>
-                            {post.content.length > 100 && (
+                            {(post.content.length > 100 || post.content.split("\n").length > 3) && (
                                 <button
                                     onClick={() => handleExpandContent(post.id)}
                                     className="text-gray-500 text-[14px]"
@@ -440,7 +378,6 @@ const handleImageNavigation = (postId: string, direction: 'prev' | 'next') => {
                             showReactionBar={showReactionBar}
                             setShowReactionBar={setShowReactionBar}
                         />
-                        
 
                         {showReactionBar === post.id && (
                             <ReactionBar onReact={(type) => handleReact(post.id, type)} />

@@ -6,14 +6,16 @@ import {
   Heart,
 } from 'lucide-react';
 import ReactionBar from './ReactionBar';
-import CommentsModal from './CommentsModal';// Import PostComments
+import CommentsModal from './CommentsModal';
+import ReactionDetailModal from './ReactionDetailModal';
+
 
 const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentUserId, showReactionBar, setShowReactionBar }) => {
-  const [showComments, setShowComments] = useState(false); // State to toggle comments
+  const [showComments, setShowComments] = useState(false);
+  const [showReactionDetail, setShowReactionDetail] = useState(false);
 
   return (
     <div className="py-2">
-      {/* Reaction Info - Top Reactions Display */}
       <div className="flex items-center space-x-2 mt-2 mb-3">
         {post.totalReactions > 0 && (
           <div className="flex items-center">
@@ -61,7 +63,8 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
               }
               return null;
             })()}
-            <span className={`text-[#b0b3b8] text-sm text-center ${currentTheme.text} ml-2`}>
+            <span className={`text-[#b0b3b8] text-sm text-center ${currentTheme.text} ml-2 cursor-pointer`}
+              onClick={() => setShowReactionDetail(true)}>
               {userReactions[post.id] && post.totalReactions === 1
                 ? 'Bạn'
                 : userReactions[post.id]
@@ -109,7 +112,6 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
             )}
           </div>
 
-          {/* Toggle comments modal */}
           <button
             className="rounded-full transition-transform"
             onClick={() => setShowComments(true)}
@@ -122,12 +124,11 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
           </button>
         </div>
 
-        <button className=" transition-transform">
+        <button className=" transition-transform mr-[6px]">
           <Bookmark className={`w-6 h-6 hover:text-gray-400 ${currentTheme.iconColor}`} />
         </button>
       </div>
 
-      {/* Render PostComments modal */}
       {showComments && (
         <CommentsModal
           postId={post.id}
@@ -135,6 +136,14 @@ const ReactionInfo = ({ post, currentTheme, handleReact, userReactions, currentU
           currentUserId={currentUserId}
         />
       )}
+
+      {showReactionDetail && (
+        <ReactionDetailModal
+          postId={post.id}
+          onClose={() => setShowReactionDetail(false)}
+        />
+      )}
+
     </div>
   );
 };

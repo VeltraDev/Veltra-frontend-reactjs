@@ -42,7 +42,7 @@ export default function HeroSection() {
               Trò chuyện, gọi video và học nhóm dễ dàng
           </h2>
           <p className="text-base text-white mt-4 ">
-            Với VelTra, bạn có thể nhắn tin tức thì, gọi video chất lượng cao và tạo phòng học nhóm miễn phí.
+            Với Veltra, bạn có thể nhắn tin tức thì, gọi video chất lượng cao và tạo phòng học nhóm miễn phí.
             Tất cả đều trên một nền tảng duy nhất, giúp bạn kết nối và học tập hiệu quả hơn.
           </p>
 

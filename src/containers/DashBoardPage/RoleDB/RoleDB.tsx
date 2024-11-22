@@ -41,8 +41,8 @@ export default function RolePage() {
     const fetchRoles = async (page: number) => {
         try {
             const response = await http.get(`/roles?page=${page}&limit=10&sortBy=createdAt&order=ASC`);
-            setRoles(response.data.data.results);
-            setTotalPages(Math.ceil(response.data.data.total / 10));
+            setRoles(response.data.results);
+            setTotalPages(Math.ceil(response.data.total / 10));
         } catch (error) {
             console.error('Lỗi khi lấy dữ liệu từ api:', error);
         }

@@ -29,7 +29,7 @@ const EditUser = () => {
     const fetchUser = async () => {
       try {
         const response = await http.get(`/users/${userId}`);
-        const user = response.data.data || {};
+        const user = response.data || {};
 
         setUserFirstName(user.firstName || '');
         setUserLastName(user.lastName || '');

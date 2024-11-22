@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CreatePostModal from './CreatePostModal';
-import { http } from '@/api/http'; 
+import { http } from '@/api/http';
 import defaultAvatar from '@/images/user/defaultAvatar.png';
+import { useNavigate } from 'react-router-dom';
 import {
   Image,
   AlignLeft,
@@ -13,12 +14,14 @@ import {
   MapPin,
 } from 'lucide-react';
 
-const PostForm = () => {
+const PostForm = ({ onNewPost }: { onNewPost: () => void }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [avatar, setAvatar] = useState(defaultAvatar);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchUserAvatar = async () => {
@@ -47,6 +50,13 @@ const PostForm = () => {
     }
   }, [user]);
 
+ const handlePostCreated = () => {
+    if (onNewPost) {
+      onNewPost(); 
+    }
+    setIsModalOpen(false); 
+  };
+
   return (
     <>
       <div
@@ -68,13 +78,13 @@ const PostForm = () => {
             </div>
           </div>
         ) : (
-          // Actual Post Form Content
           <div className="flex mb-4">
             <div className="mr-3">
               <img
                 src={avatar || defaultAvatar}
                 alt="Profile"
                 className={`w-8 h-8 rounded-full relative`}
+                onClick= {() => navigate("/settings")}
               />
             </div>
             <div className="flex-grow">
@@ -91,8 +101,8 @@ const PostForm = () => {
                   <button
                     className={`flex items-center text-${currentTheme.text} hover:text-opacity-80`}
                   >
-                    <Image 
-                      onClick={() => setIsModalOpen(true)} 
+                    <Image
+                      onClick={() => setIsModalOpen(true)}
                       className="w-5 h-5 text-cyan-600" />
                   </button>
                   <button
@@ -124,6 +134,7 @@ const PostForm = () => {
 
                 <button
                   className="px-4 py-2 rounded-full text-white font-semibold bg-blue-400"
+                  onClick={() => setIsModalOpen(true)}
                 >
                   Post
                 </button>
@@ -136,7 +147,9 @@ const PostForm = () => {
       <CreatePostModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onPostCreated={handlePostCreated}
       />
+
     </>
   );
 };

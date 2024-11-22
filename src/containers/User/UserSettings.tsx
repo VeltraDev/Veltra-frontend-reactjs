@@ -31,11 +31,12 @@ const UserSettings = () => {
     const fetchUser = async () => {
       try {
         const accountResponse = await http.get('/auth/account');
-        const userId = accountResponse.data.data.user.id;
+        const userId = accountResponse.data.user.id;
 
         if (userId) {
           const userResponse = await http.get(`/users/${userId}`);
-          const user = userResponse.data.data || {};
+          const user = userResponse.data || {};
+          console.log("user >>", user)
           setAvatar(user.avatar || userImage);
           setFirstName(user.firstName || '');
           setLastName(user.lastName || '');
@@ -68,7 +69,8 @@ const UserSettings = () => {
 
         uploadedAvatarUrl = await uploadImage(selectedFile, setAvatar);
       }
-
+      console.log("avatar >> ", uploadedAvatarUrl)
+      
       await http.patch('/users/update-profile', {
         avatar: uploadedAvatarUrl,
         firstName,

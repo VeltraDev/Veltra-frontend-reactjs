@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { http } from '@/api/http'; // Assuming http is a configured axios instance
+import { http } from '@/api/http';
 import defaultAvatar from '@/images/user/defaultAvatar.png';
-
+import { useNavigate } from 'react-router-dom';
 export default function Suggestions() {
     const { currentTheme } = useTheme();
     const [userSuggestions, setUserSuggestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchSuggestions = async () => {
             try {
@@ -48,7 +48,6 @@ export default function Suggestions() {
     if (loading) {
         return (
             <div className="space-y-6 sticky top-11">
-                {/* Skeleton Loader */}
                 <div className="space-y-4">
                     {[...Array(6)].map((_, index) => (
                         <div key={index} className="flex items-center justify-between">
@@ -76,27 +75,28 @@ export default function Suggestions() {
                             src={user.avatar || defaultAvatar}
                             alt={user.lastName}
                             className="w-[44px] h-[44px] rounded-full"
+                            onClick={() => navigate("/settings")}
                         />
                         <div>
-                            <h2 className={`font-semibold text-[14px] ${currentTheme.textNewsFeeds}`}>
+                            <h2 className={`font-semibold text-[13px] ${currentTheme.textNewsFeeds}`}>
                                 {user.firstName} {user.lastName}
                             </h2>
-                            <p className={`text-sm ${currentTheme.mutedText}`}>
+                            <p className={`text-[12px] ${currentTheme.mutedText}`}>
                                 {user.email}
                             </p>
                         </div>
                     </div>
                     <button className="text-xs font-semibold text-blue-500 hover:text-blue-600">
-                        Chuyển
+                        Switch
                     </button>
                 </div>
             )}
 
             <div className="flex items-center justify-between">
                 <h3 className={`font-semibold text-[14px] ml-2 ${currentTheme.mutedText}`}>
-                    Gợi ý cho bạn
+                    Suggested for you
                 </h3>
-                <button className={`text-xs font-semibold ${currentTheme.textNewsFeeds}`}>Xem tất cả</button>
+                <button className={`text-xs font-semibold ${currentTheme.textNewsFeeds}`}>See All</button>
             </div>
 
             <div className="space-y-4 ml-2">
@@ -109,7 +109,7 @@ export default function Suggestions() {
                                 className="w-[44px] h-[44px] rounded-full"
                             />
                             <div>
-                                <h4 className={`text-sm font-semibold ${currentTheme.textNewsFeeds}`}>
+                                <h4 className={`text-[13px] font-semibold ${currentTheme.textNewsFeeds}`}>
                                     {suggestion.firstName} {suggestion.lastName}
                                 </h4>
                                 <p className={`text-xs ${currentTheme.mutedText}`}>
@@ -118,13 +118,13 @@ export default function Suggestions() {
                             </div>
                         </div>
                         <button className="text-xs font-semibold text-blue-500 hover:text-blue-600">
-                            Theo dõi
+                            Follow
                         </button>
                     </div>
                 ))}
             </div>
             <div className="space-y-4">
-                <nav className="flex flex-wrap gap-x-2 gap-y-1">
+                <nav className="flex flex-wrap gap-x-2 gap-y-1 ml-2">
                     {[
                         'About',
                         'Help',
@@ -145,7 +145,7 @@ export default function Suggestions() {
                         </a>
                     ))}
                 </nav>
-                <p className={`text-xs ${currentTheme.mutedText}`}>
+                <p className={`text-xs ${currentTheme.mutedText} ml-2`}>
                     © 2024 VELTRA FROM VELTRA
                 </p>
             </div>

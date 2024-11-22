@@ -10,9 +10,10 @@ import defaultAvatar from '@/images/user/defaultAvatar.png';
 interface CreatePostModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onPostCreated?: () => void; 
 }
 
-export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
+export default function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostModalProps) {
     const { currentTheme } = useTheme();
     const { user } = useAuth();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -92,7 +93,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             console.log('uploadImage: Server response', response);
 
             if (response.data?.data?.url) {
-                return `${response.data.data.url}?t=${Date.now()}`;
+                return `${response.data.url}?t=${Date.now()}`;
             }
 
             if (response.data?.url) {
@@ -106,7 +107,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
         }
     };
 
-    const handleSubmit = async () => {
+ const handleSubmit = async () => {
         if (!caption.trim() && selectedFiles.length === 0) {
             toast.error('Please enter some content or select at least one image.');
             return;
@@ -131,8 +132,12 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
 
             toast.success('Post created successfully!');
             handleReset(); 
+            
             onClose(); 
-            window.location.reload(); 
+             if (onPostCreated) {
+                console.log("onPostCreated called!");
+                onPostCreated();
+            } 
         } catch (error) {
             if (error.response) {
                 toast.error(`Failed to create post: ${error.response.data.message}`);
@@ -142,8 +147,6 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             console.error('handleSubmit: Error creating post', error);
         }
     };
-
-
 
     const handleCaptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const textarea = e.target;
@@ -170,7 +173,6 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
 
     if (!isOpen) return null;
 
-
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div
@@ -181,7 +183,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                     scrollbarColor: '#888 #f4f4f4',
                     borderRadius: '12px',
                 }}
-                className={` overflow-y-auto scrollbar-custom relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
+                className={` relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
             >
                 <div className={`flex items-center justify-between p-4 border-b ${currentTheme.border2}`}>
                     <button onClick={handleClose}>
@@ -203,18 +205,19 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
                         value={caption} 
                         onChange={handleCaptionChange}
                         placeholder="What's on your mind?"
-                        className={`flex-grow w-full resize-none ${currentTheme.bg} ${currentTheme.text} focus:outline-none`}
+                        className={` overflow-y-auto scrollbar-custom flex-grow w-full resize-none ${currentTheme.bg} ${currentTheme.text} focus:outline-none`}
                         rows={1}
-                        style={{
-                            overflow: 'hidden',
-                        }}
+                        // style={{
+                        //     overflow: 'hidden',
+                        // }}
                     />
-
                 </div>
 
                 <div className={`flex-1 flex items-center justify-center p-4 ${currentTheme.bg}`}>
+                    <div className='my-3'></div>
                     {previewUrls.length > 0 && (
                         <div className="relative flex justify-center items-center w-full h-[280px]">
+
                             {previewUrls.length > 2 && currentImageIndex > 0 && (
                                 <button
                                     onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 2))}

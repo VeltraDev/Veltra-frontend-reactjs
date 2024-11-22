@@ -37,7 +37,7 @@ const CommentReactionBar: React.FC<ReactionBarProps> = ({ onReact }) => {
           <Lottie
             animationData={reaction.animation}
             loop={true}
-            style={{ width: 40, height: 40 }} 
+            style={{ width: 40, height: 40 , padding:2}} 
           />
         </div>
       ))}
