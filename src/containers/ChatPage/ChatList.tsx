@@ -212,7 +212,7 @@ export default function ChatList({
             <p style={{ textAlign: "center" }}>
               <b>You have seen it all</b>
             </p>
-            }
+          }
         >
           <AnimatePresence>
             {sortedAndFilteredConversations.map((conversation) => {
@@ -224,6 +224,7 @@ export default function ChatList({
               const isOnline = isConversationOnline(conversation);
               const onlineMembersCount = getOnlineMembersCount(conversation);
 
+
               return (
                 <motion.div
                   key={conversation.id}
@@ -232,21 +233,19 @@ export default function ChatList({
                   exit={{ opacity: 0, x: -20 }}
                   onClick={() => onSelectConversation(conversation.id)}
                   className={`
-                    relative p-4 flex items-center space-x-4 cursor-pointer
-                    ${isActive ? currentTheme.activeItem : currentTheme.buttonHover}
-                    border-b ${currentTheme.border}
-                    transition-colors duration-200
-                  `}
+        relative p-4 flex items-center space-x-4 cursor-pointer
+        ${isActive ? currentTheme.activeItem : currentTheme.buttonHover}
+        border-b ${currentTheme.border}
+        transition-colors duration-200
+      `}
                 >
                   {/* Avatar */}
                   <div className="relative">
-                    <div
-                      className={`
-                        relative w-12 h-12 rounded-full overflow-hidden
-                        ${isActive ? "ring-2 ring-blue-500" : ""}
-                        transition-all duration-200
-                      `}
-                    >
+                    <div className={`
+          relative w-12 h-12 rounded-full overflow-hidden
+          ${isActive ? 'ring-2 ring-blue-500' : ''}
+          transition-all duration-200
+        `}>
                       <img
                         src={picture || `https://ui-avatars.com/api/?name=${name}`}
                         alt={name}
@@ -254,65 +253,104 @@ export default function ChatList({
                       />
                     </div>
 
-                    {!conversation.isGroup && (
+                    {conversation.isGroup ? (
+                      // Trạng thái cho nhóm
                       <div
                         className={`
+      absolute -bottom-1 -right-1 w-4 h-4 flex items-center justify-center
+      rounded-full border-2 border-white dark:border-gray-900
+      transition-all duration-200
+      ${onlineMembersCount > 0 ? 'bg-green-500' : 'bg-gray-400'} // Màu sắc thay đổi theo trạng thái online
+    `}
+                        title={
+                          onlineMembersCount > 0
+                            ? `${onlineMembersCount} thành viên online`
+                            : 'Không có thành viên nào online'
+                        } // Tooltip hiển thị
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-2 h-2 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8 0a4 4 0 1 1 0 8A4 4 0 0 1 8 0zm2 9H6a4 4 0 0 0-4 4v.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V13a4 4 0 0 0-4-4z" />
+                        </svg>
+                      </div>
+                    ) : (
+                      // Trạng thái cho cá nhân
+                      <div
+                        className={`
+      absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+      ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+      border-2 border-white dark:border-gray-900
+      transition-all duration-200
+    `}
+                        title={isOnline ? 'Online' : 'Offline'} // Tooltip cho trạng thái
+                      />
+                    )}
+
+                  </div>
+
+
+                  {!conversation.isGroup && (
+                    <div
+                      className={`
                           absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
                           ${isOnline ? "bg-green-500" : "bg-gray-400"}
                           border-2 border-white dark:border-gray-900
                           transition-all duration-200
                         `}
-                      />
-                    )}
+                    />
+                  )}
 
-                    {conversation.isGroup && (
-                      <div
-                        className={`
+                  {conversation.isGroup && (
+                    <div
+                      className={`
                           absolute -bottom-1 -right-1 bg-blue-500 rounded-full px-1.5 py-0.5
                           border-2 border-white dark:border-gray-900
                           transition-all duration-200
                         `}
-                      >
-                        <span className="text-xs text-white font-medium">
-                          {onlineMembersCount}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Chat Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline">
-                      <h3 className={`font-semibold truncate max-w-40 ${currentTheme.text}`}>
-                        {name}
-                      </h3>
-                      <h4 className={`text-right text-sm ${currentTheme.text} truncate w-30`}>
-                        {conversation.latestMessage?.createdAt
-                          ? formatMessageTime(conversation.latestMessage.createdAt)
-                          : "No messages"}
-                      </h4>
-                    </div>
-                    <p
-                      className={`text-sm truncate ${
-                        typingText ? "text-blue-500 font-medium" : currentTheme.mutedText
-                      }`}
                     >
-                      {typingText ||
-                        (conversation.latestMessage?.sender?.id === currentUser?.id
-                          ? "You: "
-                          : "")}
-                      {conversation.latestMessage?.content || "No messages yet"}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </InfiniteScroll>
-      </div>
+                      <span className="text-xs text-white font-medium">
+                        {onlineMembersCount}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-      {/* Create Group Dialog */}
-      <CreateGroupDialog isOpen={showCreateGroup} onClose={() => setShowCreateGroup(false)} />
+                  {/* Chat Info */ }
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-baseline">
+                  <h3 className={`font-semibold truncate max-w-40 ${currentTheme.text}`}>
+                    {name}
+                  </h3>
+                  <h4 className={`text-right text-sm ${currentTheme.text} truncate w-30`}>
+                    {conversation.latestMessage?.createdAt
+                      ? formatMessageTime(conversation.latestMessage.createdAt)
+                      : "No messages"}
+                  </h4>
+                </div>
+                <p
+                  className={`text-sm truncate ${typingText ? "text-blue-500 font-medium" : currentTheme.mutedText
+                    }`}
+                >
+                  {typingText ||
+                    (conversation.latestMessage?.sender?.id === currentUser?.id
+                      ? "You: "
+                      : "")}
+                  {conversation.latestMessage?.content || "No messages yet"}
+                </p>
+              </div>
+                </motion.div>
+          );
+            })}
+        </AnimatePresence>
+      </InfiniteScroll>
     </div>
+
+      {/* Create Group Dialog */ }
+  <CreateGroupDialog isOpen={showCreateGroup} onClose={() => setShowCreateGroup(false)} />
+    </div >
   );
 }
