@@ -5,7 +5,6 @@ import { RolesTable } from "@/components/DashBoard/roles/roles-table";
 import { useToast } from "@/hooks/use-toast";
 import { rolesApi } from "@/services/api/roleService";
 import { Role } from "@/types/dbType";
-import { Button } from "@/components/ui/button";
 
 export function RolesDBPage() {
     const queryClient = useQueryClient();
@@ -20,9 +19,9 @@ export function RolesDBPage() {
     // Fetch permissions
     const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
         queryKey: ["permissions"],
-        queryFn: () => rolesApi.getPermissions(1, 10, "module", "DESC", "REACTION TYPES"),
+        queryFn: () => rolesApi.getPermissions(1, 60, "module", "DESC", "REACTION TYPES"),
     });
-
+    console.log(permissionsData)
     // Create role mutation
     const createRoleMutation = useMutation({
         mutationFn: rolesApi.createRole,
@@ -36,14 +35,42 @@ export function RolesDBPage() {
     });
 
     // Update role mutation
-  
+    const updateRoleMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Partial<Role> }) =>
+            rolesApi.updateRole(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["roles"] });
+            toast({
+                title: "Success",
+                description: "Role updated successfully",
+            });
+        },
+    });
+
+    // Delete role mutation
+    const deleteRoleMutation = useMutation({
+        mutationFn: (id: string) => rolesApi.deleteRole(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["roles"] });
+            toast({
+                title: "Success",
+                description: "Role deleted successfully",
+            });
+        },
+    });
 
     // Handlers
     const handleCreateRole = (data: any) => {
         createRoleMutation.mutate(data);
     };
 
-   
+    const handleUpdateRole = (id: string, data: Partial<Role>) => {
+        updateRoleMutation.mutate({ id, data });
+    };
+
+    const handleDeleteRole = (id: string) => {
+        deleteRoleMutation.mutate(id);
+    };
 
     // Loading state
     if (isLoadingRoles || isLoadingPermissions) {
@@ -54,15 +81,12 @@ export function RolesDBPage() {
         <div className="space-y-4">
            
                 <h1 className="text-xl font-semibold">Roles Management</h1>
-                {/* Button to open create dialog */}
-                <Button onClick={handleCreateRole} variant="outline" className="mb-4">
-                    Create Permission
-                </Button>
-        
+                <RoleDialog onSubmit={handleCreateRole} permissions={permissionsData} />
+         
             <RolesTable
                 columns={columns}
                 data={rolesData}
-                onDelete={(id) => handleDeleteRole(id)}
+                onDelete={handleDeleteRole}
                 onUpdate={(id, role) =>
                     handleUpdateRole(id, { ...role, permissions: role.permissions })
                 }
