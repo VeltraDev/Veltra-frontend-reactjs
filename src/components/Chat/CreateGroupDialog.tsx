@@ -35,14 +35,14 @@ export default function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialog
   // Get unique users, excluding current user
   const allUsers = React.useMemo(() => {
     if (!conversations?.length || !currentUser) return [];
-
+    
     const userMap = new Map<string, User>();
-
     conversations.forEach(conv => {
       if (!conv?.users) return; // Skip if users array is undefined
 
       conv.users.forEach(user => {
-        if (user && user.id !== currentUser.id && !userMap.has(user.id)) {
+
+        if (user && user.id !== currentUser.user?.id && !userMap.has(user.id)) {
           userMap.set(user.id, user);
         }
       });
@@ -51,9 +51,9 @@ export default function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialog
     return Array.from(userMap.values());
   }, [conversations, currentUser]);
 
-  // Filter users based on search query
+  // Filter users based on search query and exclude selected users
   const filteredUsers = React.useMemo(() => {
-    if (!searchQuery.trim()) return allUsers;
+    if (!searchQuery.trim()) return allUsers.filter(user => !selectedUsers.find(u => u.id === user.id));
 
     return allUsers.filter(user =>
       !selectedUsers.find(u => u.id === user.id) &&
@@ -157,6 +157,11 @@ export default function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialog
       }
     };
   }, [previewUrl]);
+
+  const handleUserSelect = (user: User) => {
+    setSelectedUsers(prev => [...prev, user]);
+    setSearchQuery('');
+  };
 
   if (!isOpen) return null;
 
@@ -279,10 +284,7 @@ export default function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialog
                   <button
                     key={user.id}
                     type="button"
-                    onClick={() => {
-                      setSelectedUsers(prev => [...prev, user]);
-                      setSearchQuery('');
-                    }}
+                    onClick={() => handleUserSelect(user)}
                     className={`w-full p-2 flex items-center space-x-3 ${currentTheme.buttonHover} transition-all`}
                   >
                     <img

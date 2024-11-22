@@ -16,7 +16,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const typingUsers = useSelector((state: RootState) =>
     state.chat.typingUsers[conversationId] || []
-  ).filter(user => user?.id !== currentUser?.id);
+  ).filter(user => user?.id !== currentUser?.user?.id);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,10 +26,18 @@ export default function MessageList({ messages, conversationId }: MessageListPro
     scrollToBottom();
   }, [messages, typingUsers]);
 
-
   const validMessages = messages.filter(message =>
     message && message.id && message.sender && message.sender.id
   );
+
+  const getTypingText = () => {
+    if (!typingUsers.length) return null;
+    if (typingUsers.length === 1) return `${typingUsers[0].firstName} is typing...`;
+    return `${typingUsers.length} people are typing...`;
+  };
+
+  const typingText = getTypingText();
+
   return (
     <div className="flex-1 overflow-y-auto p-4 scrollbar-custom">
       <div className="space-y-1">
@@ -53,7 +61,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
         })}
 
         {/* Typing Indicator */}
-        {typingUsers.length > 0 && (
+        {typingText && (
           <div className={`flex items-center space-x-2 ${currentTheme.input} rounded-xl p-2 w-fit animate-fadeIn`}>
             <div className="flex space-x-1">
               <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -61,10 +69,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
               <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
             <span className={`text-sm ${currentTheme.text}`}>
-              {typingUsers.length === 1
-                ? `${typingUsers[0]?.firstName || 'Someone'} is typing...`
-                : `${typingUsers.length} people are typing...`
-              }
+              {typingText}
             </span>
           </div>
         )}

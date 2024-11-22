@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { AuthState, LoginCredentials, AuthResponse, User } from "../types/auth";
-import  {http}  from "../api/http";
+import { http } from "../api/http";
 
 // Initial state
 const initialState: AuthState = {
@@ -24,8 +24,8 @@ export const login = createAsyncThunk(
       console.log("Login response:", response.data); // Debugging
       return response.data;
     } catch (error: any) {
-      console.error("Login error:", error); // Debugging
-      return rejectWithValue(error.response?.data || "Login failed");
+      console.error("Login error:", error.message); // Debugging
+      return rejectWithValue(error.message || "Login failed");
     }
   }
 );
@@ -36,6 +36,7 @@ export const getMe = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await http.get<User>("/auth/account");
+      console.log("GetMe response:", response.data); // Debugging
       return response.data;
     } catch (error: any) {
       console.error("GetMe error:", error); // Debugging

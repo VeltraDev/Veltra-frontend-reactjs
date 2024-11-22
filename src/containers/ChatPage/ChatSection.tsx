@@ -91,11 +91,7 @@ export default function ChatSection({
         {/* Messages */}
         <MessageList
           messages={messages}
-          typingUser={typingUser}
-          onForward={(message) => {
-            setMessageToForward(message);
-            setShowForwardDialog(true);
-          }}
+          conversationId={conversation.id}
         />
 
         {/* Message Input */}
