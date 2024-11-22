@@ -50,7 +50,7 @@ export const handleCropSave = (
       },
     });
 
-    const uploadedAvatarUrl = response.data.data.url + '?t=' + new Date().getTime();
+    const uploadedAvatarUrl = response.data.url + '?t=' + new Date().getTime();
     console.log(uploadedAvatarUrl);
     setUserAvatar(uploadedAvatarUrl);
 

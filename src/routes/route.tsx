@@ -31,6 +31,8 @@ import DropdownNavbarComponent from "@/containers/User/NavUser";
 import UserSettings from "@/containers/User/UserSettings";
 import ChatPage from "@/pages/ChatPage";
 import VideoCallPage from "@/pages/VideoCallPage";
+import NewsFeedsPage from "@/pages/NewsFeedsPage";
+
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -108,6 +110,20 @@ const publicRoutes: Route[] = [
         component: RoleDB,
         layout: DBLayout,
     },
+    {
+        path: "/dashboard/role",
+        component: RoleDB,
+        layout: DBLayout,
+    },
+    {
+        path: "/newsfeeds",
+        component: NewsFeedsPage,
+    },
+
+
+
+
+
     // {
 
     //     path: "/dashboard/permission",

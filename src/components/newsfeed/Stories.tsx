@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { mockStories } from '@/mock/newsfeedData';
+import { mockStories } from '@/mocks/newsfeedData';
 
 export default function Stories() {
     const { currentTheme } = useTheme();

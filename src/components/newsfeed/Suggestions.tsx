@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { mockSuggestions, mockUser } from '@/mock/newsfeedData';
+import { mockSuggestions, mockUser } from '@/mocks/newsfeedData';
 
 export default function Suggestions() {
     const { currentTheme } = useTheme();

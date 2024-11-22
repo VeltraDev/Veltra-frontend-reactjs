@@ -70,7 +70,7 @@ class Http {
             });
 
             const { accessToken, refreshToken: newRefreshToken } =
-              response.data.data;
+              response.data;
 
             store.dispatch(
               setTokens({

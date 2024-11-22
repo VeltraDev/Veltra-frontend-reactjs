@@ -42,7 +42,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ initialValues, onSubmit }) =
         async function fetchPermissions() {
             try {
                 const response = await http.get("/permissions?page=1&limit=40&sortBy=module&order=DESC");
-                setPermissions(response.data.data.results || []);
+                setPermissions(response.data.results || []);
             } catch (error) {
                 console.error("Error fetching permissions:", error);
             }

@@ -53,8 +53,8 @@ const UsersDashBoard = () => {
       console.log('Fetching users with params:', params);
       const response = await http.get('users', { params });
 
-      setUsers(response.data.data.results || []);
-      setTotalUsers(response.data.data.total);
+      setUsers(response.data.results || []);
+      setTotalUsers(response.data.total);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error('Failed to load users');

@@ -4,7 +4,7 @@ import {
     Smile, Share2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { mockPosts } from '@/mock/newsfeedData';
+import { mockPosts } from '@/mocks/newsfeedData';
 import { formatDistanceToNow } from 'date-fns';
 import EmojiPicker from '../chat/EmojiPicker';
 import PostOptionsModal from './PostOptionsModal';
