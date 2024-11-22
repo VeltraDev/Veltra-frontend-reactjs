@@ -1,8 +1,8 @@
 import LandingLayout from "../layouts/LandingLayout";
 import Home from "../pages/Home";
 
-import DBLayout from "@/layouts/DBLayout";
-import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
+
+
 import AuthLayout from "../layouts/AuthLayout";
 import AuthPage from "../pages/Auth";
 import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
@@ -10,23 +10,29 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 
 import MainSocial from "../containers/SocialPage/MainSocial";
-import Post from "../pages/PostForm";
-import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
+import Post from "../pages/PostForm";
+import Profile from "../pages/Profile";
 
-import { AddRole } from "@/pages/DashBoard/AddRolePage";
-import RoleDB from "@/pages/DashBoard/RolePage";
 
-import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
-import UsersDB from "@/pages/DashBoard/UsersDB";
 
-import ChangePassword from "@/containers/User/ChangePassword";
-import DropdownNavbarComponent from "@/containers/User/NavUser";
-import UserSettings from "@/containers/User/UserSettings";
+
 import ChatPage from "@/pages/ChatPage";
 import VideoCallPage from "@/pages/VideoCallPage";
 
+import { UsersDBPage } from "@/pages/DashBoard/UsersDBPage";
 import NewsFeedsPage from "@/pages/NewsFeedsPage";
+
+import ChangePassword from "@/containers/User/ChangePassword";
+import UserSettings from "@/containers/User/UserSettings";
+import { DashboardLayout } from "@/layouts/DBLayout";
+import { EditPermissionPage } from "@/pages/DashBoard/EditPermissionsDBPage";
+import { EditRolePage } from "@/pages/DashBoard/EditRoleDBPage";
+import { EditUserDBPage } from "@/pages/DashBoard/EditUserPage";
+import HomeDBPage from "@/pages/DashBoard/HomeDBPage";
+import { PermissionsDBPage } from "@/pages/DashBoard/PermissionsDBPage";
+import { ReactionTypesPage } from "@/pages/DashBoard/ReactionTypesPage";
+import { RolesDBPage } from "@/pages/DashBoard/RoleDBPage";
 
 
 interface Route {
@@ -103,11 +109,6 @@ const protectedRoutes: Route[] = [
         requiresAuth: true,
     },
     {
-        path: "/nav-home",
-        component: DropdownNavbarComponent,
-        requiresAuth: true,
-    },
-    {
         path: "/settings",
         component: UserSettings,
         requiresAuth: true,
@@ -122,31 +123,53 @@ const protectedRoutes: Route[] = [
         component: NewsFeedsPage,
     },
     // Thêm các route bảo vệ khác
+    {
+        path: "/dashboard/users",
+        component: UsersDBPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/users/edit/:id",
+        component: EditUserDBPage,
+        layout: DashboardLayout,
+    },
+
+    {
+        path: "/dashboard/roles",
+        component: RolesDBPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/roles/edit/:id",
+        component: EditRolePage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/permissions",
+        component: PermissionsDBPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/permissions/edit/:id",
+        component: EditPermissionPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/reaction-types",
+        component: ReactionTypesPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard",
+        component: HomeDBPage,
+        layout: DashboardLayout,
+    },
 ];
 
 const adminRoutes: Route[] = [
-    {
-        path: "/dashboard",
-        component: MainDashBoardPage,
-        layout: DBLayout,
-        requiresAuth: true,
-        roles: ["ADMIN"],
-    },
-    {
-        path: "/dashboard/role",
-        component: RoleDB,
-        layout: DBLayout,
-        requiresAuth: true,
-        roles: ["ADMIN"],
-    },
+  
 
-    {
-        path: "/dashboard/role",
-        component: RoleDB,
-        layout: DBLayout,
-    },
-
-
+  
 
 
 
@@ -168,28 +191,8 @@ const adminRoutes: Route[] = [
     //     layout: DBLayout,
     // },
 
-    {
-        path: "/dashboard/role/add",
-        component: AddRole,
-        layout: DBLayout,
-        requiresAuth: true,
-        roles: ["ADMIN"],
-    },
-    {
-        path: "/dashboard/users",
-        component: UsersDB,
-        layout: DBLayout,
-        requiresAuth: true,
-        roles: ["ADMIN"],
-    },
-    {
-        path: "/dashboard/users/:userId",
-        component: EditUser,
-        layout: DBLayout,
-        requiresAuth: true,
-        roles: ["ADMIN"],
-    },
+  
     // Thêm các route ADMIN khác
 ];
 
-export { publicRoutes, protectedRoutes, adminRoutes };
+export { adminRoutes, protectedRoutes, publicRoutes };

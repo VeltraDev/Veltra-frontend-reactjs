@@ -77,7 +77,7 @@ export default function ForwardMessageDialog({
                                             src={
                                                 conversation.isGroup
                                                     ? conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`
-                                                    : otherUser?.picture || `https://ui-avatars.com/api/?name=${otherUser?.firstName}+${otherUser?.lastName}`
+                                                    : otherUser?.avatar || `https://ui-avatars.com/api/?name=${otherUser?.firstName}+${otherUser?.lastName}`
                                             }
                                             alt={
                                                 conversation.isGroup

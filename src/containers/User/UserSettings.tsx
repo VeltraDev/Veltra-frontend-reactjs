@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { http } from '@/api/http';
-import userImage from '../images/user/User-avatar.svg';
+import userImage from '../../images/user/User-avatar.svg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AvatarEditor from "react-avatar-editor";
@@ -70,7 +70,7 @@ const UserSettings = () => {
         uploadedAvatarUrl = await uploadImage(selectedFile, setAvatar);
       }
       console.log("avatar >> ", uploadedAvatarUrl)
-      
+
       await http.patch('/users/update-profile', {
         avatar: uploadedAvatarUrl,
         firstName,
