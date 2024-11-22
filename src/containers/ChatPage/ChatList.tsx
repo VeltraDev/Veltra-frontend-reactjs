@@ -255,26 +255,43 @@ export default function ChatList({
                     />
                   </div>
 
-                  {!conversation.isGroup && (
-                    <div className={`
-            absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
-            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
-            border-2 border-white dark:border-gray-900
-            transition-all duration-200
-          `} />
+                  {conversation.isGroup ? (
+                    // Trạng thái cho nhóm
+                    <div
+                      className={`
+      absolute -bottom-1 -right-1 w-4 h-4 flex items-center justify-center
+      rounded-full border-2 border-white dark:border-gray-900
+      transition-all duration-200
+      ${onlineMembersCount > 0 ? 'bg-green-500' : 'bg-gray-400'} // Màu sắc thay đổi theo trạng thái online
+    `}
+                      title={
+                        onlineMembersCount > 0
+                          ? `${onlineMembersCount} thành viên online`
+                          : 'Không có thành viên nào online'
+                      } // Tooltip hiển thị
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-2 h-2 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M8 0a4 4 0 1 1 0 8A4 4 0 0 1 8 0zm2 9H6a4 4 0 0 0-4 4v.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V13a4 4 0 0 0-4-4z" />
+                      </svg>
+                    </div>
+                  ) : (
+                    // Trạng thái cho cá nhân
+                    <div
+                      className={`
+      absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+      ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+      border-2 border-white dark:border-gray-900
+      transition-all duration-200
+    `}
+                      title={isOnline ? 'Online' : 'Offline'} // Tooltip cho trạng thái
+                    />
                   )}
 
-                  {conversation.isGroup && (
-                    <div className={`
-            absolute -bottom-1 -right-1 bg-blue-500 rounded-full px-1.5 py-0.5
-            border-2 border-white dark:border-gray-900
-            transition-all duration-200
-          `}>
-                      <span className="text-xs text-white font-medium">
-                        {onlineMembersCount}
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Chat Info */}

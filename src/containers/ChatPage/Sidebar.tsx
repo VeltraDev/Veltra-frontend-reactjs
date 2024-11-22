@@ -23,7 +23,7 @@ export default function Sidebar() {
     value: key as ThemeType,
     icon: value.icon,
   }));
-
+console.log(user)
   return (
     <>
       <div className={`w-20 h-screen ${currentTheme.bg} flex flex-col items-center py-8 relative z-30`}>
@@ -31,7 +31,7 @@ export default function Sidebar() {
           <div className="relative">
             <div className={`absolute inset-0 bg-gradient-to-r ${currentTheme.primary} rounded-full animate-pulse`} style={{ filter: 'blur(8px)' }} />
             <img
-              src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.firstName}`}
+              src={user?.user.picture || `https://ui-avatars.com/api/?name=${user?.firstName}`}
               alt="Profile"
               className={`w-12 h-12 rounded-full relative z-10 ring-2 ring-${currentTheme.text}`}
             />
