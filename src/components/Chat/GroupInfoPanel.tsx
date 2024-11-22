@@ -31,6 +31,7 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
   const [isStarred, setIsStarred] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showConfirmDeleteGroup, setShowConfirmDeleteGroup] = useState(false);
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
   const [showConfirmTransferAdmin, setShowConfirmTransferAdmin] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
@@ -170,7 +171,7 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
   };
 
   const handleDeleteGroup = () => {
-    setShowConfirmDelete(true);
+    setShowConfirmDeleteGroup(true);
   };
 
   const confirmDeleteGroup = async () => {
@@ -179,6 +180,12 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
       await conversationService.delete(conversation.id);
       toast.success('Group deleted successfully');
       onClose();
+      const conversations = await dispatch(getConversations()).unwrap();
+      if (conversations?.length > 0) {
+        const firstConversation = conversations[0];
+        dispatch(setActiveConversation(firstConversation));
+        dispatch(getConversationMessages(firstConversation.id));
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete group');
     } finally {
@@ -478,6 +485,14 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
         onConfirm={confirmUpdateAdmin}
         title="Transfer Admin"
         description="Are you sure you want to transfer group ownership?"
+      />
+
+        <ConfirmDeleteModal
+        isOpen={showConfirmDeleteGroup}
+        onClose={() => setShowConfirmDeleteGroup(false)} // Đóng modal khi hủy
+        onConfirm={confirmDeleteGroup} // Gọi hàm xoá nhóm khi xác nhận
+        title="Delete Group"
+        description="Are you sure you want to delete this group? This action cannot be undone."
       />
     </>
   );

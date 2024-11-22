@@ -206,8 +206,13 @@ export default function ChatList({
           dataLength={conversations.length}
           next={fetchMoreData}
           hasMore={hasMore}
-          loader={<h4>Loading...</h4>}
+          loader={<h2 style={{ textAlign: "center" }}>Loading...</h2>}
           scrollableTarget="scrollableDiv"
+          endMessage={
+            <p style={{ textAlign: "center" }}>
+              <b>You have seen it all</b>
+            </p>
+            }
         >
           <AnimatePresence>
             {sortedAndFilteredConversations.map((conversation) => {
