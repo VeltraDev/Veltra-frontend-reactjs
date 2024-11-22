@@ -10,30 +10,29 @@ import ResetPasswordPage from "../pages/Auth/ResetPassword";
 import VerifyEmailPage from "../pages/Auth/VerifyEmail";
 
 import MainSocial from "../containers/SocialPage/MainSocial";
-import Post from "../pages/PostForm";
-import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
+import Post from "../pages/PostForm";
+import Profile from "../pages/Profile";
 
-import { AddRole } from "@/pages/DashBoard/AddRolePage";
-import RoleDB from "@/pages/DashBoard/RolePage";
 
 
-import UsersDB from "@/pages/DashBoard/UsersDB";
 
 import ChatPage from "@/pages/ChatPage";
 import VideoCallPage from "@/pages/VideoCallPage";
 
-import NewsFeedsPage from "@/pages/NewsFeedsPage";
 import { UsersDBPage } from "@/pages/DashBoard/UsersDBPage";
+import NewsFeedsPage from "@/pages/NewsFeedsPage";
 
-import { EditUserDBPage } from "@/pages/DashBoard/EditUserPage";
-import { RolesDBPage } from "@/pages/DashBoard/RoleDBPage";
-import { EditRolePage } from "@/pages/DashBoard/EditRoleDBPage";
-import { PermissionsDBPage } from "@/pages/DashBoard/PermissionsDBPage";
-import { EditPermissionPage } from "@/pages/DashBoard/EditPermissionsDBPage";
-import HomeDBPage from "@/pages/DashBoard/HomeDBPage";
-import { ReactionTypesPage } from "@/pages/DashBoard/ReactionTypesPage";
+import ChangePassword from "@/containers/User/ChangePassword";
+import UserSettings from "@/containers/User/UserSettings";
 import { DashboardLayout } from "@/layouts/DBLayout";
+import { EditPermissionPage } from "@/pages/DashBoard/EditPermissionsDBPage";
+import { EditRolePage } from "@/pages/DashBoard/EditRoleDBPage";
+import { EditUserDBPage } from "@/pages/DashBoard/EditUserPage";
+import HomeDBPage from "@/pages/DashBoard/HomeDBPage";
+import { PermissionsDBPage } from "@/pages/DashBoard/PermissionsDBPage";
+import { ReactionTypesPage } from "@/pages/DashBoard/ReactionTypesPage";
+import { RolesDBPage } from "@/pages/DashBoard/RoleDBPage";
 
 
 interface Route {
@@ -109,7 +108,16 @@ const protectedRoutes: Route[] = [
         component: EditProfile,
         requiresAuth: true,
     },
- 
+    {
+        path: "/settings",
+        component: UserSettings,
+        requiresAuth: true,
+    },
+    {
+        path: "/settings/change-password",
+        component: ChangePassword,
+        requiresAuth: true,
+    },
     {
         path: "/newsfeeds",
         component: NewsFeedsPage,
@@ -187,4 +195,4 @@ const adminRoutes: Route[] = [
     // Thêm các route ADMIN khác
 ];
 
-export { publicRoutes, protectedRoutes, adminRoutes };
+export { adminRoutes, protectedRoutes, publicRoutes };
