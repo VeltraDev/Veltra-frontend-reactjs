@@ -34,7 +34,7 @@ export function SignInForm() {
     const { login, isLoading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const from = (location.state as any)?.from?.pathname || '/chat';
+    const from = (location.state as any)?.from?.pathname || '/newsfeeds';
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const error = useSelector((state: RootState) => state.auth.error);
