@@ -434,7 +434,7 @@ export default function CommentsModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className={`${currentTheme.bg} rounded-xl max-w-[700px] w-full max-h-[90vh] flex flex-col`}>
         <div className={`p-4 border-b flex justify-between ${currentTheme.border2}`}>
-          <h2 className={`text-lg font-semibold mx-auto mt-2 ${currentTheme.text}`}>Post & Comments</h2>
+          <h2 className={`text-lg font-semibold mx-auto mt-2 ${currentTheme.text}`}>{post?.author.lastName}'s Post</h2>
           <button onClick={onClose} className={`p-2 rounded-full ${currentTheme.text} ${currentTheme.buttonHover}`}>
             <X />
           </button>

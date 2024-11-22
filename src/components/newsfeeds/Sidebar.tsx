@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   StretchHorizontal,
   Video,
+  LayoutDashboard,
 } from 'lucide-react';
 import { http } from '@/api/http';
 import defaultAvatar from '@/images/user/defaultAvatar.png';
@@ -29,6 +30,7 @@ const Sidebar = () => {
   const { logout, user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [avatar, setAvatar] = useState(defaultAvatar);
+  const [role, setRole] = useState(null); // Thêm state để lưu role người dùng
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -37,6 +39,7 @@ const Sidebar = () => {
         const accountResponse = await http.get('/auth/account');
         console.log('Account response:', accountResponse);
         const userId = accountResponse.data.user.id;
+        setRole(accountResponse.data.user.role?.name); // Lấy role từ API
 
         if (userId) {
           const userResponse = await http.get(`/users/${userId}`);
@@ -70,7 +73,7 @@ const Sidebar = () => {
 
         <nav className="flex items-start flex-col space-y-4 mt-4 text-white">
           <button
-            className={`flex items-center space-x-3 p-2 rounded-xl outline-none  transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
+            className={`flex items-center space-x-3 p-2 rounded-xl outline-none transition-all duration-300 hover:w-full ${currentTheme.buttonHover} hover:bg-opacity-80 hover:pr-8`}
           >
             <Home
               className={`w-[25px] h-[25px] hover:scale-110 duration-300 ${currentTheme.iconColorSideBar}`}
@@ -152,15 +155,18 @@ const Sidebar = () => {
               className={`flex items-center space-x-3 w-full px-4 py-2 ${currentTheme.buttonHover}`}
             >
               <Settings className={`w-4 h-4 ${currentTheme.iconColorSideBar}`} />
-              <span className={currentTheme.text}>Cài đặt</span>
+              <span className={currentTheme.text}>Settings</span>
             </button>
 
-            <button
-              className={`flex items-center space-x-3 w-full px-4 py-2 ${currentTheme.buttonHover}`}
-            >
-              <Bookmark className={`w-4 h-4 ${currentTheme.iconColorSideBar}`} />
-              <span className={currentTheme.text}>Đã lưu</span>
-            </button>
+            {role === 'ADMIN' && ( 
+              <button
+                className={`flex items-center space-x-3 w-full px-4 py-2 ${currentTheme.buttonHover}`}
+                onClick={() => navigate('/dashboard')}
+              >
+                <LayoutDashboard className={`w-4 h-4 ${currentTheme.iconColorSideBar}`} />
+                <span className={currentTheme.text}>Dashboard</span>
+              </button>
+            )}
 
             <button
               className={`flex items-center space-x-3 w-full px-4 py-2 ${currentTheme.buttonHover}`}
@@ -171,14 +177,14 @@ const Sidebar = () => {
               ) : (
                 <Sun className={`w-4 h-4 ${currentTheme.iconColorSideBar}`} />
               )}
-              <span className={currentTheme.text}>Chuyển chế độ</span>
+              <span className={currentTheme.text}>Switch appearance</span>
             </button>
 
             <button
               className={`flex items-center space-x-3 w-full px-4 py-2 ${currentTheme.buttonHover}`}
             >
               <AlertTriangle className={`w-4 h-4 ${currentTheme.iconColorSideBar}`} />
-              <span className={currentTheme.text}>Báo cáo sự cố</span>
+              <span className={currentTheme.text}>Report</span>
             </button>
 
             <hr className={`my-1 ${currentTheme.border}`} />
@@ -189,7 +195,7 @@ const Sidebar = () => {
               <StretchHorizontal
                 className={`w-4 h-4 ${currentTheme.iconColorSideBar}`}
               />
-              <span className={currentTheme.text}>Chuyển tài khoản</span>
+              <span className={currentTheme.text}>Switch account</span>
             </button>
 
             <button
@@ -197,7 +203,7 @@ const Sidebar = () => {
               className={`flex items-center space-x-3 w-full px-4 py-2 ${currentTheme.buttonHover}`}
             >
               <LogOut className={`w-4 h-4 ${currentTheme.iconColorSideBar}`} />
-              <span className={currentTheme.text}>Đăng xuất</span>
+              <span className={currentTheme.text}>Log out</span>
             </button>
           </div>
         )}
