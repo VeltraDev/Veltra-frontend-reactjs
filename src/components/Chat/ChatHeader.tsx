@@ -64,7 +64,7 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
 
 
 
-
+console.log(otherUser?.avatar)
 
 
     return (
@@ -83,8 +83,8 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
                         <img
                             src={
                                 conversation.isGroup
-                                    ? conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`
-                                    : otherUser?.picture || `https://ui-avatars.com/api/?name=${otherUser?.name}`
+                                    ? conversation.picture 
+                                    : otherUser?.avatar 
                             }
                             alt={conversation.isGroup ? conversation.name : otherUser?.name}
                             className="w-10 h-10 rounded-full object-cover"
