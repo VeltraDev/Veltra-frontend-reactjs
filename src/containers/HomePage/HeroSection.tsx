@@ -39,10 +39,10 @@ export default function HeroSection() {
               classname="text-4xl text-gray-800 font-extrabold md:text-5xl "
             /> */}
             <h2 className="text-4xl text-white font-extrabold md:text-5xl">
-              Trò chuyện, gọi video và học nhóm dễ dàng
+              Trò chuyện, học nhóm dễ dàng
           </h2>
           <p className="text-base text-white mt-4 ">
-            Với VelTra, bạn có thể nhắn tin tức thì, gọi video chất lượng cao và tạo phòng học nhóm miễn phí.
+            Với VelTra, bạn có thể nhắn tin tức thì và tạo phòng học nhóm miễn phí.
             Tất cả đều trên một nền tảng duy nhất, giúp bạn kết nối và học tập hiệu quả hơn.
           </p>
 
