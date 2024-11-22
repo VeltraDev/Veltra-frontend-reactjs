@@ -147,15 +147,24 @@ export default function VideoCallPage() {
     return () => {
       cleanup();
     };
-  }, [conversationId, conversation, incomingCall]);
+  }, []);
 
   useEffect(() => {
     if (callAnswered && peerConnectionRef.current && !isCallee) {
-      peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(callAnswered)
-      );
+      const signalingState = peerConnectionRef.current.signalingState;
+      console.log("Caller signaling state trước khi đặt remote description:", signalingState);
+  
+      if (signalingState === "have-local-offer") {
+        peerConnectionRef.current
+          .setRemoteDescription(new RTCSessionDescription(callAnswered))
+          .catch((error) =>
+            console.error("Không thể đặt remote description:", error)
+          );
+      } else {
+        console.error("Không thể đặt remote description trong trạng thái:", signalingState);
+      }
     }
-  }, [callAnswered]);
+  }, [callAnswered]);  
 
   // useEffect(() => {
   //   if (!isCallActive && !incomingCall) {
