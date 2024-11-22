@@ -27,7 +27,7 @@ export const rolesApi = {
   },
 
   getPermissions: async (page = 1, limit = 10, sortBy = 'module', order = 'DESC', module = 'REACTION TYPES') => {
-    const { data } = await http.get(`/permissions?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}&module=${module}`);
+    const { data } = await http.get(`/permissions?page=${page}&limit=${limit}`);
     return data.results;
   },
 };
