@@ -323,7 +323,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                     >
                         <div className="py-4 flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                                <img
+                                {/* <img
                                     src={post.author.avatar || 'https://avatar.iran.liara.run/public'}
                                     alt={post.author.firstName}
                                     className="w-[32px] h-[32px] rounded-full"
@@ -335,7 +335,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                                     <p className={`text-xs ${currentTheme.mutedText}`}>
                                         {formatDistanceToNow(new Date(post.createdAt), new Date()).replace("about ", "")}
                                     </p>
-                                </div>
+                                </div> */}
                             </div>
                             <button
                                 onClick={() => setShowOptions(post.id)}
