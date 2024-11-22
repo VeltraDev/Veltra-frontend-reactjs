@@ -2,7 +2,7 @@ import LandingLayout from "../layouts/LandingLayout";
 import Home from "../pages/Home";
 
 
-import MainDashBoardPage from "@/pages/DashBoard/MainDashBoard";
+
 import AuthLayout from "../layouts/AuthLayout";
 import AuthPage from "../pages/Auth";
 import ForgotPasswordPage from "../pages/Auth/ForgotPassword";
@@ -14,17 +14,28 @@ import Post from "../pages/PostForm";
 import Profile from "../pages/Profile"
 import EditProfile from '../pages/EditProfile';
 
-// import { AddRole } from "@/pages/DashBoard/AddRolePage";
+import { AddRole } from "@/pages/DashBoard/AddRolePage";
 import RoleDB from "@/pages/DashBoard/RolePage";
 
-// import EditUser from "@/containers/DashBoardPage/UsersDB/EditUser";
+
 import UsersDB from "@/pages/DashBoard/UsersDB";
 
-import ChangePassword from "@/containers/User/ChangePassword";
-// import DropdownNavbarComponent from "@/containers/User/NavUser";
-// import UserSettings from "@/containers/User/UserSettings";
 import ChatPage from "@/pages/ChatPage";
 import VideoCallPage from "@/pages/VideoCallPage";
+
+import NewsFeedsPage from "@/pages/NewsFeedsPage";
+import { UsersDBPage } from "@/pages/DashBoard/UsersDBPage";
+
+import { EditUserDBPage } from "@/pages/DashBoard/EditUserPage";
+import { RolesDBPage } from "@/pages/DashBoard/RoleDBPage";
+import { EditRolePage } from "@/pages/DashBoard/EditRoleDBPage";
+import { PermissionsDBPage } from "@/pages/DashBoard/PermissionsDBPage";
+import { EditPermissionPage } from "@/pages/DashBoard/EditPermissionsDBPage";
+import HomeDBPage from "@/pages/DashBoard/HomeDBPage";
+import { ReactionTypesPage } from "@/pages/DashBoard/ReactionTypesPage";
+import { DashboardLayout } from "@/layouts/DBLayout";
+
+
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -58,74 +69,122 @@ const publicRoutes: Route[] = [
         layout: AuthLayout,
         params: { token: ':token' },
     },
+    // Thêm các route công khai khác
+];
+
+const protectedRoutes: Route[] = [
+    {
+        path: "/",
+        component: Home,
+        layout: LandingLayout,
+        requiresAuth: true,
+    },
+    {
+        path: "/chat",
+        component: ChatPage,
+        requiresAuth: true,
+    },
+    {
+        path: "/call/:conversationId",
+        component: VideoCallPage,
+        requiresAuth: true,
+    },
+    {
+        path: "/post",
+        component: Post,
+        requiresAuth: true,
+    },
+    {
+        path: "/social",
+        component: MainSocial,
+        requiresAuth: true,
+    },
+    {
+        path: "/profile",
+        component: Profile,
+        requiresAuth: true,
+    },
+    {
+        path: "/edit-profile",
+        component: EditProfile,
+        requiresAuth: true,
+    },
+ 
+    {
+        path: "/newsfeeds",
+        component: NewsFeedsPage,
+    },
+    // Thêm các route bảo vệ khác
+    {
+        path: "/dashboard/users",
+        component: UsersDBPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/users/edit/:id",
+        component: EditUserDBPage,
+        layout: DashboardLayout,
+    },
+
+    {
+        path: "/dashboard/roles",
+        component: RolesDBPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/roles/edit/:id",
+        component: EditRolePage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/permissions",
+        component: PermissionsDBPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/permissions/edit/:id",
+        component: EditPermissionPage,
+        layout: DashboardLayout,
+    },
+    {
+        path: "/dashboard/reaction-types",
+        component: ReactionTypesPage,
+        layout: DashboardLayout,
+    },
     {
         path: "/dashboard",
-        component: MainDashBoardPage,
-        layout: DBLayout,
+        component: HomeDBPage,
+        layout: DashboardLayout,
     },
-    {
-        path: "/dashboard/role",
-        component: RoleDB,
-        layout: DBLayout,
-    },
+];
+
+const adminRoutes: Route[] = [
+  
+
+  
+
+
+
+
     // {
 
     //     path: "/dashboard/permission",
     //     component: Permission,
-    //     layout: DashboardLayout,
+    //     layout: DBLayout,
     // },
     // {
     //     path: "/dashboard/permission/addpermission",
     //     component: AddPermission,
-    //     layout: DashboardLayout,
+    //     layout: DBLayout,
     // },
     // {
     //     path: "/dashboard/permission/updatepermission/:id",
     //     component: UpdatePermission,
-    //     layout: DashboardLayout,
-    // },
-    // {
-    //     path: "/dashboard/role/add",
-    //     component: AddRole,
-    //     layout: DashboardLayout,
+    //     layout: DBLayout,
     // },
 
-    {
-        path: "/dashboard/role/add",
-        component: AddRole,
-        layout: DBLayout,
-    },
-    {
-        path: "/dashboard/users",
-        component: UsersDB,
-        layout: DBLayout,
-    },
-
-    {
-        path: "/dashboard/users/:userId",
-        component: EditUser,
-        layout: DBLayout,
-    },
-
-    {
-        path: "/nav-home",
-        component: DropdownNavbarComponent,
-    },
-    {
-        path: "/settings/change-password",
-        component: ChangePassword,
-    },
-
-    {
-        path: "/settings",
-        component: UserSettings,
-    },
-
-
-
-
+  
+    // Thêm các route ADMIN khác
 ];
-
-const privateRoutes: Route[] = [];
 
 export { publicRoutes, protectedRoutes, adminRoutes };
