@@ -115,7 +115,7 @@ export default function SignUpForm() {
                                         disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -134,7 +134,7 @@ export default function SignUpForm() {
                                         disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -153,7 +153,7 @@ export default function SignUpForm() {
                                         disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -168,7 +168,7 @@ export default function SignUpForm() {
                                 <FormControl>
                                     <Input className="text-blue-500" type="password" {...field} disabled={isSubmitting} />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />

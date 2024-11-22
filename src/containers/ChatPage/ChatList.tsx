@@ -206,7 +206,7 @@ export default function ChatList({
           dataLength={conversations.length}
           next={fetchMoreData}
           hasMore={hasMore}
-          loader={<h2 style={{ textAlign: "center" }}>Loading...</h2>}
+          // loader={<h2 style={{ textAlign: "center" }}>Loading...</h2>}
           scrollableTarget="scrollableDiv"
           endMessage={
             <p style={{ textAlign: "center" }}>
