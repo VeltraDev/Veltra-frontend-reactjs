@@ -14,7 +14,6 @@ import {
 } from "@/redux/callSlice";
 
 import {
-  updateMessagesAndConversations,
   removeUserFromConversation,
   addNewConversation,
   getConversations,
@@ -30,7 +29,7 @@ import {
 
 class SocketService {
   public socket: Socket | null = null;
-  private readonly url: string = "ws://localhost:8081";
+  private readonly url: string = "wss://veltra2.duckdns.org";
   private typingTimeout: Record<string, NodeJS.Timeout> = {};
   private notificationRoot: ReturnType<typeof createRoot> | null = null;
   private notificationContainer: HTMLDivElement | null = null;
@@ -39,10 +38,10 @@ class SocketService {
 
   public connect(navigateCallback?: (path: string) => void): void {
     if (this.socket?.connected) {
-        if (navigateCallback) {
-            this.setNavigateCallback(navigateCallback);
-        }
-        return;
+      if (navigateCallback) {
+        this.setNavigateCallback(navigateCallback);
+      }
+      return;
     }
 
     const token = store.getState().auth.accessToken;
@@ -78,6 +77,12 @@ class SocketService {
     if (navigateCallback) {
       this.navigateCallback = navigateCallback;
     }
+
+    this.socket.removeAllListeners("receive-call");
+    this.socket.removeAllListeners("call-answered");
+    this.socket.removeAllListeners("ice-candidate");
+    this.socket.removeAllListeners("end-call");
+    this.socket.removeAllListeners("call-rejected");
 
     if (this.socket.hasListeners("receive-call")) {
       return;
@@ -176,15 +181,13 @@ class SocketService {
 
       store.dispatch(setIncomingCall({ from, conversationId, offer }));
 
-      this.showCallNotification(
-        {
-          from,
-          conversationId,
-          offer,
-          message: `${from.firstName} ${from.lastName} is calling you...`,
-        },
-      );
-    });  
+      this.showCallNotification({
+        from,
+        conversationId,
+        offer,
+        message: `${from.firstName} ${from.lastName} đang gọi cho bạn...`,
+      });
+    });
 
     this.socket.on("call-answered", (data) => {
       store.dispatch(setCallAnswered(data.answer));
@@ -199,16 +202,20 @@ class SocketService {
       }
     });
 
-    this.socket.on("call-ended", () => {
+    this.socket.on("end-call", (data) => {
       store.dispatch(endCall());
       this.cleanupNotification();
-      toast.info("Call ended");
+      if (data.reason === "call-rejected") {
+        toast.error(data.message || "Cuộc gọi đã bị từ chối");
+      } else {
+        toast.info(data.message || "Cuộc gọi đã kết thúc");
+      }
     });
 
     this.socket.on("call-rejected", () => {
       store.dispatch(endCall());
       this.cleanupNotification();
-      toast.error("Call rejected");
+      toast.error("Cuộc gọi đã bị từ chối");
     });
   }
 
@@ -316,7 +323,6 @@ class SocketService {
     this.createNotificationContainer();
 
     if (this.notificationRoot) {
-
       this.notificationRoot.render(
         React.createElement(
           ThemeProvider,
@@ -335,20 +341,21 @@ class SocketService {
               if (this.navigateCallback) {
                 this.navigateCallback(`/call/${data.conversationId}`);
               } else {
-                console.error("navigateCallback is not defined");
+                console.error("navigateCallback không được định nghĩa");
               }
               this.cleanupNotification();
             },
             onReject: () => {
               if (this.socket) {
-                this.socket.emit("call-rejected", {
+                this.socket.emit("end-call", {
                   conversationId: data.conversationId,
                   to: data.from.id,
+                  reason: "call-rejected",
                 });
                 store.dispatch(endCall());
                 this.cleanupNotification();
               }
-            },
+            }            
           })
         )
       );
@@ -366,7 +373,11 @@ class SocketService {
   ): void {
     if (!this.socket) return;
 
-    console.log("Calling user with conversation:", { conversationId, toUserId, offer });
+    console.log("Gọi người dùng với conversation:", {
+      conversationId,
+      toUserId,
+      offer,
+    });
 
     this.socket.emit("call-user", {
       conversationId,
@@ -382,7 +393,7 @@ class SocketService {
   ): void {
     if (!this.socket) return;
 
-    console.log("Answering call:", { conversationId, fromUserId, answer });
+    console.log("Trả lời cuộc gọi:", { conversationId, fromUserId, answer });
 
     this.socket.emit("answer-call", {
       conversationId,
@@ -398,7 +409,11 @@ class SocketService {
   ): void {
     if (!this.socket) return;
 
-    console.log("Sending ICE candidate:", { conversationId, toUserId, candidate });
+    console.log("Gửi ICE candidate:", {
+      conversationId,
+      toUserId,
+      candidate,
+    });
 
     this.socket.emit("send-ice-candidate", {
       conversationId,
@@ -407,13 +422,14 @@ class SocketService {
     });
   }
 
-  public endCall(conversationId: string, toUserId: string): void {
+  public endCall(conversationId: string, toUserId: string, reason: string): void {
     if (!this.socket) return;
-
-    console.log("Ending call for conversation:", conversationId);
-
-    this.socket.emit("end-call", { conversationId, to: toUserId });
-  }
+    this.socket.emit("end-call", {
+      conversationId,
+      to: toUserId,
+      reason,
+    });
+  }  
 
   public disconnect(): void {
     if (this.socket) {

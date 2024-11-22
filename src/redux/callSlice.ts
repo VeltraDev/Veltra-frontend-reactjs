@@ -1,5 +1,5 @@
-import { User } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { User } from "@/types";
 
 interface CallState {
   incomingCall: {
@@ -7,39 +7,20 @@ interface CallState {
     offer: RTCSessionDescriptionInit;
     conversationId: string;
   } | null;
-  isCallActive: boolean;
   callAnswered: RTCSessionDescriptionInit | null;
-  connectionRef: RTCPeerConnection | null;
+  isCallActive: boolean;
 }
 
 const initialState: CallState = {
   incomingCall: null,
-  isCallActive: false,
   callAnswered: null,
-  connectionRef: null,
+  isCallActive: false,
 };
 
 const callSlice = createSlice({
   name: "call",
   initialState,
   reducers: {
-    setConnectionRef: (state, action: PayloadAction<RTCPeerConnection>) => {
-      if (state.connectionRef) {
-        state.connectionRef.close();
-      }
-      state.connectionRef = action.payload;
-    },
-    clearConnectionRef: (state) => {
-      if (state.connectionRef) {
-        state.connectionRef.close();
-        state.connectionRef = null;
-      }
-    },
-    updateConnectionState: (state, action: PayloadAction<string>) => {
-      if (state.connectionRef) {
-        console.log(`Connection state updated to: ${action.payload}`);
-      }
-    },
     setIncomingCall: (
       state,
       action: PayloadAction<{
@@ -49,27 +30,24 @@ const callSlice = createSlice({
       }>
     ) => {
       state.incomingCall = action.payload;
+    },
+    setCallAnswered: (
+      state,
+      action: PayloadAction<RTCSessionDescriptionInit>
+    ) => {
+      state.callAnswered = action.payload;
       state.isCallActive = true;
     },
-    setCallAnswered: (state, action: PayloadAction<RTCSessionDescriptionInit>) => {
-      state.callAnswered = action.payload;
+    startCall: (state) => {
       state.isCallActive = true;
     },
     endCall: (state) => {
       state.incomingCall = null;
-      state.isCallActive = false;
       state.callAnswered = null;
+      state.isCallActive = false;
     },
   },
 });
 
-export const {
-  setConnectionRef,
-  clearConnectionRef,
-  updateConnectionState,
-  setIncomingCall,
-  setCallAnswered,
-  endCall,
-} = callSlice.actions;
-
+export const { setIncomingCall, setCallAnswered, startCall, endCall } = callSlice.actions;
 export default callSlice.reducer;

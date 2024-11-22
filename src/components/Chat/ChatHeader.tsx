@@ -25,7 +25,7 @@ interface ChatHeaderProps {
 export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: ChatHeaderProps) {
     const { currentTheme } = useTheme();
     const navigate = useNavigate();
-    const currentUser = useSelector((state: RootState) => state.auth.user?.user);
+    const currentUser = useSelector((state: RootState) => state.auth.user);
     const conversation = useSelector((state: RootState) => state.chat.activeConversation);
     const onlineUsers = useSelector((state: RootState) => state.chat.onlineUsers);
 

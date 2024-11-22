@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { useSocket } from "@/contexts/SocketContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { motion } from "framer-motion";
+import { startCall } from "@/redux/callSlice";
 import {
   Mic,
   MicOff,
@@ -15,15 +15,14 @@ import {
   Minimize2,
   Settings,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
 import { endCall } from "@/redux/callSlice";
 import { getConversationById } from "@/redux/chatSlice";
+import { socketService } from "@/services/socket";
 
 export default function VideoCallPage() {
   const navigate = useNavigate();
   const { conversationId } = useParams<{ conversationId: string }>();
   const { currentTheme } = useTheme();
-  const { socketService } = useSocket();
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
@@ -31,7 +30,6 @@ export default function VideoCallPage() {
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const callTimerRef = useRef<NodeJS.Timeout>();
 
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -42,8 +40,9 @@ export default function VideoCallPage() {
   const dispatch = useDispatch<AppDispatch>();
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);
   const callAnswered = useSelector((state: RootState) => state.call.callAnswered);
+  const isCallActive = useSelector((state: RootState) => state.call.isCallActive);
 
-  const currentUser = useSelector((state: RootState) => state.auth.user?.user);
+  const currentUser = useSelector((state: RootState) => state.auth.user);
   const conversation = useSelector((state: RootState) =>
     state.chat.conversations.find((c) => c.id === conversationId)
   );
@@ -52,11 +51,19 @@ export default function VideoCallPage() {
   const isCallee = !!incomingCall;
 
   useEffect(() => {
-    if (socketService) {
-        socketService.setNavigateCallback((path: string) => navigate(path));
-    }
-}, [socketService, navigate]);
-  
+    socketService.connect();
+    socketService.onIceCandidateCallback = async (candidate: RTCIceCandidate) => {
+      if (peerConnectionRef.current) {
+        await peerConnectionRef.current.addIceCandidate(candidate);
+      } else {
+        queuedIceCandidates.current.push(candidate);
+      }
+    };
+    return () => {
+      socketService.onIceCandidateCallback = null;
+    };
+  }, []);
+
   useEffect(() => {
     const fetchConversation = async () => {
       if (!conversation && conversationId) {
@@ -64,8 +71,6 @@ export default function VideoCallPage() {
         try {
           await dispatch(getConversationById(conversationId)).unwrap();
         } catch (error) {
-          console.error("Failed to fetch conversation:", error);
-          toast.error("Failed to load conversation. Please try again.");
           navigate("/chat");
           return;
         } finally {
@@ -73,176 +78,144 @@ export default function VideoCallPage() {
         }
       }
     };
-
     fetchConversation();
   }, [conversationId, conversation, dispatch]);
 
-  if (isLoadingConversation) {
-    return <div>Loading conversation...</div>;
-  }
-
-  useEffect(() => {
-    if (!socketService) return;
-
-    socketService.onIceCandidateCallback = async (candidate: RTCIceCandidate) => {
-      console.log("ICE Candidate received:", candidate);
-
-      if (peerConnectionRef.current) {
-        try {
-          await peerConnectionRef.current.addIceCandidate(candidate);
-          console.log("ICE Candidate added successfully.");
-        } catch (error) {
-          console.error("Error adding ICE candidate:", error);
-        }
-      } else {
-        console.log("PeerConnection chưa sẵn sàng, lưu ICE Candidate.");
-        queuedIceCandidates.current.push(candidate);
-      }
-    };
-
-    return () => {
-      socketService.onIceCandidateCallback = null;
-    };
-  }, [socketService]);
-
   useEffect(() => {
     if (!conversationId || !conversation || !currentUser) {
-      toast.error("Invalid conversation");
       navigate("/chat");
       return;
     }
-
     const otherUser = conversation.users.find((u) => u.id !== currentUser.id);
     if (!otherUser) {
-      toast.error("Cannot find user to call");
       navigate("/chat");
       return;
     }
-
     const initializeCall = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-
-        localStreamRef.current = stream;
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-        }
-
-        const peerConnection = new RTCPeerConnection({
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-        });
-
-        peerConnectionRef.current = peerConnection;
-
-        stream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, stream);
-        });
-
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate && otherUser) {
-            socketService.sendIceCandidate(
-              conversationId,
-              otherUser.id,
-              event.candidate
-            );
-          }
-        };
-
-        peerConnection.ontrack = (event) => {
-          remoteStreamRef.current = event.streams[0];
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = event.streams[0];
-          }
-        };
-
-        if (queuedIceCandidates.current.length > 0) {
-          console.log("Adding queued ICE candidates.");
-          for (const candidate of queuedIceCandidates.current) {
-            try {
-              await peerConnection.addIceCandidate(candidate);
-              console.log("Queued ICE Candidate added successfully.");
-            } catch (error) {
-              console.error("Error adding queued ICE candidate:", error);
-            }
-          }
-          queuedIceCandidates.current = [];
-        }
-
-        if (!incomingCall) {
-          const offer = await peerConnection.createOffer();
-          await peerConnection.setLocalDescription(offer);
-          socketService.callUser(conversationId, otherUser.id, offer);
-        } else {
-          await peerConnection.setRemoteDescription(
-            new RTCSessionDescription(incomingCall.offer)
-          );
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
-          socketService.answerCall(conversationId, incomingCall.from.id, answer);
-        }
-
-        setIsConnecting(false);
-        callTimerRef.current = setInterval(
-          () => setCallDuration((prev) => prev + 1),
-          1000
-        );
-      } catch (error) {
-        console.error("Error initializing call:", error);
-        toast.error("Failed to access camera/microphone.");
-        handleEndCall();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      localStreamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
       }
+      const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      });
+      peerConnectionRef.current = peerConnection;
+      stream.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, stream);
+      });
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socketService.sendIceCandidate(
+            conversationId,
+            otherUser.id,
+            event.candidate
+          );
+        }
+      };
+      peerConnection.ontrack = (event) => {
+        remoteStreamRef.current = event.streams[0];
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+        }
+      };
+      if (queuedIceCandidates.current.length > 0) {
+        for (const candidate of queuedIceCandidates.current) {
+          await peerConnection.addIceCandidate(candidate);
+        }
+        queuedIceCandidates.current = [];
+      }
+      if (!incomingCall) {
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        socketService.callUser(conversationId, otherUser.id, offer);
+        dispatch(startCall());
+      } else {
+        await peerConnection.setRemoteDescription(
+          new RTCSessionDescription(incomingCall.offer)
+        );
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socketService.answerCall(conversationId, incomingCall.from.id, answer);
+      }
+      setIsConnecting(false);
     };
-
-    if (incomingCall && callAnswered && isCallee) {
-      initializeCall();
-    } else if (!isCallee) {
-      initializeCall();
-    }
-
+    initializeCall();
     return () => {
       cleanup();
     };
+  }, [conversationId, conversation, incomingCall]);
 
-  }, [conversationId, conversation, incomingCall, callAnswered]);
+  useEffect(() => {
+    if (callAnswered && peerConnectionRef.current && !isCallee) {
+      peerConnectionRef.current.setRemoteDescription(
+        new RTCSessionDescription(callAnswered)
+      );
+    }
+  }, [callAnswered]);
+
+  // useEffect(() => {
+  //   if (!isCallActive && !incomingCall) {
+  //     cleanup();
+  //     navigate("/chat");
+  //   }
+  // }, [isCallActive, incomingCall, isConnecting, isCallee]);  
 
   const cleanup = () => {
-    console.log("cleanup called");
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => {
-        console.log(`Stopping local track: ${track.kind}`);
-        track.stop();
-      });
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
     }
     if (remoteStreamRef.current) {
-      remoteStreamRef.current.getTracks().forEach((track) => {
-        console.log(`Stopping remote track: ${track.kind}`);
-        track.stop();
-      });
+      remoteStreamRef.current.getTracks().forEach((track) => track.stop());
       remoteStreamRef.current = null;
     }
     if (peerConnectionRef.current) {
-      console.log("Closing peer connection");
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
-    if (callTimerRef.current) {
-      clearInterval(callTimerRef.current);
-    }
-    dispatch(endCall());
+    setIsMuted(false);  
+    setIsVideoOff(false);
+    setIsConnecting(false);
+    setCallDuration(0);
   };
 
-  const handleEndCall = () => {
-    cleanup();
+  const handleEndCall = useCallback(() => {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
+    }
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach((track) => track.stop());
+      remoteStreamRef.current = null;
+    }
+    setIsMuted(false);
+    setIsVideoOff(false);
+    setIsConnecting(false);
+    setCallDuration(0);
     const otherUser = conversation?.users.find((u) => u.id !== currentUser?.id);
     if (otherUser) {
-      socketService.endCall(conversationId, otherUser.id);
+      socketService.endCall(conversationId!, otherUser.id, "call-ended");
     }
+    dispatch(endCall());
     navigate("/chat");
-  };
+  }, [
+    peerConnectionRef,
+    localStreamRef,
+    remoteStreamRef,
+    conversation,
+    currentUser,
+    conversationId,
+    dispatch,
+    navigate,
+  ]);
 
   const toggleMic = () => {
     if (localStreamRef.current) {
@@ -275,6 +248,20 @@ export default function VideoCallPage() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isCallActive) {
+      timer = setInterval(() => setCallDuration((prev) => prev + 1), 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isCallActive]);
+
+  if (isLoadingConversation) {
+    return <div>Loading conversation...</div>;
+  }
 
   return (
     <div className={`h-screen ${currentTheme.bg} flex flex-col`}>
