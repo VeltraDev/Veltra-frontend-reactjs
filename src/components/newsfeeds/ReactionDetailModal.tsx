@@ -107,8 +107,8 @@ export default function ReactionDetailModal({ postId, onClose }: ReactionDetailM
                                             <div className="absolute bottom-0 right-0 w-4 h-4 bg-gray-600 rounded-full"></div>
                                         </div>
                                         <div className="flex flex-col">
-                                            <div className="w-32 h-4 bg-gray-700 rounded-md"></div>
-                                            <div className="w-20 h-3 bg-gray-600 rounded-md mt-1"></div>
+                                            <div className="w-32 h-4 bg-gray-700 rounded-full"></div>
+                                            <div className="w-20 h-3 bg-gray-600 rounded-full mt-1"></div>
                                         </div>
                                     </div>
                                     <div className="ml-auto px-4 py-2 bg-gray-700 rounded w-[100px] h-8"></div>
@@ -140,7 +140,7 @@ export default function ReactionDetailModal({ postId, onClose }: ReactionDetailM
                                             </p>
                                         </div>
                                     </div>
-                                    <button className="ml-auto px-4 py-1 bg-[#3B3D3E] text-[#f5f5f5] rounded-sm">
+                                    <button className="ml-auto px-4 py-1 bg-[#3B3D3E] text-[#f5f5f5] rounded-[12px]">
                                         <div className="flex justify-between w-[100px]">
                                             <div>
                                                 <svg

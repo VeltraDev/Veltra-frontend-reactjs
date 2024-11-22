@@ -148,7 +148,6 @@ export default function CommentsModal({
     try {
       if (userReaction) {
         if (userReaction.reactionType.type === reactionType) {
-          // Nếu người dùng đã thả cảm xúc giống loại hiện tại, xóa cảm xúc
           await http.delete(`/comments/${commentId}/reactions`);
           setComments((prevComments) =>
             updateComments(prevComments, commentId, (comment) => ({
@@ -159,7 +158,6 @@ export default function CommentsModal({
             }))
           );
         } else {
-          // Nếu người dùng chọn cảm xúc khác, cập nhật cảm xúc
           await http.delete(`/comments/${commentId}/reactions`);
           const response = await http.post(`/comments/${commentId}/reactions`, {
             reactionTypeId: reactionTypeData.id,
@@ -205,44 +203,48 @@ export default function CommentsModal({
   };
 
   const handlePostComment = async () => {
-    if (!newComment.trim()) return;
+  if (!newComment.trim()) return;
 
-    try {
-      const payload = { content: newComment, parentId: replyParentId };
-      const response = await http.post(`/posts/${postId}/comments`, payload);
-      const newCommentData = response.data;
+  try {
+    const payload = { content: newComment, parentId: replyParentId };
+    const response = await http.post(`/posts/${postId}/comments`, payload); 
+    const newCommentData = response.data;
 
-      setComments((prevComments) => {
-        if (!replyParentId) {
-          // Nếu comment không có parentId, thêm vào đầu danh sách
-          return [newCommentData, ...prevComments];
-        }
+    const enrichedComment = {
+      ...newCommentData,
+      author: {
+        ...newCommentData.author,
+        avatar: avatar || defaultAvatar, 
+      },
+      reactions: [], 
+    };
 
-        // Nếu comment là phản hồi, tìm và thêm vào danh sách phản hồi của comment cha
-        return updateComments(prevComments, replyParentId, (parentComment) => ({
-          ...parentComment,
-          children: parentComment.children
-            ? [...parentComment.children, newCommentData]
-            : [newCommentData],
-        }));
-      });
-
-      if (replyParentId) {
-        setExpandedComments((prev) => ({
-          ...prev,
-          [replyParentId]: true, 
-        }));
+    setComments((prevComments) => {
+      if (!replyParentId) {
+        return [enrichedComment, ...prevComments];
       }
 
-      setNewComment("");
-      setReplyParentId(null);
-      setReplyingToAuthorName(null);
-    } catch (error) {
-      console.error("Error posting comment:", error);
+      return updateComments(prevComments, replyParentId, (parentComment) => ({
+        ...parentComment,
+        children: parentComment.children
+          ? [...parentComment.children, enrichedComment]
+          : [enrichedComment],
+      }));
+    });
+
+    if (replyParentId) {
+      setExpandedComments((prev) => ({
+        ...prev,
+        [replyParentId]: true,
+      }));
     }
-  };
-
-
+    setNewComment("");
+    setReplyParentId(null);
+    setReplyingToAuthorName(null);
+  } catch (error) {
+    console.error("Error posting comment:", error);
+  }
+};
 
   function reactionColorClass(type: string): string {
     switch (type) {
@@ -512,7 +514,7 @@ export default function CommentsModal({
                 replyParentId ? `Replying to ${replyingToAuthorName}...` : "Write a comment..."
               }
               rows={1}
-              className="py-3 w-full bg-gray-700 text-gray-200 p-3 rounded-xl outline-none resize-none overflow-auto focus:ring-2 focus:ring-gray-400 max-h-[150px] scrollbar-custom"
+              className="py-3 w-full bg-gray-700 text-gray-200 p-3 rounded-full outline-none resize-none overflow-auto focus:ring-2 focus:ring-gray-400 max-h-[150px] scrollbar-custom"
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
@@ -526,8 +528,8 @@ export default function CommentsModal({
             className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none">
-              <path d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z" 
-                stroke="#f5f5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z"
+                stroke="#f5f5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
         </div>

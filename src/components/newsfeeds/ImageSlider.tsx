@@ -33,7 +33,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
                         key={index}
                         src={attachment.url}
                         alt={`Attachment ${index + 1}`}
-                        className="h-[585px] min-w-[470px] object-cover rounded-md border border-zinc-800"
+                        className="h-[585px] min-w-[470px] object-cover rounded-[8px] border border-zinc-800"
                     />
                 ))}
             </div>

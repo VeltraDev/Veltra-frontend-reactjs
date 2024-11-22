@@ -90,7 +90,7 @@ const PostForm = ({ onNewPost }: { onNewPost: () => void }) => {
             <div className="flex-grow">
               <input
                 type="text"
-                placeholder="Bạn đang nghĩ gì thế?"
+                placeholder="What's on your mind?"
                 className={`w-full text-sm ${currentTheme.text} bg-transparent border-none focus:outline-none cursor-pointer`}
                 onFocus={() => setIsModalOpen(true)}
                 readOnly
