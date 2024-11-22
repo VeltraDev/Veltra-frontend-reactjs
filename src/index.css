@@ -2,12 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-
-.active{
-    color: #1E73BE;
+.active {
+  color: #1E73BE;
 }
 
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
 
+  .scrollbar::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 10px;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 10px;
+    border: 2px solid var(--scrollbar-track);
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+}
 
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
@@ -15,16 +34,16 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0; 
 }
 
-.editorjsdiv h2{
+.editorjsdiv h2 {
   font-weight: 600;
   font-size: 18px;
 }
-.editorjsdiv h3, h4, h5{
+.editorjsdiv h3, h4, h5 {
   font-weight: 500;
   font-size: 16px;
 }
 
-.editorjsdiv li{
+.editorjsdiv li {
   margin-bottom: 10px;
   list-style-type: disc;
   padding-left: 10px;
@@ -33,6 +52,7 @@ input[type=number]::-webkit-outer-spin-button {
 
 @layer base {
   :root {
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -84,5 +104,19 @@ input[type=number]::-webkit-outer-spin-button {
     --chart-3: 216 92% 60%;
     --chart-4: 210 98% 78%;
     --chart-5: 212 97% 87%;
+     --scrollbar-track: #2c2c2c;
+    --scrollbar-thumb: #555;
+    --scrollbar-thumb-hover: #333;
     }
 }
+
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+  body {
+    @apply bg-white text-black dark:bg-gray-900 dark:text-white;
+  }
+}
+

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme, ThemeType, themes } from '@/contexts/ThemeContext';
 import { Home, MessageCircle, Users, Search, Settings, LogOut, Palette, Plus } from 'lucide-react';
 import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
+import { Link } from 'react-router-dom';
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -40,12 +41,12 @@ console.log(user)
         </div>
 
         <div className="flex-1 flex flex-col items-center space-y-4">
-          <button className={`p-3 rounded-xl hover:bg-gradient-to-r ${currentTheme.hover} transition-all group relative`}>
+          <Link to="/newsfeeds"className={`p-3 rounded-xl hover:bg-gradient-to-r ${currentTheme.hover} transition-all group relative`}>
             <Home className={`w-6 h-6 ${currentTheme.text}`} />
             <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
               Home
             </span>
-          </button>
+          </Link>
           <button className={`p-3 rounded-xl bg-gradient-to-r ${currentTheme.primary}`}>
             <MessageCircle className="w-6 h-6 text-white" />
           </button>

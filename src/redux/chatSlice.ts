@@ -13,6 +13,7 @@ interface ChatState {
   error: string | null;
   typingUsers: Record<string, User[]>;
   onlineUsers: User[];
+  total: number; // Thêm total
 }
 
 const initialState: ChatState = {
@@ -23,6 +24,7 @@ const initialState: ChatState = {
   error: null,
   typingUsers: {},
   onlineUsers: [],
+  total: 0, // Khởi tạo
 };
 
 const sortConversations = (conversations: Conversation[]) => {
@@ -50,6 +52,18 @@ export const getConversations = createAsyncThunk(
     return response.results;
   }
 );
+
+export const getConversationsWithTotal = createAsyncThunk(
+  "chat/getConversationsWithTotal",
+  async ({ page }: { page: number }) => {
+    const response = await conversationService.getConversationsWithTotal(page);
+    return {
+      results: response.results, // Danh sách conversations
+      total: response.total,    // Tổng số conversations
+    };
+  }
+);
+
 
 export const updateGroupInfo = createAsyncThunk(
   "chat/updateGroupInfo",
@@ -186,14 +200,32 @@ const chatSlice = createSlice({
         state.typingUsers[action.payload.id] = [];
       }
     },
+    deleteMessageById: (state, action: PayloadAction<{ messageId: string; conversationId: string }>) => {
+      const { messageId, conversationId } = action.payload;
+      if (state.activeConversation?.id === conversationId) {
+        state.messages = state.messages.filter(m => m.id !== messageId);
+      }
+      const conversation = state.conversations.find(c => c.id === conversationId);
+      if (conversation) {
+        conversation.latestMessage = state.messages[state.messages.length - 1] || null;
+      }
+    },
+    
     addMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
-      state.messages.push(message);
+      if (state.activeConversation?.id === message.conversationId) {
+        state.messages.push(message);
+        console.log('messages: ', state.messages);
+      }
+      console.log("Message:", message);
+      console.log("Conversations:", state.conversations);
       const conversation = state.conversations.find(
         (c) => c.id === message.conversationId
       );
+      console.log("Conversation:", conversation);
       if (conversation) {
         conversation.latestMessage = message;
+        console.log("Latest message:", message);
         state.conversations = sortConversations(state.conversations);
       }
     },
@@ -232,12 +264,27 @@ const chatSlice = createSlice({
           .filter(user => user.id !== userId);
       }
     },
-    removeUserFromConversation: (state, action: PayloadAction<{ conversationId: string; userId: string }>) => {
-      const { conversationId, userId } = action.payload;
-      const conversation = state.conversations.find(c => c.id === conversationId);
-      if (conversation) {
-        conversation.users = conversation.users.filter(u => u.id !== userId);
+    removeUserFromConversation: (state, action: PayloadAction<{ conversation: Conversation; user: User }>) => {
+      const { conversation, user } = action.payload;
+      console.log("Removing user from conversation:", conversation, user);
+      if (state.activeConversation?.id === conversation.id) {
+        state.activeConversation = state.conversations.find(c => c.id !== conversation.id) || null;
       }
+      const existingConversation = state.conversations.find(c => c.id === conversation.id);
+      if (existingConversation) {
+        existingConversation.users = existingConversation.users.filter(u => u.id !== user.id);
+
+      }
+    },
+    handleAdminDeleted: (state, action: PayloadAction<{ conversationId: string }>) => {
+      const { conversationId } = action.payload;
+      if (state.activeConversation?.id === conversationId) {
+        // Nếu người dùng đang xem cuộc hội thoại bị xóa, chuyển sang cuộc hội thoại khác
+        state.activeConversation = state.conversations.find(c => c.id !== conversationId) || null;
+      }
+      console.log("Admin deleted conversation:", state.conversations, conversationId);
+      // Cập nhật danh sách cuộc hội thoại
+      state.conversations = state.conversations.filter(c => c.id !== conversationId);
     },
     updateGroupMembers: (state, action: PayloadAction<{ conversation: Conversation; addedUsers?: User[] }>) => {
       const { conversation } = action.payload;
@@ -277,6 +324,7 @@ const chatSlice = createSlice({
       }
     },
   },
+  
   extraReducers: (builder) => {
     builder
       .addCase(createConversation.pending, (state) => {
@@ -305,6 +353,27 @@ const chatSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(getConversations.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || "Failed to fetch conversations";
+      })
+      .addCase(getConversationsWithTotal.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getConversationsWithTotal.fulfilled, (state, action) => {
+        if (action.meta.arg.page === 1) {
+          state.conversations = action.payload.results; // Reset khi page là 1
+        } else {
+          // Tránh trùng lặp conversation
+          const seen = new Set(state.conversations.map((c) => c.id));
+          const newConversations = action.payload.results.filter(
+            (c) => !seen.has(c.id)
+          );
+          state.conversations = [...state.conversations, ...newConversations];
+        }
+        state.total = action.payload.total; // Cập nhật tổng số
+        state.isLoading = false;
+      })
+      .addCase(getConversationsWithTotal.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "Failed to fetch conversations";
       })
@@ -400,6 +469,8 @@ export const {
   removeGroupMembers,
   updateConversation,
   removeConversation,
+  deleteMessageById,
+  handleAdminDeleted,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -20,6 +20,7 @@ import { http } from '@/api/http';
 import { useNavigate } from "react-router-dom";
 import PasswordInput from "@/components/auth/PasswordInput";
 import EmailVerificationModal from "@/components/auth/EmailVerificationModal";
+import ErrorModal from "@/components/auth/ErrorModal"; 
 
 const formSchema = z.object({
     firstname: z.string().min(1, "Vui lòng nhập tên."),
@@ -51,7 +52,10 @@ const formSchema = z.object({
 export default function SignUpForm() {
     const [verificationSent, setVerificationSent] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [email, setEmail] = useState<string>('');
+    const [errorModalOpen, setErrorModalOpen] = useState<boolean>(false); // Thêm trạng thái cho lỗi
+    const [errorMessage, setErrorMessage] = useState<string>(""); // Thêm thông báo lỗi
     const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -67,6 +71,7 @@ export default function SignUpForm() {
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsSubmitting(true); // Bắt đầu trạng thái loading
         try {
             const response = await http.post(
                 "/auth/register",
@@ -76,7 +81,6 @@ export default function SignUpForm() {
                     email: values.email,
                     password: values.password,
                 },
-
             );
 
             if (response.code === 1000) {
@@ -84,8 +88,12 @@ export default function SignUpForm() {
                 setEmail(values.email); // Lưu email để truyền vào modal
                 setIsModalOpen(true); // Mở modal sau khi đăng ký thành công
             }
-        } catch (error) {
-            console.error("Đăng ký thất bại:", error);
+        } catch (error: any) {
+            console.error("Đăng ký thất bại:", error.message);
+            setErrorMessage(error.message || "Đã xảy ra lỗi, vui lòng thử lại."); // Đặt thông báo lỗi
+            setErrorModalOpen(true); // Hiển thị modal lỗi
+        } finally {
+            setIsSubmitting(false); // Kết thúc trạng thái loading
         }
     }
 
@@ -104,9 +112,10 @@ export default function SignUpForm() {
                                         type="text"
                                         placeholder="Nguyễn"
                                         {...field}
+                                        disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -122,9 +131,10 @@ export default function SignUpForm() {
                                         type="text"
                                         placeholder="Văn A"
                                         {...field}
+                                        disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -140,14 +150,15 @@ export default function SignUpForm() {
                                         type="email"
                                         placeholder="nguyenvan@example.com"
                                         {...field}
+                                        disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
 
-                    <PasswordInput />
+                    <PasswordInput isDisabled={isSubmitting} /> {/* Truyền trạng thái vào */}
                     <FormField
                         control={form.control}
                         name="passwordConfirmation"
@@ -155,9 +166,9 @@ export default function SignUpForm() {
                             <FormItem>
                                 <FormLabel className="text-white">Xác nhận mật khẩu</FormLabel>
                                 <FormControl>
-                                    <Input className="text-blue-500" type="password" {...field} />
+                                    <Input className="text-blue-500" type="password" {...field} disabled={isSubmitting} />
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -171,6 +182,7 @@ export default function SignUpForm() {
                                     <Checkbox
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
+                                        disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
@@ -195,8 +207,19 @@ export default function SignUpForm() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <Button type="submit" className="text-white">
-                            Tạo tài khoản
+                        <Button
+                            type="submit"
+                            className="text-white flex items-center justify-center"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <div className="flex items-center">
+                                    <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
+                                    Đang xử lý...
+                                </div>
+                            ) : (
+                                "Tạo tài khoản"
+                            )}
                         </Button>
                         <p className="text-sm text-gray-500">
                             Đã có tài khoản?{" "}
@@ -215,6 +238,13 @@ export default function SignUpForm() {
                     setIsModalOpen(false);
                 }}
                 email={email} // Truyền email vào modal
+            />
+
+            <ErrorModal
+                isOpen={errorModalOpen}
+                onRequestClose={() => setErrorModalOpen(false)}
+                errorMessage={errorMessage} // Truyền thông báo lỗi
+                title="Đăng ký thất bại"
             />
         </>
     );

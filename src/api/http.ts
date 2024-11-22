@@ -12,6 +12,7 @@ class Http {
   private _instance: AxiosInstance; // Renamed to avoid conflict
   private isRefreshing = false;
   private refreshSubscribers: ((token: string) => void)[] = [];
+  private isLoginRequest = false; // Flag to track login requests
 
   constructor() {
     this._instance = axios.create({
@@ -26,10 +27,14 @@ class Http {
   }
 
   private setupInterceptors() {
+    // Request Interceptor
     this._instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const state = store.getState();
         const token = state.auth.accessToken;
+
+        // Check if the request is a login request
+        this.isLoginRequest = config.url === "/auth/login";
 
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -39,6 +44,7 @@ class Http {
       (error) => Promise.reject(error)
     );
 
+    // Response Interceptor
     this._instance.interceptors.response.use(
       (response) => response.data,
       async (error: AxiosError) => {
@@ -48,6 +54,13 @@ class Http {
           return Promise.reject(error);
         }
 
+        // Handle login-specific errors
+        if (this.isLoginRequest) {
+          this.isLoginRequest = false; // Reset the flag
+          return Promise.reject(error.response?.data || error);
+        }
+
+        // Handle token refresh for other requests
         if (error.response?.status === 401 && !originalRequest._retry) {
           if (this.isRefreshing) {
             return new Promise((resolve) => {
@@ -70,7 +83,7 @@ class Http {
             });
 
             const { accessToken, refreshToken: newRefreshToken } =
-              response.data.data;
+              response.data;
 
             store.dispatch(
               setTokens({
