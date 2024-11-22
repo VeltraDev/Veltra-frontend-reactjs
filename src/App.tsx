@@ -16,11 +16,13 @@ import { SocketProvider } from "./contexts/SocketContext";
 import { store } from "./redux/store";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+const queryClient = new QueryClient();
 
 function App() {
   return (
-
+    <QueryClientProvider client={queryClient}>
     <Provider store={store}>
       <Router>
         <AuthProvider>
@@ -59,7 +61,7 @@ function App() {
         </AuthProvider>
       </Router>
     </Provider>
-
+    </QueryClientProvider>
   );
 }
 
