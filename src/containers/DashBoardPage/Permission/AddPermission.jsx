@@ -17,7 +17,7 @@ const AddForm = () => {
     const fetchAllModules = async () => {
       try {
         const response = await getAllForms(1, 1000, 'module', 'DESC');
-        const allModules = response.data.data?.results?.map((item) => item.module) || [];
+        const allModules = response.data?.results?.map((item) => item.module) || [];
         const uniqueModules = Array.from(new Set(allModules));
         setForm((prevForm) => ({ ...prevForm, modules: uniqueModules }));
       } catch (error) {

@@ -87,6 +87,20 @@ class ChatSocketService {
       store.dispatch(getConversations());
     });
 
+    this.socket.on("receiveForwardMessage", (data) => {
+    const { conversationId, message } = data;
+    console.log("Received forwarded message in conversation:", conversationId);
+    store.dispatch(addMessage(message));
+    store.dispatch(updateConversation(conversationId));
+    });
+
+    this.socket.on("messageForwarded", (data) => {
+    const { conversationId, message } = data;
+    console.log("Confirmation of forwarded message:", conversationId);
+    toast.success("Message forwarded successfully.");
+    store.dispatch(addMessage(message));
+    });
+
     // Group management events
     this.socket.on("usersAdded", ({ conversation, message, addedUsers }) => {
       store.dispatch(updateGroupMembers({ conversation, addedUsers }));
@@ -178,6 +192,23 @@ class ChatSocketService {
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
+    }
+  }
+
+  public forwardMessage(payload: { originalMessageId: string; targetConversationId: string }): void {
+    if (!this.socket) return;
+
+    try {
+    this.socket.emit("forwardMessage", payload, (response: any) => {
+      if (response?.success) {
+        console.log("Message forwarded successfully:", response);
+      } else {
+        console.error("Failed to forward message:", response?.message || "Unknown error");
+      }
+    });
+    } catch (error) {
+    console.error("Error forwarding message:", error);
+    throw error;
     }
   }
 

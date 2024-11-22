@@ -26,6 +26,9 @@ import UserSettings from "@/containers/User/UserSettings";
 import ChatPage from "@/pages/ChatPage";
 import VideoCallPage from "@/pages/VideoCallPage";
 
+import NewsFeedsPage from "@/pages/NewsFeedsPage";
+
+
 interface Route {
     path: string;
     component: React.ComponentType<any>;
@@ -132,6 +135,38 @@ const adminRoutes: Route[] = [
         requiresAuth: true,
         roles: ["ADMIN"],
     },
+
+    {
+        path: "/dashboard/role",
+        component: RoleDB,
+        layout: DBLayout,
+    },
+    {
+        path: "/newsfeeds",
+        component: NewsFeedsPage,
+    },
+
+
+
+
+
+    // {
+
+    //     path: "/dashboard/permission",
+    //     component: Permission,
+    //     layout: DBLayout,
+    // },
+    // {
+    //     path: "/dashboard/permission/addpermission",
+    //     component: AddPermission,
+    //     layout: DBLayout,
+    // },
+    // {
+    //     path: "/dashboard/permission/updatepermission/:id",
+    //     component: UpdatePermission,
+    //     layout: DBLayout,
+    // },
+
     {
         path: "/dashboard/role/add",
         component: AddRole,
