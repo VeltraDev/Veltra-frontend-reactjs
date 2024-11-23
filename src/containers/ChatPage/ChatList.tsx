@@ -138,7 +138,7 @@ export default function ChatList({
     const otherTypingUsers = typingUsersInConvo.filter((user) => user.id !== currentUser?.id);
 
     if (!otherTypingUsers.length) return null;
-    if (otherTypingUsers.length === 1) return `${otherTypingUsers[0].firstName} is typing...`;
+    if (otherTypingUsers.length === 1) return `${otherTypingUsers[0].lastName} is typing...`;
     return `${otherTypingUsers.length} people are typing...`;
   };
 
@@ -201,6 +201,7 @@ export default function ChatList({
       {/* Conversations List */}
       <div id="scrollableDiv" className="flex-1 overflow-y-auto scrollbar-custom">
         <InfiniteScroll
+          key="infinite-scroll" // Đảm bảo key không thay đổi
           dataLength={conversations.length}
           next={fetchMoreData}
           hasMore={hasMore}
