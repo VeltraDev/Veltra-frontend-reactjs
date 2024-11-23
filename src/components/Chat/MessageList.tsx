@@ -32,7 +32,7 @@ export default function MessageList({ messages, conversationId }: MessageListPro
 
   const getTypingText = () => {
     if (!typingUsers.length) return null;
-    if (typingUsers.length === 1) return `${typingUsers[0].firstName} is typing...`;
+    if (typingUsers.length === 1) return `${typingUsers[0].lastName} is typing...`;
     return `${typingUsers.length} people are typing...`;
   };
 
