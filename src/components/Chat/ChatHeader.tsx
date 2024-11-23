@@ -64,7 +64,7 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
 
 
 
-console.log(otherUser?.avatar)
+    console.log(otherUser?.avatar)
 
 
     return (
@@ -80,39 +80,26 @@ console.log(otherUser?.avatar)
                 {/* Avatar */}
                 {conversation && (
                     <div className="relative">
-                        <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-medium overflow-hidden">
-                            {conversation.isGroup && !conversation.picture ? (
-                                <span>
-                                    {conversation.name
-                                        ? `${conversation.name[0]}${conversation.name.slice(-1)}`.toUpperCase()
-                                        : 'G'}
-                                </span>
-                            ) : otherUser?.avatar ? (
-                                <img
-                                    src={otherUser?.avatar}
-                                    alt={otherUser?.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <span>
-                                    {otherUser?.name
-                                        ? `${otherUser.name[0]}${otherUser.name.slice(-1)}`.toUpperCase()
-                                        : 'U'}
-                                </span>
-                            )}
-                        </div>
-
+                        <img
+                            src={
+                                conversation.isGroup
+                                    ? conversation.picture
+                                    : otherUser?.avatar
+                            }
+                            alt={conversation.isGroup ? conversation.name : otherUser?.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                        />
                         {!conversation.isGroup && (
                             <div className={`
-                absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
-                ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
-                border-2 border-white dark:border-gray-900
-                transition-all duration-200
-            `} />
+            absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
+            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
+            border-2 border-white dark:border-gray-900
+            transition-all duration-200
+          `} />
                         )}
+
                     </div>
                 )}
-
 
                 {/* Info */}
                 {conversation && (
