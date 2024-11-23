@@ -80,15 +80,22 @@ console.log(otherUser?.avatar)
                 {/* Avatar */}
                 {conversation && (
                     <div className="relative">
-                        <img
-                            src={
-                                conversation.isGroup
-                                    ? conversation.picture 
-                                    : otherUser?.avatar 
-                            }
-                            alt={conversation.isGroup ? conversation.name : otherUser?.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                        />
+                        <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-medium overflow-hidden">
+                            {conversation.isGroup && !conversation.picture ? (
+                                <span>
+                                    {conversation.name
+                                        ? `${conversation.name[0]}${conversation.name.slice(-1)}`.toUpperCase()
+                                        : 'G'}
+                                </span>
+                            ) : (
+                                <img
+                                    src={conversation.isGroup ? conversation.picture || '' : otherUser?.avatar || ''}
+                                    alt={conversation.isGroup ? conversation.name : otherUser?.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            )}
+                        </div>
+
                         {!conversation.isGroup && (
                             <div className={`
             absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full
