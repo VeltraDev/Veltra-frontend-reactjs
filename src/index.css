@@ -112,6 +112,16 @@ input[type=number]::-webkit-outer-spin-button {
 
 
 @layer base {
+   :root {
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #888;
+    --scrollbar-thumb-hover: #555;
+  }
+  .dark {
+    --scrollbar-track: #2c2c2c;
+    --scrollbar-thumb: #555;
+    --scrollbar-thumb-hover: #333;
+  }
   * {
     @apply box-border;
   }
