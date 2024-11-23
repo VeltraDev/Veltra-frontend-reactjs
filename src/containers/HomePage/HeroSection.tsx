@@ -22,9 +22,7 @@ export default function HeroSection() {
       <div className='relative font-mono'>
         <div className="max-w-screen-xl z-10 mx-auto text-gray-600 gap-x-12 items-center justify-between overflow-hidden md:flex md:px-8">
           <div className="flex-none space-y-5 px-4 sm:max-w-lg md:px-0 lg:max-w-xl">
-            <h1 className="text-sm text-primary font-medium">
-              Kết nối không giới hạn với bạn bè UTH
-            </h1>
+            <h1 className="text-sm text-primary font-medium"> Cùng bạn bè, kết nối qua từng dòng cảm xúc. </h1>
             {/* <TextAnimation
               text="Trò chuyện, gọi video và học nhóm dễ dàng "
               variants={{
@@ -62,7 +60,7 @@ export default function HeroSection() {
           </div>
           <div className="flex-none mt-14 md:mt-0 md:max-w-xl">
             <img
-              src="https://tuyensinh.ut.edu.vn/wp-content/uploads/2023/04/IMG_3029-scaled.jpg"
+              src="https://veltra-nestjs-uploader.s3.ap-southeast-1.amazonaws.com/Screenshot 2024-11-23 082515.png"
               className=" md:rounded-tl-[108px]"
               alt=""
             />
