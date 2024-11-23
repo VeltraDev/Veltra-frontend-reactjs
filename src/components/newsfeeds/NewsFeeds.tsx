@@ -333,7 +333,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                             <div className="flex items-center space-x-3">
 
 
-                                {/* <img
+                                <img
                                     src={post.author.avatar || defaultAvatar}
 
                                     alt={post.author.firstName}
@@ -346,7 +346,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                                     <p className={`text-xs ${currentTheme.mutedText}`}>
                                         {formatDistanceToNow(new Date(post.createdAt), new Date()).replace("about ", "")}
                                     </p>
-                                </div> */}
+                                </div>
                             </div>
                             <button
                                 onClick={() => handleMoreOptions(post.id)}
