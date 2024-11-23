@@ -201,6 +201,7 @@ export default function ChatList({
       {/* Conversations List */}
       <div id="scrollableDiv" className="flex-1 overflow-y-auto scrollbar-custom">
         <InfiniteScroll
+          key="infinite-scroll" // Đảm bảo key không thay đổi
           dataLength={conversations.length}
           next={fetchMoreData}
           hasMore={hasMore}
