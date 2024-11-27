@@ -1,4 +1,4 @@
-  import {
+import {
   Table,
   TableBody,
   TableCell,
@@ -73,12 +73,12 @@ export function RolesTable<TData, TValue>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
-                <TableHead>Actions</TableHead>
+
               </TableRow>
             ))}
           </TableHeader>
@@ -91,7 +91,7 @@ export function RolesTable<TData, TValue>({
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
-             
+
                 </TableRow>
               ))
             ) : (
