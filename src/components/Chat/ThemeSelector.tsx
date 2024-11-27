@@ -6,10 +6,11 @@ export default function ThemeSelector() {
     const { theme, setTheme, currentTheme } = useTheme();
 
     return (
-        <div className={`p-4 ${currentTheme.bg} rounded-xl shadow-lg border ${currentTheme.border}`}>
+        <div className={`p-4 ${currentTheme.bg} rounded-xl shadow-lg border ${currentTheme.border}`}>   
             <h3 className={`text-lg font-semibold mb-4 ${currentTheme.headerText}`}>Choose Theme</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {(Object.keys(themes) as ThemeType[]).map((themeKey) => {
+                    z
                     const themeData = themes[themeKey];
                     return (
                         <button
