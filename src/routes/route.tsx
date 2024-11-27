@@ -46,6 +46,12 @@ interface Route {
 
 const publicRoutes: Route[] = [
     {
+        path: "/",
+        component: Home,
+        layout: LandingLayout,
+        requiresAuth: true,
+    },
+    {
         path: "/auth",
         component: AuthPage,
         layout: LandingLayout,
@@ -72,12 +78,7 @@ const publicRoutes: Route[] = [
 ];
 
 const protectedRoutes: Route[] = [
-    {
-        path: "/",
-        component: Home,
-        layout: LandingLayout,
-        requiresAuth: true,
-    },
+
     {
         path: "/chat",
         component: ChatPage,
