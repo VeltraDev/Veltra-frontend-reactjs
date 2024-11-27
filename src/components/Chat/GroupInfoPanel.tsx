@@ -467,6 +467,8 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
         onConfirm={confirmRemoveUser}
         title="Confirm Delete"
         description={`Are you sure you want to remove ${userToDelete?.firstName} ${userToDelete?.lastName} from the group?`}
+        confirmButtonText="Delete"
+        confirmButtonColor="bg-red-500 hover:bg-red-600 text-white"
       />
 
       {/* Confirm Leave Group Modal */}
@@ -476,6 +478,8 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
         onConfirm={confirmLeaveGroup}
         title="Leave Group"
         description="Are you sure you want to leave this group?"
+        confirmButtonText="Leave"
+        confirmButtonColor="bg-blue-500 hover:bg-blue-600 text-white"
       />
 
       {/* Confirm Transfer Admin Modal */}
@@ -485,15 +489,21 @@ export default function GroupInfoPanel({ onClose }: GroupInfoPanelProps) {
         onConfirm={confirmUpdateAdmin}
         title="Transfer Admin"
         description="Are you sure you want to transfer group ownership?"
+        confirmButtonText="Transfer"
+        confirmButtonColor="bg-green-500 hover:bg-green-600 text-white"
       />
 
-        <ConfirmDeleteModal
+      {/* Confirm Delete Group Modal */}
+      <ConfirmDeleteModal
         isOpen={showConfirmDeleteGroup}
-        onClose={() => setShowConfirmDeleteGroup(false)} // Đóng modal khi hủy
-        onConfirm={confirmDeleteGroup} // Gọi hàm xoá nhóm khi xác nhận
+        onClose={() => setShowConfirmDeleteGroup(false)}
+        onConfirm={confirmDeleteGroup}
         title="Delete Group"
         description="Are you sure you want to delete this group? This action cannot be undone."
+        confirmButtonText="Delete Group"
+        confirmButtonColor="bg-red-500 hover:bg-red-600 text-white"
       />
+
     </>
   );
 }
