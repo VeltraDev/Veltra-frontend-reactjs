@@ -80,11 +80,12 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
                 {/* Avatar */}
                 {conversation && (
                     <div className="relative">
+                        
                         <img
                             src={
                                 conversation.isGroup
-                                    ? conversation.picture
-                                    : otherUser?.avatar
+                                    ? conversation.picture || `https://ui-avatars.com/api/?name=${conversation.name}`
+                                    : otherUser?.avatar || `https://ui-avatars.com/api/?name=${otherUser.name}`
                             }
                             alt={conversation.isGroup ? conversation.name : otherUser?.name}
                             className="w-10 h-10 rounded-full object-cover"
@@ -112,7 +113,6 @@ export default function ChatHeader({ onToggleGroupInfo, onToggleChatList }: Chat
                                 ? `${conversation.users?.length || 0} members`
                                 : otherUser ? (isOnline ? 'Online' : 'Offline') : 'User not found'}
                         </p>
-
                     </div>
                 )}
 
