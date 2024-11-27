@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
         },
       });
 
-      if (response.data && response.data.code === 201) {
+      if (response && response.statusCode === 201) {
         setRequestStatus("Yêu cầu đặt lại mật khẩu thành công. Vui lòng kiểm tra email của bạn.");
       } else {
         setRequestStatus("Yêu cầu đặt lại mật khẩu thất bại. Vui lòng thử lại.");
