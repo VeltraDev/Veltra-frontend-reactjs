@@ -9,6 +9,8 @@ interface ConfirmDeleteModalProps {
   onConfirm: () => void;
   title: string;
   description: string;
+  confirmButtonText?: string; // Nội dung nút xác nhận
+  confirmButtonColor?: string; // Lớp màu của nút xác nhận
 }
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
@@ -16,7 +18,9 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onClose,
   onConfirm,
   title,
-  description
+  description,
+  confirmButtonText = 'Delete', // Giá trị mặc định
+  confirmButtonColor = 'bg-red-500 hover:bg-red-600 text-white', // Giá trị mặc định
 }) => {
   const { theme } = useTheme();
   const currentTheme = themes[theme];
@@ -53,9 +57,9 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             </button>
             <button
               onClick={onConfirm}
-              className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+              className={`px-4 py-2 rounded-lg ${confirmButtonColor} transition-colors`}
             >
-              Delete
+              {confirmButtonText}
             </button>
           </div>
         </motion.div>
