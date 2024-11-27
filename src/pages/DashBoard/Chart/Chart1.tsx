@@ -8,10 +8,22 @@ interface ReactionData {
 }
 
 export function ReactionChart({ data }: { data: ReactionData[] }) {
-    const formattedData = data.map(item => ({
-        ...item,
-        count: parseInt(item.count, 10)
-    }));
+    // Chuyển đổi dữ liệu thành dạng tổng hợp
+    const groupedData = data.reduce((acc, item) => {
+        const existing = acc.find(d => d.date === item.date);
+        if (existing) {
+            existing[item.reactionType] = parseInt(item.count, 10);
+        } else {
+            acc.push({
+                date: item.date,
+                [item.reactionType]: parseInt(item.count, 10),
+            });
+        }
+        return acc;
+    }, [] as Array<{ date: string;[key: string]: number | string }>);
+
+    // Lấy danh sách tất cả các loại phản ứng để map cột
+    const reactionTypes = Array.from(new Set(data.map(item => item.reactionType)));
 
     return (
         <Card className="col-span-2">
@@ -21,12 +33,14 @@ export function ReactionChart({ data }: { data: ReactionData[] }) {
             <CardContent>
                 <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={formattedData}>
+                        <BarChart data={groupedData}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="reactionType" />
+                            <XAxis dataKey="date" />
                             <YAxis />
                             <Tooltip />
-                            <Bar dataKey="count" fill="hsl(var(--primary))" />
+                            {reactionTypes.map(type => (
+                                <Bar key={type} dataKey={type} stackId="a" fill={`hsl(var(--primary))`} />
+                            ))}
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
