@@ -14,7 +14,7 @@ import {
   MapPin,
 } from 'lucide-react';
 
-const PostForm = ({ onNewPost }: { onNewPost: () => void }) => {
+const PostForm = ({ onNewPost, postToEdit, isEditing }: { onNewPost: () => void, postToEdit?: any, isEditing?: boolean }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,10 +145,12 @@ const PostForm = ({ onNewPost }: { onNewPost: () => void }) => {
       </div>
 
       <CreatePostModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onPostCreated={handlePostCreated}
-      />
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onPostCreated={handlePostCreated}
+                postToEdit={postToEdit} 
+                isEditing={isEditing} 
+            />
 
     </>
   );
