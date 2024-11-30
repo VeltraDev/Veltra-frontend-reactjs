@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
           )}
         />
 
-        <Button type="submit" className="text-white">Đặt lại mật khẩu</Button>
+        <Button type="submit" className="text-white bg-blue-600 hover:bg-blue-700">Đặt lại mật khẩu</Button>
 
         {requestStatus && (
           <p className={`text-center ${requestStatus.includes("thành công") ? "text-green-600" : "text-red-600"}`}>
