@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme, ThemeType, themes } from '@/contexts/ThemeContext';
 import { Home, MessageCircle, Users, Search, Settings, LogOut, Palette, Plus } from 'lucide-react';
-import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
+import CreateGroupDialog from '@/components/Chat/CreateGroupDialog';
 import { Link } from 'react-router-dom';
 const ITEMS_PER_PAGE = 6; // Số themes mỗi trang
 
