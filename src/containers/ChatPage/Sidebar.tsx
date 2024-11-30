@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme, ThemeType, themes } from '@/contexts/ThemeContext';
 import { Home, MessageCircle, Users, Search, Settings, LogOut, Palette, Plus } from 'lucide-react';
 import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
 import { Link } from 'react-router-dom';
-
+import { http } from '@/api/http';
 const ITEMS_PER_PAGE = 6; // Số themes mỗi trang
 
 export default function Sidebar() {
@@ -17,6 +17,7 @@ export default function Sidebar() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
 
   const currentTheme = themes[theme];
+  const [avatar, setAvatar] = useState('');
 
   const themeOptions = Object.entries(themes).map(([key, value]) => ({
     name: value.name,
@@ -35,6 +36,24 @@ export default function Sidebar() {
     navigate('/');
   };
 
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      try {
+          const userResponse = await http.get(`/users/${user.user.id}`);
+          const userData = userResponse.data.avatar;
+
+          console.log("user", userData)
+          
+          setAvatar(userData);
+      } catch (error) {
+        console.error('Error fetching user avatar:', error);
+      }
+    };
+
+    if (user) {
+      fetchUserAvatar();
+    }
+  }, [user]);
   return (
     <>
       <div className={`w-20 h-screen ${currentTheme.bg} flex flex-col items-center py-8 relative z-30`}>
@@ -42,7 +61,7 @@ export default function Sidebar() {
           <div className="relative">
             <div className={`absolute inset-0 bg-gradient-to-r ${currentTheme.primary} rounded-full animate-pulse`} style={{ filter: 'blur(8px)' }} />
             <img
-              src={user?.user.picture || `https://ui-avatars.com/api/?name=${user?.firstName}`}
+              src={avatar || `https://ui-avatars.com/api/?name=${user?.firstName}`}
               alt="Profile"
               className={`w-12 h-12 rounded-full relative z-10 ring-2 ring-${currentTheme.text}`}
             />

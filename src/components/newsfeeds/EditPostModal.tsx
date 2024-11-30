@@ -32,10 +32,8 @@ export default function EditPostModal({ isOpen, onClose, postToEdit, onPostUpdat
 
     useEffect(() => {
         const fetchUserAvatar = async () => {
-            console.log('Fetching user avatar...');
             try {
                 const accountResponse = await http.get('/auth/account');
-                console.log('Account response:', accountResponse);
                 const userId = accountResponse.data.user.id;
 
                 if (userId) {
