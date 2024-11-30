@@ -1,18 +1,44 @@
 import { useState, useEffect } from 'react';
 import AppLogo from './common/AppLogo';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store'; // Import RootState để lấy thông tin người dùng từ Redux
+import { http } from '@/api/http'; // Import http để gọi API
+import defaultAvatar from '@/images/user/defaultAvatar.png'; // Avatar mặc định
+import { useNavigate } from 'react-router-dom'; // Dùng useNavigate để chuyển hướng nếu cần
 
 export default function Header() {
     const [state, setState] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [user, setUser] = useState(null); // Thêm state để lưu thông tin người dùng
+    const currentUser = useSelector((state: RootState) => state.auth.user?.user); // Lấy thông tin người dùng hiện tại từ Redux
+    const navigate = useNavigate();
 
-    // Replace paths with your paths
+    // Thông tin điều hướng
     const navigation = [
         { title: "Trang chủ", path: "" },
         { title: "Giới thiệu", path: "" },
         { title: "Liên hệ", path: "" },
         { title: "Blog", path: "" }
     ];
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const accountResponse = await http.get('/auth/account');
+                const userId = accountResponse.data.user.id;
+
+                if (userId) {
+                    const userResponse = await http.get(`/users/${userId}`);
+                    setUser(userResponse.data); // Lưu thông tin người dùng vào state
+                }
+            } catch (error) {
+                console.error('Error fetching user avatar:', error);
+            }
+        };
+
+        fetchUserData();
+    }, []); // Chạy một lần khi component mount
 
     useEffect(() => {
         const handleScroll = () => {
@@ -57,7 +83,7 @@ export default function Header() {
                         {
                             navigation.map((item, idx) => {
                                 return (
-                                    <li key={idx} className="text-white text-base  hover:text-primary">
+                                    <li key={idx} className="text-white text-base hover:text-primary">
                                         <a href={item.path} className="block">
                                             {item.title}
                                         </a>
@@ -66,18 +92,29 @@ export default function Header() {
                             })
                         }
                         <span className='hidden w-px h-6 bg-gray-300 md:block'></span>
-                        <div className='space-y-3 items-center gap-x-6 md:flex md:space-y-0'>
-                            <li>
-                                <Link to="/auth?tab=signin" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
-                                    Đăng nhập
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/auth?tab=signup" className="block py-3 px-4 font-medium text-center  text-white bg-primary hover:bg-primary active:bg-primary active:shadow-none rounded-lg shadow md:inline">
-                                    Đăng ký
-                                </Link>
-                            </li>
-                        </div>
+                        {user ? (
+                            <Link to="/newsfeeds" className="flex items-center space-x-4">
+                                <img
+                                    src={user.avatar || defaultAvatar} // Sử dụng avatar từ API hoặc ảnh mặc định
+                                    alt={user.firstName}
+                                    className="w-8 h-8 rounded-full object-cover"
+                                />
+                                <span className="text-white">{user.firstName} {user.lastName}</span>
+                            </Link>
+                        ) : (
+                            <div className="space-y-3 items-center gap-x-6 md:flex md:space-y-0">
+                                <li>
+                                    <Link to="/auth?tab=signin" className="block py-3 text-center text-white hover:text-primary border rounded-lg md:border-none">
+                                        Đăng nhập
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/auth?tab=signup" className="block py-3 px-4 font-medium text-center text-white bg-primary hover:bg-primary active:bg-primary active:shadow-none rounded-lg shadow md:inline">
+                                        Đăng ký
+                                    </Link>
+                                </li>
+                            </div>
+                        )}
                     </ul>
                 </div>
             </div>

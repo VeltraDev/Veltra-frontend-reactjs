@@ -209,7 +209,7 @@ export default function SignUpForm() {
                     <div className="flex items-center justify-between">
                         <Button
                             type="submit"
-                            className="text-white flex items-center justify-center"
+                            className="flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (

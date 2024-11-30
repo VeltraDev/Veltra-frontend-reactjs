@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
           )}
         />
 
-        <Button type="submit" className="text-white">Đặt lại mật khẩu</Button>
+        <Button type="submit" className="text-white bg-blue-600 hover:bg-blue-700">Đặt lại mật khẩu</Button>
 
         {resetStatus && (
           <p className={`text-center ${resetStatus.includes("thành công") ? "text-green-600" : "text-red-600"}`}>
