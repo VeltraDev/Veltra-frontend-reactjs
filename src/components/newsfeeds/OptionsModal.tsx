@@ -53,7 +53,7 @@ const OptionsModal: React.FC<OptionsModalProps> = ({
     <>
       {/* Options Modal */}
       <div className="bg-black bg-opacity-10 fixed inset-0 flex items-center justify-center z-50">
-        <div className="bg-[#262626] w-[300px] py-4 shadow-lg rounded-xl">
+        <div className="bg-[#262626] w-[200px] py-4 shadow-lg rounded-xl">
           <ul className="text-center space-y-4">
             <li
               className="cursor-pointer font-semibold text-yellow-500 dark:text-gray-300 hover:opacity-80"

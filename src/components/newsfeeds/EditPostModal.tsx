@@ -34,13 +34,9 @@ export default function EditPostModal({ isOpen, onClose, postToEdit, onPostUpdat
         const fetchUserAvatar = async () => {
             try {
                 const accountResponse = await http.get('/auth/account');
-                const userId = accountResponse.data.user.id;
+                const data = accountResponse.data.user.avatar;
 
-                if (userId) {
-                    const userResponse = await http.get(`/users/${userId}`);
-                    const userData = userResponse.data.avatar;
-                    setAvatar(userData || defaultAvatar);
-                }
+                setAvatar(data)
             } catch (error) {
                 console.error('Error fetching user avatar:', error);
             }
