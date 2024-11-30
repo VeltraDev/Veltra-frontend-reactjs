@@ -26,12 +26,9 @@ export default function Header() {
         const fetchUserData = async () => {
             try {
                 const accountResponse = await http.get('/auth/account');
-                const userId = accountResponse.data.user.id;
+                const userData = accountResponse.data.user;
 
-                if (userId) {
-                    const userResponse = await http.get(`/users/${userId}`);
-                    setUser(userResponse.data); // Lưu thông tin người dùng vào state
-                }
+               setUser(userData)
             } catch (error) {
                 console.error('Error fetching user avatar:', error);
             }

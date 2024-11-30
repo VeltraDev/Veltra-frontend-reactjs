@@ -106,11 +106,11 @@ export default function SignUpForm() {
                         name="firstname"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-white">Tên</FormLabel>
+                                <FormLabel className="text-white">Họ</FormLabel>
                                 <FormControl>
                                     <Input className="text-blue-500"
                                         type="text"
-                                        placeholder="Nguyễn"
+                                        placeholder="Nguyễn Văn"
                                         {...field}
                                         disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
@@ -125,11 +125,11 @@ export default function SignUpForm() {
                         name="lastname"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-white">Họ</FormLabel>
+                                <FormLabel className="text-white">Tên</FormLabel>
                                 <FormControl>
                                     <Input className="text-blue-500"
                                         type="text"
-                                        placeholder="Văn A"
+                                        placeholder="An"
                                         {...field}
                                         disabled={isSubmitting} // Vô hiệu hóa khi đăng ký
                                     />
