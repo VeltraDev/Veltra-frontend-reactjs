@@ -4,41 +4,39 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { Image, AlignLeft, Smile, Calendar, Camera, MapPin } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { http } from '@/api/http';
 import defaultAvatar from '@/images/user/defaultAvatar.png';
-interface CreatePostModalProps {
+
+interface EditPostModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onPostCreated?: () => void; 
+    postToEdit: {
+        id: string;
+        content: string;
+        attachments: { url: string; type: string }[];
+    };
+    onPostUpdated?: () => void;
 }
 
-export default function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostModalProps) {
+export default function EditPostModal({ isOpen, onClose, postToEdit, onPostUpdated }: EditPostModalProps) {
     const { currentTheme } = useTheme();
     const { user } = useAuth();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [caption, setCaption] = useState('');
+    const [caption, setCaption] = useState(postToEdit.content);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    const [previewUrls, setPreviewUrls] = useState<string[]>(postToEdit.attachments.map(att => att.url));
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [avatar, setAvatar] = useState('');
     const [loading, setLoading] = useState(false);
 
-
     useEffect(() => {
         const fetchUserAvatar = async () => {
-            console.log('Fetching user avatar...');
             try {
                 const accountResponse = await http.get('/auth/account');
-                console.log('Account response:', accountResponse);
-                const userId = accountResponse.data.user.id;
+                const data = accountResponse.data.user.avatar;
 
-                if (userId) {
-                    const userResponse = await http.get(`/users/${userId}`);
-                    const userData = userResponse.data.avatar;
-                    setAvatar(userData || defaultAvatar);
-                }
+                setAvatar(data)
             } catch (error) {
                 console.error('Error fetching user avatar:', error);
             }
@@ -83,9 +81,7 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
 
     const uploadImage = async (file: File): Promise<string> => {
         const formData = new FormData();
-        const uniqueFileName = `${uuidv4()}-${file.name}`;
-        const uniqueFile = new File([file], uniqueFileName, { type: file.type });
-        formData.append('fileUpload', uniqueFile);
+        formData.append('fileUpload', file);
 
         try {
             const response = await http.post('/files/upload/', formData, {
@@ -93,10 +89,6 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
             });
 
             console.log('uploadImage: Server response', response);
-
-            if (response.data?.data?.url) {
-                return `${response.data.url}?t=${Date.now()}`;
-            }
 
             if (response.data?.url) {
                 return `${response.data.url}?t=${Date.now()}`;
@@ -109,16 +101,16 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
         }
     };
 
- const handleSubmit = async () => {
+    const handleSubmit = async () => {
         if (!caption.trim() && selectedFiles.length === 0) {
             toast.error('Please enter some content or select at least one image.');
             return;
         }
 
-        setLoading(true); 
+        setLoading(true);
 
         try {
-            const attachments = [];
+            const attachments = [...postToEdit.attachments];
 
             for (const file of selectedFiles) {
                 const url = await uploadImage(file);
@@ -130,23 +122,23 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                 attachments,
             };
 
-            await http.post('/posts', postData);
+            await http.patch(`/posts/${postToEdit.id}`, postData);
 
-            toast.success('Post created successfully!');
+            toast.success('Post updated successfully!');
             handleReset();
             onClose();
-            if (onPostCreated) {
-                onPostCreated();
+            if (onPostUpdated) {
+                onPostUpdated();
             }
         } catch (error: any) {
             if (error.response) {
-                toast.error(`Failed to create post: ${error.response.data.message}`);
+                toast.error(`Failed to update post: ${error.response.data.message}`);
             } else {
-                toast.error('Failed to create post. Please try again.');
+                toast.error('Failed to update post. Please try again.');
             }
-            console.error('handleSubmit: Error creating post', error);
+            console.error('handleSubmit: Error updating post', error);
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     };
 
@@ -154,7 +146,6 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
         const textarea = e.target;
 
         textarea.style.height = 'auto';
-
         textarea.style.height = `${textarea.scrollHeight}px`;
 
         setCaption(e.target.value);
@@ -162,8 +153,8 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
 
     const handleReset = () => {
         setSelectedFiles([]);
-        setPreviewUrls([]);
-        setCaption('');
+        setPreviewUrls(postToEdit.attachments.map(att => att.url));
+        setCaption(postToEdit.content);
         setCurrentImageIndex(0);
     };
 
@@ -178,10 +169,10 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             {loading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
-                        <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-                    </div>
-                )}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+                </div>
+            )}
             <div
                 style={{
                     maxHeight: '90vh',
@@ -190,17 +181,15 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                     scrollbarColor: '#888 #f4f4f4',
                     borderRadius: '12px',
                 }}
-                className={` relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
+                className={`relative ${currentTheme.bg} rounded-xl max-w-2xl w-full border ${currentTheme.border2}`}
             >
-                
-
                 <div className={`flex items-center justify-between p-4 border-b ${currentTheme.border2}`}>
                     <button onClick={handleClose}>
                         <X className={currentTheme.iconColor} />
                     </button>
-                    <h2 className={`text-lg font-semibold ${currentTheme.text}`}>Create New Post</h2>
+                    <h2 className={`text-lg font-semibold ${currentTheme.text}`}>Edit Post</h2>
                     <button onClick={handleSubmit} className="text-blue-500 font-semibold hover:text-blue-600">
-                        Post
+                        Update
                     </button>
                 </div>
 
@@ -211,14 +200,11 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                         className="w-10 h-10 rounded-full object-cover"
                     />
                     <textarea
-                        value={caption} 
+                        value={caption}
                         onChange={handleCaptionChange}
                         placeholder="What's on your mind?"
-                        className={` overflow-y-auto scrollbar-custom flex-grow w-full resize-none ${currentTheme.bg} ${currentTheme.text} focus:outline-none`}
+                        className={`overflow-y-auto scrollbar-custom flex-grow w-full resize-none ${currentTheme.bg} ${currentTheme.text} focus:outline-none`}
                         rows={1}
-                        // style={{
-                        //     overflow: 'hidden',
-                        // }}
                     />
                 </div>
 
@@ -226,7 +212,6 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                     <div className='my-3'></div>
                     {previewUrls.length > 0 && (
                         <div className="relative flex justify-center items-center w-full h-[280px]">
-
                             {previewUrls.length > 2 && currentImageIndex > 0 && (
                                 <button
                                     onClick={() => setCurrentImageIndex((prev) => Math.max(0, prev - 2))}
@@ -301,15 +286,15 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }: Crea
                         </button>
                     </div>
                     <button onClick={handleSubmit} className="px-4 py-2 rounded-full text-white font-semibold bg-blue-400">
-                        Post
+                        Update
                     </button>
                 </div>
 
                 {isConfirmModalOpen && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className={`bg-white rounded-lg p-6 w-full max-w-sm`}>
-                            <h3 className="text-lg font-semibold mb-4">Hủy bài viết?</h3>
-                            <p className="mb-6 text-center">Bạn không thể hoàn tác thao tác này và bản nháp sẽ biến mất</p>
+                            <h3 className="text-lg font-semibold mb-4">Hủy chỉnh sửa?</h3>
+                            <p className="mb-6 text-center">Bạn không thể hoàn tác thao tác này và các thay đổi sẽ không được lưu</p>
                             <div className="flex space-y-4 flex-col">
                                 <button
                                     onClick={handleConfirmClose}

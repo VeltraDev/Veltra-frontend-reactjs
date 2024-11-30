@@ -72,7 +72,7 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                 return {
                     ...post,
                     userReactionDetail: userReactionDetail || null,
-                    totalReactions: post.reactions?.length || 0, 
+                    totalReactions: post.reactions?.length || 0,
                 };
             });
 
@@ -288,12 +288,12 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
     }, []);
 
     const handleMoreOptions = (postId: string) => {
-    setShowOptions(postId); 
-  };
+        setShowOptions(postId);
+    };
 
-  const handleCloseModal = () => {
-    setShowOptions(null); 
-  };
+    const handleCloseModal = () => {
+        setShowOptions(null);
+    };
 
     return (
         <div className="space-y-6">
@@ -398,13 +398,16 @@ export default function NewsFeeds({ refreshPosts }: { refreshPosts: boolean }) {
                             isVisible={!!showOptions}
                             onClose={handleCloseModal}
                             postId={showOptions as string}
+                            postToEdit={posts.find((post) => post.id === showOptions)} 
                             onPostDelete={(postId) => {
                                 setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId)); 
                             }}
-                            onPostEdit={(postId) => { 
-                             console.log(`Editing post with ID: ${postId}`);
+                            onPostUpdated={() => {
+                               
+                                fetchPosts(1);
                             }}
-                            />
+                        />
+
                     </article>
                 ))}
         </div>

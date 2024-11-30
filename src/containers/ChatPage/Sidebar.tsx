@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme, ThemeType, themes } from '@/contexts/ThemeContext';
 import { Home, MessageCircle, Users, Search, Settings, LogOut, Palette, Plus } from 'lucide-react';
 import CreateGroupDialog from '@/components/chat/CreateGroupDialog';
 import { Link } from 'react-router-dom';
-
 const ITEMS_PER_PAGE = 6; // Số themes mỗi trang
 
 export default function Sidebar() {
@@ -17,6 +16,7 @@ export default function Sidebar() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
 
   const currentTheme = themes[theme];
+
 
   const themeOptions = Object.entries(themes).map(([key, value]) => ({
     name: value.name,
@@ -42,7 +42,7 @@ export default function Sidebar() {
           <div className="relative">
             <div className={`absolute inset-0 bg-gradient-to-r ${currentTheme.primary} rounded-full animate-pulse`} style={{ filter: 'blur(8px)' }} />
             <img
-              src={user?.user.picture || `https://ui-avatars.com/api/?name=${user?.firstName}`}
+              src={user.user.avatar || `https://ui-avatars.com/api/?name=${user?.firstName}`}
               alt="Profile"
               className={`w-12 h-12 rounded-full relative z-10 ring-2 ring-${currentTheme.text}`}
             />
